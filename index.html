@@ -251,12 +251,12 @@ const fmt = n => {
 };
 const pct = v => v!=null ? Math.round(v)+'%' : '—';
 
-function scoreBadge(s) {
-  const cls = s>=7?'score-high':s>=4?'score-mid':'score-low';
-  return `<span class="score-badge ${cls}">${s.toFixed(1)}</span>`;
+function scoreBadge(s, breakdown) {
+  const s100 = Math.round(s*10);
+  const cls = s100>=80?"score-high":s100>=60?"score-mid":"score-low";
+  const tip = breakdown ? " title=\""+breakdown+"\" style=\"cursor:help;\"" : "";
+  return `<span class="score-badge ${cls}"${tip}>${s100}</span>`;
 }
-
-function updateSummaryCards(cards) {
   document.getElementById('summaryCards').innerHTML = cards.map(c=>
     `<div class="card card-teal p-4">
       <div style="font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--dim);">${c.label}</div>
@@ -344,7 +344,8 @@ function parseClose(rows, fname) {
     <div class="mobile-scroll">
     <table class="bp-table">
       <thead><tr>
-        <th class="text-left">Account</th>
+        <th style="width:32px;text-align:center;padding:8px 4px;" title="Add to plan"></th>
+        <th style="width:32px;"></th><th class="text-left">Account</th>
         <th class="text-right accent">Score</th>
         <th class="text-right">Revenue</th>
         <th class="text-right hide-mobile">Confidence</th>
@@ -358,6 +359,7 @@ function parseClose(rows, fname) {
       <tbody>
         ${deals.map(d=>`
           <tr>
+            ${makeCheckbox("close",{name:d.acct,cat:d.type,rev:d.rev,score:d.score})}
             <td><strong style="color:#fff;">${d.acct}</strong>${d.isIgnite?'<span class="badge-ignite" style="margin-left:6px;">IGNITE</span>':''}</td>
             <td class="text-right">${scoreBadge(d.score)}</td>
             <td class="text-right" style="color:#fff;font-weight:600;">${fmt(d.rev)}</td>
@@ -449,7 +451,8 @@ function parseProtect(rows, fname) {
     <div class="mobile-scroll">
     <table class="bp-table">
       <thead><tr>
-        <th class="text-left">Advertiser</th>
+        <th style="width:32px;text-align:center;padding:8px 4px;" title="Add to plan"></th>
+        <th style="width:32px;"></th><th class="text-left">Advertiser</th>
         <th class="text-left hide-mobile">AE</th>
         <th class="text-right accent">Score</th>
         <th class="text-right">2025 Revenue</th>
@@ -463,6 +466,7 @@ function parseProtect(rows, fname) {
           const trendIcon = c.trend===1?'<span style="color:var(--green);">▲ Growing</span>':c.trend===-1?'<span style="color:var(--red);">▼ Declining</span>':'<span style="color:var(--dim);">→ Stable</span>';
           const action = c.score>=7?'<span class="badge-now">PROTECT NOW</span>':c.trend===1?'<span class="badge-ignite">EXPAND</span>':'<span style="font-size:.68rem;color:var(--dim);">Monitor</span>';
           return `<tr>
+            ${makeCheckbox("protect",{name:c.adv,cat:"Active Client",rev:c.rev26,score:c.score})}
             <td><strong style="color:#fff;">${c.adv}</strong></td>
             <td class="hide-mobile" style="color:var(--dim);font-size:.78rem;">${c.ae}</td>
             <td class="text-right">${scoreBadge(c.score)}</td>
@@ -544,6 +548,7 @@ function renderReclaim() {
     <div class="mobile-scroll">
     <table class="bp-table">
       <thead><tr>
+        <th style="width:32px;text-align:center;padding:8px 4px;" title="Add to plan"></th>
         <th class="text-left">Advertiser</th>
         <th class="text-right accent">Score</th>
         <th class="text-left">Bucket</th>
@@ -558,6 +563,7 @@ function renderReclaim() {
                            c.bucket==='Reapproach Later'?`<span class="badge-reclaim">REAPPROACH</span>`:
                            `<span style="font-size:.68rem;color:var(--dim);">Low Priority</span>`;
           return `<tr>
+            ${makeCheckbox("reclaim",{name:c.adv,cat:c.isIgnite?"Former Ignite":"Former Client",rev:c.rev25,score:c.score})}
             <td><strong style="color:#fff;">${c.adv}</strong></td>
             <td class="text-right">${scoreBadge(c.score)}</td>
             <td>${bucketEl}</td>
@@ -701,6 +707,7 @@ function renderRebuild(prospects, radius) {
     <div class="mobile-scroll">
     <table class="bp-table">
       <thead><tr>
+        <th style="width:32px;text-align:center;padding:8px 4px;" title="Add to plan"></th>
         <th class="text-left">Prospect</th>
         <th class="text-left hide-mobile">Category</th>
         <th class="text-right accent">Score</th>
@@ -712,6 +719,7 @@ function renderRebuild(prospects, radius) {
       <tbody>
         ${prospects.map(p=>`
           <tr>
+            ${makeCheckbox("rebuild",{name:p.name,cat:p.cat,estRev:p.estRev,score:p.score})}
             <td><strong style="color:#fff;">${p.name}</strong></td>
             <td class="hide-mobile"><span class="badge-reclaim">${p.cat||'—'}</span></td>
             <td class="text-right">${scoreBadge(p.score)}</td>
@@ -808,7 +816,7 @@ async function discoverProspects() {
 
       const spendScore = Math.min(10,cfg.estRev/10000);
       const distScore  = dist!=null ? Math.max(1,10-(dist/radiusMi)*5) : 5;
-      const score = parseFloat(Math.min(10,0.35*spendScore+0.30*cfg.anchorScore+0.20*distScore+0.15*5).toFixed(1));
+      const score = parseFloat(Math.min(10,0.35*spendScore+0.35*cfg.anchorScore+0.20*distScore+0.10*7).toFixed(1));
 
       prospects.push({name,cat:matchedCat,city,addr,zip:'',website:tags.website||tags['contact:website']||'',phone:tags.phone||'',dist,estRev:cfg.estRev,score,_lat:lat,_lng:lng});
     });
@@ -824,6 +832,159 @@ async function discoverProspects() {
   }
 }
 
+// ─── PLAN STATE & FUNCTIONS ─────────────────────────────────────────────────
+const plan = { close:[], protect:[], reclaim:[], rebuild:[] };
+
+function planKey(section, name) { return section+'::'+name; }
+
+function isInPlan(section, name) {
+  return plan[section] && plan[section].some(function(a){return a.name===name;});
+}
+
+function addToPlan(section, account) {
+  if (!plan[section]) plan[section]=[];
+  if (!isInPlan(section, account.name)) {
+    plan[section].push(account);
+    savePlanLocal();
+    updatePlanFab();
+    refreshPlanModal();
+  }
+}
+
+function removeFromPlan(section, name) {
+  if (plan[section]) plan[section] = plan[section].filter(function(a){return a.name!==name;});
+  savePlanLocal();
+  updatePlanFab();
+  refreshPlanModal();
+  // Uncheck checkbox in table
+  const cb = document.getElementById('cb-'+section+'-'+name.replace(/[^a-z0-9]/gi,''));
+  if (cb) cb.checked=false;
+}
+
+function clearPlan() {
+  Object.keys(plan).forEach(function(s){plan[s]=[];});
+  savePlanLocal();
+  updatePlanFab();
+  refreshPlanModal();
+  // Uncheck all checkboxes
+  document.querySelectorAll('.plan-cb').forEach(function(cb){cb.checked=false;});
+}
+
+function togglePlan() {
+  const modal = document.getElementById('planModal');
+  modal.style.display = modal.style.display==='none' ? 'block' : 'none';
+  if (modal.style.display==='block') refreshPlanModal();
+}
+
+function updatePlanFab() {
+  const total = Object.values(plan).reduce(function(s,a){return s+a.length;},0);
+  const fab = document.getElementById('planFab');
+  document.getElementById('planCount').textContent = total;
+  fab.style.display = total>0 ? 'block' : 'none';
+}
+
+function refreshPlanModal() {
+  document.getElementById('planMarketLabel').textContent =
+    document.getElementById('marketInput').value || 'Market Plan';
+
+  const labels = {close:'🔴 Close Now',protect:'🟢 Protect & Expand',reclaim:'🟡 Reclaim',rebuild:'🔵 Rebuild'};
+  let html = '';
+  Object.entries(labels).forEach(function(entry) {
+    const s=entry[0], label=entry[1];
+    const items = plan[s]||[];
+    if (!items.length) return;
+    html += '<div style="margin-bottom:20px;">';
+    html += '<div style="font-size:.68rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--teal);margin-bottom:8px;">'+label+' ('+items.length+')</div>';
+    items.forEach(function(a) {
+      const score100 = Math.round(a.score*10);
+      const scColor = score100>=80?'var(--green)':score100>=60?'var(--yellow)':'var(--red)';
+      html += '<div style="display:flex;align-items:center;gap:10px;padding:8px 10px;background:var(--surface2);border:1px solid var(--border);border-radius:6px;margin-bottom:6px;">';
+      html += '<div style="flex:1;min-width:0;">';
+      html += '<div style="font-weight:600;color:#fff;font-size:.82rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">'+a.name+'</div>';
+      html += '<div style="font-size:.68rem;color:var(--dim);">'+(a.cat||a.type||'')+(a.estRev||a.rev||a.revenue?(' &bull; Est. '+fmt(a.estRev||a.rev||a.revenue)):'')+'</div>';
+      html += '</div>';
+      html += '<span style="font-size:.75rem;font-weight:700;color:'+scColor+';">'+score100+'</span>';
+      html += '<button onclick="removeFromPlan(\''+s+'\',\''+a.name.replace(/'/g,"\\'")+'\')" style="background:none;border:none;color:var(--dim);cursor:pointer;font-size:.9rem;padding:2px 4px;">✕</button>';
+      html += '</div>';
+    });
+    html += '</div>';
+  });
+  if (!html) html='<div style="text-align:center;color:var(--dim);padding:40px 0;font-size:.85rem;">Check accounts in any tab to add them here.</div>';
+  document.getElementById('planContent').innerHTML = html;
+  document.getElementById('planUrlBar').style.display='none';
+}
+
+function savePlanLocal() {
+  try { localStorage.setItem('reignite_plan', JSON.stringify(plan)); } catch(e){}
+}
+
+function loadPlanLocal() {
+  try {
+    const d = JSON.parse(localStorage.getItem('reignite_plan')||'{}');
+    Object.keys(plan).forEach(function(s){if(d[s]) plan[s]=d[s];});
+    updatePlanFab();
+  } catch(e){}
+}
+
+function savePlanUrl() {
+  const market = document.getElementById('marketInput').value||'';
+  const payload = JSON.stringify({market, plan, created: new Date().toISOString().split('T')[0]});
+  const encoded = btoa(unescape(encodeURIComponent(payload))).replace(/\+/g,'-').replace(/\//g,'_').replace(/=/g,'');
+  const url = location.href.split('#')[0]+'#plan='+encoded;
+  document.getElementById('planUrlInput').value = url;
+  document.getElementById('planUrlBar').style.display='block';
+  history.replaceState(null,'',url);
+}
+
+function copyPlanUrl() {
+  const inp = document.getElementById('planUrlInput');
+  navigator.clipboard.writeText(inp.value).then(function(){
+    const btn = inp.nextElementSibling;
+    btn.textContent='Copied!'; setTimeout(function(){btn.textContent='Copy';},2000);
+  });
+}
+
+function loadPlanFromUrl() {
+  const hash = location.hash;
+  if (!hash.includes('plan=')) return;
+  try {
+    const encoded = hash.split('plan=')[1];
+    const decoded = decodeURIComponent(escape(atob(encoded.replace(/-/g,'+').replace(/_/g,'/'))));
+    const data = JSON.parse(decoded);
+    if (data.market) document.getElementById('marketInput').value=data.market;
+    if (data.plan) {
+      Object.keys(plan).forEach(function(s){if(data.plan[s]) plan[s]=data.plan[s];});
+      updatePlanFab();
+    }
+  } catch(e){ console.warn('Could not load plan from URL',e); }
+}
+
+function exportPlan() {
+  const market = document.getElementById('marketInput').value||'Market';
+  const labels = {close:'Close Now',protect:'Protect & Expand',reclaim:'Reclaim',rebuild:'Rebuild'};
+  let csv = 'Section,Account,Category,Estimated Revenue,Score\n';
+  Object.entries(labels).forEach(function(entry) {
+    const s=entry[0], label=entry[1];
+    (plan[s]||[]).forEach(function(a) {
+      const row = [label, a.name, (a.cat||a.type||''), (a.estRev||a.rev||a.revenue||''), Math.round(a.score*10)];
+      csv += row.map(function(v){return '"'+(String(v||'')).replace(/"/g,'""')+'"';}).join(',')+'\n';
+    });
+  });
+  const blob = new Blob([csv],{type:'text/csv'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href=url; a.download=market.replace(/\s/g,'_')+'_ReIgnite_Plan.csv'; a.click();
+}
+
+function makeCheckbox(section, account) {
+  const cbId = 'cb-'+section+'-'+account.name.replace(/[^a-z0-9]/gi,'');
+  const checked = isInPlan(section, account.name) ? 'checked' : '';
+  return '<td style="padding:6px 12px;text-align:center;">'
+    +'<input type="checkbox" id="'+cbId+'" class="plan-cb" '+checked+' '
+    +'onchange="this.checked?addToPlan(\''+section+'\','+JSON.stringify(account).replace(/'/g,"\\'")+'):removeFromPlan(\''+section+'\',\''+account.name.replace(/'/g,"\\'")+'\');" '
+    +'style="width:15px;height:15px;cursor:pointer;accent-color:var(--teal);" title="Add to plan"/>'
+    +'</td>';
+}
 // ─── INIT ───────────────────────────────────────────────────────────────────
 buildCategoryFilters([]);
 updateSummaryCards([
@@ -833,5 +994,48 @@ updateSummaryCards([
   {label:'Market',value:'Enter name',sub:'Top-right corner'}
 ]);
 </script>
+<!-- Floating Plan Button -->
+<div id="planFab" onclick="togglePlan()" style="display:none;position:fixed;bottom:24px;right:24px;z-index:1000;
+  background:var(--teal);color:#000;font-weight:800;border-radius:999px;padding:12px 20px;cursor:pointer;
+  box-shadow:0 4px 20px rgba(0,188,212,.4);font-size:.85rem;transition:all .2s;user-select:none;">
+  📋 Plan (<span id="planCount">0</span>)
+</div>
+
+<!-- Plan Modal -->
+<div id="planModal" style="display:none;position:fixed;inset:0;z-index:2000;background:rgba(0,0,0,.7);backdrop-filter:blur(4px);">
+  <div style="position:absolute;right:0;top:0;bottom:0;width:min(480px,100%);background:var(--surface);
+       border-left:1px solid var(--teal-border);display:flex;flex-direction:column;overflow:hidden;">
+    <!-- Header -->
+    <div style="padding:16px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-shrink:0;">
+      <div>
+        <div style="font-weight:800;font-size:1rem;color:#fff;">Market Attack Plan</div>
+        <div id="planMarketLabel" style="font-size:.72rem;color:var(--dim);margin-top:2px;"></div>
+      </div>
+      <div style="display:flex;gap:8px;align-items:center;">
+        <button onclick="savePlanUrl()" style="background:var(--teal-dim);border:1px solid var(--teal-border);color:var(--teal);border-radius:6px;padding:6px 12px;font-size:.75rem;font-weight:700;cursor:pointer;">
+          🔗 Save URL
+        </button>
+        <button onclick="togglePlan()" style="background:var(--surface2);border:1px solid var(--border);color:var(--dim);border-radius:6px;padding:6px 10px;font-size:.85rem;cursor:pointer;">✕</button>
+      </div>
+    </div>
+    <!-- Copy URL bar -->
+    <div id="planUrlBar" style="display:none;padding:10px 16px;background:var(--surface2);border-bottom:1px solid var(--border);flex-shrink:0;">
+      <div style="font-size:.65rem;color:var(--dim);margin-bottom:4px;">Share or bookmark this URL to access your plan from any device:</div>
+      <div style="display:flex;gap:6px;">
+        <input id="planUrlInput" readonly style="flex:1;background:var(--surface);border:1px solid var(--border);border-radius:4px;padding:5px 8px;color:var(--teal);font-size:.7rem;outline:none;"/>
+        <button onclick="copyPlanUrl()" style="background:var(--teal);color:#000;border:none;border-radius:4px;padding:5px 10px;font-size:.72rem;font-weight:700;cursor:pointer;">Copy</button>
+      </div>
+    </div>
+    <!-- Plan content -->
+    <div id="planContent" style="flex:1;overflow-y:auto;padding:16px 20px;"></div>
+    <!-- Footer -->
+    <div style="padding:12px 20px;border-top:1px solid var(--border);display:flex;gap:8px;flex-shrink:0;">
+      <button onclick="clearPlan()" style="flex:1;background:rgba(248,113,113,.1);border:1px solid rgba(248,113,113,.3);color:var(--red);border-radius:6px;padding:8px;font-size:.78rem;cursor:pointer;">Clear All</button>
+      <button onclick="exportPlan()" style="flex:1;background:var(--teal-dim);border:1px solid var(--teal-border);color:var(--teal);border-radius:6px;padding:8px;font-size:.78rem;font-weight:700;cursor:pointer;">Export CSV</button>
+    </div>
+  </div>
+</div>
 </body>
 </html>
+
+
