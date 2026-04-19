@@ -1,0 +1,726 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>Re-Ignite Planner</title>
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    :root {
+      --teal:#00bcd4; --teal-dim:rgba(0,188,212,.12); --teal-border:rgba(0,188,212,.3);
+      --bg:#080d1a; --surface:#0f1629; --surface2:#141d35; --surface3:#1a2540;
+      --border:rgba(255,255,255,.07); --text:#e2e8f0; --dim:#64748b;
+      --green:#34d399; --red:#f87171; --yellow:#fbbf24; --orange:#fb923c;
+    }
+    *{box-sizing:border-box;}
+    body{background:var(--bg);font-family:'Inter',system-ui,sans-serif;color:var(--text);margin:0;min-height:100vh;}
+    .tab-active{background:var(--teal);color:#000;font-weight:700;border-radius:6px;}
+    .tab-inactive{color:var(--dim);border-radius:6px;}
+    .tab-inactive:hover{background:var(--surface3);color:var(--text);}
+    .card{background:var(--surface);border:1px solid var(--border);border-radius:8px;}
+    .card-teal{border-top:2px solid var(--teal);}
+    .upload-zone{border:2px dashed var(--teal-border);border-radius:8px;background:var(--teal-dim);transition:all .2s;cursor:pointer;}
+    .upload-zone:hover{border-color:var(--teal);background:rgba(0,188,212,.18);}
+    .upload-zone.drag{border-color:var(--teal);background:rgba(0,188,212,.25);}
+    .bp-table{width:100%;border-collapse:collapse;background:transparent;}
+    .bp-table thead th{background:var(--surface2);color:var(--dim);font-size:.68rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;padding:10px 12px;border-bottom:1px solid var(--teal-border);white-space:nowrap;}
+    .bp-table thead th.accent{color:var(--teal);}
+    .bp-table tbody tr{border-bottom:1px solid var(--border);}
+    .bp-table tbody tr:hover{background:var(--surface2);}
+    .bp-table td{padding:8px 12px;font-size:.83rem;}
+    .score-badge{display:inline-block;padding:2px 8px;border-radius:4px;font-size:.72rem;font-weight:700;}
+    .score-high{background:rgba(52,211,153,.15);color:var(--green);border:1px solid rgba(52,211,153,.3);}
+    .score-mid{background:rgba(251,191,36,.12);color:var(--yellow);border:1px solid rgba(251,191,36,.3);}
+    .score-low{background:rgba(248,113,113,.12);color:var(--red);border:1px solid rgba(248,113,113,.3);}
+    .badge-ignite{background:rgba(0,188,212,.15);color:var(--teal);border:1px solid var(--teal-border);border-radius:3px;padding:1px 6px;font-size:.65rem;font-weight:700;}
+    .badge-reclaim{background:rgba(251,146,60,.15);color:var(--orange);border:1px solid rgba(251,146,60,.3);border-radius:3px;padding:1px 6px;font-size:.65rem;}
+    .badge-now{background:rgba(52,211,153,.15);color:var(--green);border:1px solid rgba(52,211,153,.3);border-radius:3px;padding:1px 6px;font-size:.65rem;font-weight:700;}
+    .range-slider{-webkit-appearance:none;appearance:none;width:100%;height:6px;border-radius:3px;background:var(--surface2);outline:none;}
+    .range-slider::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;width:18px;height:18px;border-radius:50%;background:var(--teal);cursor:pointer;}
+    .section-header{font-size:.68rem;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:var(--teal);margin-bottom:12px;}
+    .mobile-scroll{overflow-x:auto;}
+    @media(max-width:768px){.hide-mobile{display:none;}}
+  </style>
+</head>
+<body class="min-h-screen">
+
+<!-- Header -->
+<header style="background:var(--surface);border-bottom:1px solid var(--teal-border);padding:12px 24px;">
+  <div class="max-w-screen-xl mx-auto flex items-center justify-between flex-wrap gap-3">
+    <div class="flex items-center gap-3">
+      <div style="width:34px;height:34px;background:var(--teal);border-radius:6px;display:flex;align-items:center;justify-content:center;font-weight:900;color:#000;font-size:1rem;">R</div>
+      <div>
+        <div style="font-weight:800;font-size:1.05rem;color:#fff;">Re-Ignite <span style="color:var(--teal);">Planner</span></div>
+        <div id="marketLabel" style="font-size:.68rem;color:var(--dim);letter-spacing:.05em;">IGNITE GROWTH INTELLIGENCE</div>
+      </div>
+    </div>
+    <div class="flex items-center gap-2">
+      <input id="marketInput" type="text" placeholder="Market name (e.g. Utica, NY)" 
+        style="background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:6px 12px;color:var(--text);font-size:.78rem;width:200px;outline:none;"
+        oninput="document.getElementById('marketLabel').textContent=this.value||'IGNITE GROWTH INTELLIGENCE'"/>
+      <a href="https://ignitegrowthintelligence.github.io/igi-command-center/" target="_blank"
+        style="background:var(--teal-dim);border:1px solid var(--teal-border);color:var(--teal);border-radius:6px;padding:6px 12px;font-size:.75rem;text-decoration:none;">
+        ← Command Center
+      </a>
+    </div>
+  </div>
+</header>
+
+<!-- Summary Cards -->
+<div class="max-w-screen-xl mx-auto px-6 pt-5 pb-2">
+  <div id="summaryCards" class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-5"></div>
+
+  <!-- Tabs -->
+  <div style="background:var(--surface);border:1px solid var(--border);border-radius:8px;overflow:hidden;">
+    <div style="background:var(--surface);border-bottom:1px solid var(--border);padding:10px 16px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+      <button onclick="switchTab('close')"    id="tab-close"    class="tab-active    px-4 py-2 text-sm transition-all">Close Now</button>
+      <button onclick="switchTab('protect')"  id="tab-protect"  class="tab-inactive  px-4 py-2 text-sm transition-all">Protect &amp; Expand</button>
+      <button onclick="switchTab('reclaim')"  id="tab-reclaim"  class="tab-inactive  px-4 py-2 text-sm transition-all">Reclaim</button>
+      <button onclick="switchTab('rebuild')"  id="tab-rebuild"  class="tab-inactive  px-4 py-2 text-sm transition-all">Rebuild</button>
+    </div>
+
+    <!-- CLOSE NOW -->
+    <div id="panel-close" class="p-5">
+      <div class="section-header">Close Now — Blueprint Pipeline</div>
+      <div id="close-upload" class="upload-zone p-8 text-center mb-4" onclick="document.getElementById('close-file').click()" 
+           ondragover="event.preventDefault();this.classList.add('drag')" ondragleave="this.classList.remove('drag')"
+           ondrop="event.preventDefault();this.classList.remove('drag');handleFile('close',event.dataTransfer.files[0])">
+        <div style="font-size:2rem;margin-bottom:8px;">📋</div>
+        <div style="font-weight:600;color:var(--text);">Upload Blueprint Pipeline</div>
+        <div style="font-size:.75rem;color:var(--dim);margin-top:4px;">CSV or Excel — drop here or click to browse</div>
+        <input type="file" id="close-file" accept=".csv,.xlsx,.xls" style="display:none" onchange="handleFile('close',this.files[0])"/>
+      </div>
+      <div id="close-content"></div>
+    </div>
+
+    <!-- PROTECT & EXPAND -->
+    <div id="panel-protect" class="p-5 hidden">
+      <div class="section-header">Protect &amp; Expand — Current Active Clients</div>
+      <div id="protect-upload" class="upload-zone p-8 text-center mb-4" onclick="document.getElementById('protect-file').click()"
+           ondragover="event.preventDefault();this.classList.add('drag')" ondragleave="this.classList.remove('drag')"
+           ondrop="event.preventDefault();this.classList.remove('drag');handleFile('protect',event.dataTransfer.files[0])">
+        <div style="font-size:2rem;margin-bottom:8px;">📊</div>
+        <div style="font-weight:600;color:var(--text);">Upload Current Client Revenue Report</div>
+        <div style="font-size:.75rem;color:var(--dim);margin-top:4px;">Basic Revenue Report — CSV or Excel</div>
+        <input type="file" id="protect-file" accept=".csv,.xlsx,.xls" style="display:none" onchange="handleFile('protect',this.files[0])"/>
+      </div>
+      <div id="protect-content"></div>
+    </div>
+
+    <!-- RECLAIM -->
+    <div id="panel-reclaim" class="p-5 hidden">
+      <div class="section-header">Reclaim — Former Clients</div>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+        <div id="reclaim-all-upload" class="upload-zone p-6 text-center" onclick="document.getElementById('reclaim-all-file').click()"
+             ondragover="event.preventDefault();this.classList.add('drag')" ondragleave="this.classList.remove('drag')"
+             ondrop="event.preventDefault();this.classList.remove('drag');handleFile('reclaim-all',event.dataTransfer.files[0])">
+          <div style="font-size:1.5rem;margin-bottom:6px;">📁</div>
+          <div style="font-weight:600;font-size:.85rem;">5-Year Non-Returning — All Revenue</div>
+          <div style="font-size:.72rem;color:var(--dim);margin-top:4px;">Broad former client universe</div>
+          <input type="file" id="reclaim-all-file" accept=".csv,.xlsx,.xls" style="display:none" onchange="handleFile('reclaim-all',this.files[0])"/>
+        </div>
+        <div id="reclaim-ignite-upload" class="upload-zone p-6 text-center" onclick="document.getElementById('reclaim-ignite-file').click()"
+             ondragover="event.preventDefault();this.classList.add('drag')" ondragleave="this.classList.remove('drag')"
+             ondrop="event.preventDefault();this.classList.remove('drag');handleFile('reclaim-ignite',event.dataTransfer.files[0])">
+          <div style="font-size:1.5rem;margin-bottom:6px;">🎯</div>
+          <div style="font-weight:600;font-size:.85rem;">5-Year Non-Returning — Ignite Only</div>
+          <div style="font-size:.72rem;color:var(--dim);margin-top:4px;">Former Ignite buyers — highest priority</div>
+          <input type="file" id="reclaim-ignite-file" accept=".csv,.xlsx,.xls" style="display:none" onchange="handleFile('reclaim-ignite',this.files[0])"/>
+        </div>
+      </div>
+      <div id="reclaim-content"></div>
+    </div>
+
+    <!-- REBUILD -->
+    <div id="panel-rebuild" class="p-5 hidden">
+      <div class="section-header">Rebuild — Net New Prospects</div>
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-5">
+        <!-- Upload -->
+        <div id="rebuild-upload" class="upload-zone p-6 text-center" onclick="document.getElementById('rebuild-file').click()"
+             ondragover="event.preventDefault();this.classList.add('drag')" ondragleave="this.classList.remove('drag')"
+             ondrop="event.preventDefault();this.classList.remove('drag');handleFile('rebuild',event.dataTransfer.files[0])">
+          <div style="font-size:1.5rem;margin-bottom:6px;">🏗️</div>
+          <div style="font-weight:600;font-size:.85rem;">Upload Prospect List</div>
+          <div style="font-size:.72rem;color:var(--dim);margin-top:4px;">CSV with Name, Category, City, Zip, Est. Revenue</div>
+          <input type="file" id="rebuild-file" accept=".csv,.xlsx,.xls" style="display:none" onchange="handleFile('rebuild',this.files[0])"/>
+        </div>
+        <!-- Geography -->
+        <div class="card p-4 md:col-span-2">
+          <div style="font-size:.7rem;font-weight:700;color:var(--teal);letter-spacing:.07em;text-transform:uppercase;margin-bottom:12px;">Geography Filter</div>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label style="font-size:.72rem;color:var(--dim);">Target ZIP Code</label>
+              <input id="zipInput" type="text" maxlength="5" placeholder="e.g. 13501"
+                style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:8px 12px;color:var(--text);font-size:.85rem;margin-top:4px;outline:none;"
+                oninput="updateGeoFilter()"/>
+            </div>
+            <div>
+              <label style="font-size:.72rem;color:var(--dim);">Market Name / Geography Description</label>
+              <input id="geoDesc" type="text" placeholder="e.g. Oneida County, Central NY"
+                style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:8px 12px;color:var(--text);font-size:.85rem;margin-top:4px;outline:none;"/>
+            </div>
+          </div>
+          <div style="margin-top:14px;">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+              <label style="font-size:.72rem;color:var(--dim);">Radius</label>
+              <span id="radiusLabel" style="font-size:.85rem;font-weight:700;color:var(--teal);">25 miles</span>
+            </div>
+            <input type="range" id="radiusSlider" class="range-slider" min="0" max="100" value="25" step="5"
+              oninput="document.getElementById('radiusLabel').textContent=this.value+' miles';filterRebuild()"/>
+            <div style="display:flex;justify-content:space-between;font-size:.65rem;color:var(--dim);margin-top:2px;">
+              <span>0 mi</span><span>25 mi</span><span>50 mi</span><span>75 mi</span><span>100 mi</span>
+            </div>
+          </div>
+          <!-- Category filter -->
+          <div style="margin-top:14px;">
+            <label style="font-size:.72rem;color:var(--dim);display:block;margin-bottom:6px;">Category Focus</label>
+            <div id="categoryFilters" style="display:flex;flex-wrap:wrap;gap:6px;"></div>
+          </div>
+        </div>
+      </div>
+      <div id="rebuild-content"></div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+// ─── STATE ─────────────────────────────────────────────────────────────────
+const state = {
+  close: null, protect: null,
+  reclaimAll: null, reclaimIgnite: null,
+  rebuild: null, geoCenter: null
+};
+
+const IGNITE_CATEGORIES = [
+  'In-Home Services','Legal','Healthcare','Auto Dealer','Financial / Credit Union',
+  'QSR / Food','Fitness / Wellness','Dental','Real Estate','Retail','Education',
+  'Entertainment','Senior Living','Home Improvement','Insurance'
+];
+
+// ─── TAB SWITCHING ─────────────────────────────────────────────────────────
+function switchTab(t) {
+  ['close','protect','reclaim','rebuild'].forEach(id => {
+    document.getElementById('panel-'+id).classList.toggle('hidden', id!==t);
+    const btn = document.getElementById('tab-'+id);
+    btn.className = (id===t?'tab-active':'tab-inactive')+' px-4 py-2 text-sm transition-all';
+  });
+}
+
+// ─── FILE HANDLING ─────────────────────────────────────────────────────────
+function handleFile(section, file) {
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    try {
+      const wb = XLSX.read(e.target.result, {type:'array', raw:false});
+      const ws = wb.Sheets[wb.SheetNames[0]];
+      const rows = XLSX.utils.sheet_to_json(ws, {header:1, defval:''});
+      processFile(section, rows, file.name);
+    } catch(err) { alert('Error reading file: '+err.message); }
+  };
+  reader.readAsArrayBuffer(file);
+}
+
+function processFile(section, rows, fname) {
+  if (section === 'close')          { parseClose(rows, fname); }
+  else if (section === 'protect')   { parseProtect(rows, fname); }
+  else if (section === 'reclaim-all')    { parseReclaim(rows, 'all', fname); }
+  else if (section === 'reclaim-ignite') { parseReclaim(rows, 'ignite', fname); }
+  else if (section === 'rebuild')   { parseRebuild(rows, fname); }
+}
+
+// ─── UTILITIES ─────────────────────────────────────────────────────────────
+const fmt = n => {
+  if (!n && n!==0) return '—';
+  const abs = Math.abs(n);
+  const s = abs>=1000000 ? '$'+(abs/1000000).toFixed(1)+'M' : abs>=1000 ? '$'+Math.round(abs).toLocaleString() : '$'+Math.round(abs);
+  return n<0 ? '-'+s : s;
+};
+const pct = v => v!=null ? Math.round(v)+'%' : '—';
+
+function scoreBadge(s) {
+  const cls = s>=7?'score-high':s>=4?'score-mid':'score-low';
+  return `<span class="score-badge ${cls}">${s.toFixed(1)}</span>`;
+}
+
+function updateSummaryCards(cards) {
+  document.getElementById('summaryCards').innerHTML = cards.map(c=>
+    `<div class="card card-teal p-4">
+      <div style="font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--dim);">${c.label}</div>
+      <div style="font-size:1.5rem;font-weight:800;color:#fff;margin:4px 0;">${c.value}</div>
+      <div style="font-size:.72rem;color:var(--dim);">${c.sub||''}</div>
+    </div>`
+  ).join('');
+}
+
+function cleanNum(s) {
+  if (!s && s!==0) return 0;
+  const str = String(s).replace(/[$,\s()]/g,'');
+  if (!str||str==='-') return 0;
+  const v = parseFloat(str);
+  return isNaN(v)?0:(String(s).includes('(')?-v:v);
+}
+
+// ─── CLOSE NOW ─────────────────────────────────────────────────────────────
+function parseClose(rows, fname) {
+  // Find "Returning for Remaining 2026" section
+  let headerRow = -1, dataStart = -1, dataEnd = rows.length;
+  for (let i=0;i<rows.length;i++) {
+    const r = rows[i].join('|');
+    if (r.includes('Returning for Remaining')) { headerRow = i+1; dataStart = i+2; }
+    if (dataStart>0 && r.includes('Non Returning')) { dataEnd = i; break; }
+  }
+
+  // Summary row (first data row)
+  const sumRow = rows[0]||[];
+  const budget = cleanNum(sumRow[1]);
+  const booked = cleanNum(sumRow[2]);
+  const pitched = cleanNum(sumRow[3]);
+  const projected = cleanNum(sumRow[4]);
+
+  let deals = [];
+  if (dataStart>0) {
+    const headers = rows[headerRow]||[];
+    for (let i=dataStart;i<dataEnd;i++) {
+      const r = rows[i];
+      if (!r||!r[0]||String(r[0]).trim()==='') continue;
+      const acct = String(r[0]).trim();
+      const rev = cleanNum(r[1]);
+      const closing = String(r[2]||'').trim();
+      const notes = String(r[3]||'').trim();
+      const type = String(r[4]||'').trim();
+      const conf = String(r[6]||'').trim();
+      const closeDate = String(r[7]||'').trim();
+      const daysIn = cleanNum(r[8]);
+      const lyRev = cleanNum(r[9]);
+      const apr = cleanNum(r[10]);
+      const may = cleanNum(r[11]);
+      const jun = cleanNum(r[12]);
+
+      // Pipeline Priority Score
+      const sizeScore = Math.min(10, rev/10000);
+      const confNum = conf==='95%'?9.5:conf==='75%'?7.5:conf==='50%'?5:conf==='-'?3:5;
+      const stalenessScore = daysIn>90?1:daysIn>60?4:daysIn>30?6:8;
+      const leaderScore = rev>50000?2:0;
+      const score = Math.min(10, 0.30*sizeScore + 0.25*confNum + 0.25*stalenessScore + 0.20*leaderScore + leaderScore);
+
+      const isIgnite = (type||'').toUpperCase().includes('IGNITE');
+      deals.push({acct,rev,closing,notes,type,conf,closeDate,daysIn,lyRev,apr,may,jun,score,isIgnite});
+    }
+  }
+
+  deals.sort((a,b)=>b.score-a.score);
+  state.close = deals;
+
+  updateSummaryCards([
+    {label:'Budget',value:fmt(budget),sub:'Total market goal'},
+    {label:'Booked',value:fmt(booked),sub:pct(budget?booked/budget*100:null)+' of budget'},
+    {label:'Pipeline',value:fmt(pitched),sub:'Pending close'},
+    {label:'Deals',value:deals.length,sub:'Returning accounts'}
+  ]);
+
+  const el = document.getElementById('close-content');
+  document.getElementById('close-upload').style.display='none';
+
+  el.innerHTML = `
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+      <div style="font-size:.75rem;color:var(--dim);">${fname} — ${deals.length} pending opportunities</div>
+      <button onclick="document.getElementById('close-upload').style.display='block';document.getElementById('close-content').innerHTML=''"
+        style="font-size:.7rem;color:var(--teal);background:var(--teal-dim);border:1px solid var(--teal-border);padding:3px 8px;border-radius:4px;cursor:pointer;">Replace file</button>
+    </div>
+    <div class="mobile-scroll">
+    <table class="bp-table">
+      <thead><tr>
+        <th class="text-left">Account</th>
+        <th class="text-right accent">Score</th>
+        <th class="text-right">Revenue</th>
+        <th class="text-right hide-mobile">Confidence</th>
+        <th class="text-right hide-mobile">Days Pending</th>
+        <th class="text-left hide-mobile">Type</th>
+        <th class="text-right hide-mobile">Apr</th>
+        <th class="text-right hide-mobile">May</th>
+        <th class="text-right hide-mobile">Jun</th>
+        <th class="text-left">Status / Notes</th>
+      </tr></thead>
+      <tbody>
+        ${deals.map(d=>`
+          <tr>
+            <td><strong style="color:#fff;">${d.acct}</strong>${d.isIgnite?'<span class="badge-ignite" style="margin-left:6px;">IGNITE</span>':''}</td>
+            <td class="text-right">${scoreBadge(d.score)}</td>
+            <td class="text-right" style="color:#fff;font-weight:600;">${fmt(d.rev)}</td>
+            <td class="text-right hide-mobile" style="color:${d.conf==='95%'?'var(--green)':d.conf==='75%'?'var(--yellow)':'var(--dim)'};">${d.conf||'—'}</td>
+            <td class="text-right hide-mobile" style="color:${d.daysIn>60?'var(--red)':d.daysIn>30?'var(--yellow)':'var(--dim)'};">${d.daysIn||'—'}</td>
+            <td class="hide-mobile" style="color:var(--dim);font-size:.72rem;">${d.type.replace(/,/g,', ')}</td>
+            <td class="text-right hide-mobile" style="color:var(--dim);">${d.apr?fmt(d.apr):'—'}</td>
+            <td class="text-right hide-mobile" style="color:var(--dim);">${d.may?fmt(d.may):'—'}</td>
+            <td class="text-right hide-mobile" style="color:var(--dim);">${d.jun?fmt(d.jun):'—'}</td>
+            <td style="font-size:.7rem;color:var(--dim);max-width:220px;">${d.notes?d.notes.split('\n')[0].substring(0,80)+(d.notes.length>80?'…':''):'—'}</td>
+          </tr>`).join('')}
+      </tbody>
+    </table></div>`;
+}
+
+// ─── PROTECT & EXPAND ──────────────────────────────────────────────────────
+function parseProtect(rows, fname) {
+  // Expect: Market | AE Name | Advertiser | Agency | months... | Total 2025 | months 2026 | Total 2026 | Grand Total
+  // Find header row
+  let hRow = 0;
+  for (let i=0;i<Math.min(10,rows.length);i++) {
+    if (rows[i].join('').toLowerCase().includes('advertiser') && rows[i].join('').toLowerCase().includes('market')) {
+      hRow = i; break;
+    }
+  }
+
+  const headers = rows[hRow]||[];
+  // Find 2026 total column and grand total
+  let col2025Total=-1, col2026Total=-1, colGrand=-1;
+  headers.forEach((h,i)=>{
+    const s=String(h).toLowerCase();
+    if(s.includes('total') && col2025Total<0) col2025Total=i;
+    else if(s.includes('total') && col2025Total>=0 && col2026Total<0) col2026Total=i;
+    else if(s.includes('grand') || (s.includes('total') && col2026Total>=0 && colGrand<0)) colGrand=i;
+  });
+
+  // Aggregate by advertiser
+  const adMap = {};
+  for (let i=hRow+1;i<rows.length;i++) {
+    const r = rows[i];
+    if (!r||!r[2]||String(r[2]).trim()===''||String(r[2]).toLowerCase()==='total') continue;
+    const mkt = String(r[0]||'').trim();
+    const ae = String(r[1]||'').trim();
+    const adv = String(r[2]||'').trim();
+    const rev25 = col2025Total>=0?cleanNum(r[col2025Total]):0;
+    const rev26 = col2026Total>=0?cleanNum(r[col2026Total]):0;
+    const grand = colGrand>=0?cleanNum(r[colGrand]):rev25+rev26;
+
+    if (!mkt && !ae) continue; // skip blank rows
+    const key = adv;
+    if (!adMap[key]) adMap[key] = {adv,ae,mkt,rev25:0,rev26:0,grand:0};
+    adMap[key].rev25 += rev25;
+    adMap[key].rev26 += rev26;
+    adMap[key].grand += grand;
+  }
+
+  let clients = Object.values(adMap).filter(c=>c.grand>0);
+
+  // Score each client
+  clients.forEach(c => {
+    const traj = c.rev26>c.rev25*1.1?1:c.rev26<c.rev25*0.9?-1:0;
+    const spendScore = Math.min(10, c.grand/15000);
+    const trajScore = traj===1?8:traj===0?5:2;
+    const categoryScore = 5; // neutral without category data
+    c.score = Math.min(10, 0.40*spendScore + 0.25*trajScore + 0.20*categoryScore + 0.15*(c.rev26>0?7:2));
+    c.trend = traj;
+  });
+
+  clients.sort((a,b)=>b.score-a.score);
+  state.protect = clients;
+
+  const total26 = clients.reduce((s,c)=>s+c.rev26,0);
+  const total25 = clients.reduce((s,c)=>s+c.rev25,0);
+
+  updateSummaryCards([
+    {label:'Active Clients',value:clients.length,sub:'Current advertisers'},
+    {label:'2025 Revenue',value:fmt(total25),sub:'Full year base'},
+    {label:'2026 Revenue',value:fmt(total26),sub:'Current pace'},
+    {label:'Avg Spend',value:fmt(clients.length?total26/clients.length:0),sub:'Per advertiser 2026'}
+  ]);
+
+  document.getElementById('protect-upload').style.display='none';
+  document.getElementById('protect-content').innerHTML = `
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+      <div style="font-size:.75rem;color:var(--dim);">${fname} — ${clients.length} active clients</div>
+      <button onclick="document.getElementById('protect-upload').style.display='block';document.getElementById('protect-content').innerHTML=''"
+        style="font-size:.7rem;color:var(--teal);background:var(--teal-dim);border:1px solid var(--teal-border);padding:3px 8px;border-radius:4px;cursor:pointer;">Replace file</button>
+    </div>
+    <div class="mobile-scroll">
+    <table class="bp-table">
+      <thead><tr>
+        <th class="text-left">Advertiser</th>
+        <th class="text-left hide-mobile">AE</th>
+        <th class="text-right accent">Score</th>
+        <th class="text-right">2025 Revenue</th>
+        <th class="text-right">2026 Revenue</th>
+        <th class="text-right hide-mobile">Trend</th>
+        <th class="text-right">Grand Total</th>
+        <th class="text-left hide-mobile">Action</th>
+      </tr></thead>
+      <tbody>
+        ${clients.map(c=>{
+          const trendIcon = c.trend===1?'<span style="color:var(--green);">▲ Growing</span>':c.trend===-1?'<span style="color:var(--red);">▼ Declining</span>':'<span style="color:var(--dim);">→ Stable</span>';
+          const action = c.score>=7?'<span class="badge-now">PROTECT NOW</span>':c.trend===1?'<span class="badge-ignite">EXPAND</span>':'<span style="font-size:.68rem;color:var(--dim);">Monitor</span>';
+          return `<tr>
+            <td><strong style="color:#fff;">${c.adv}</strong></td>
+            <td class="hide-mobile" style="color:var(--dim);font-size:.78rem;">${c.ae}</td>
+            <td class="text-right">${scoreBadge(c.score)}</td>
+            <td class="text-right" style="color:var(--dim);">${fmt(c.rev25)}</td>
+            <td class="text-right" style="color:#fff;font-weight:600;">${fmt(c.rev26)}</td>
+            <td class="text-right hide-mobile">${trendIcon}</td>
+            <td class="text-right" style="color:var(--dim);">${fmt(c.grand)}</td>
+            <td class="hide-mobile">${action}</td>
+          </tr>`;
+        }).join('')}
+      </tbody>
+    </table></div>`;
+}
+
+// ─── RECLAIM ───────────────────────────────────────────────────────────────
+function parseReclaim(rows, type, fname) {
+  // Format: Market | Advertiser | 2024 | 2025 | 2026
+  let hRow = 0;
+  for (let i=0;i<Math.min(5,rows.length);i++) {
+    const r = rows[i].join('').toLowerCase();
+    if (r.includes('advertiser') || r.includes('market')) { hRow=i; break; }
+  }
+
+  const key = type==='ignite'?'reclaimIgnite':'reclaimAll';
+  const clients = [];
+
+  for (let i=hRow+1;i<rows.length;i++) {
+    const r = rows[i];
+    if (!r||!r[1]||String(r[1]).trim()==='Total'||String(r[1]).trim()==='') continue;
+    const mkt = String(r[0]||'').trim();
+    const adv = String(r[1]||'').trim();
+    if (!adv) continue;
+    const rev24 = cleanNum(r[2]);
+    const rev25 = cleanNum(r[3]);
+    const rev26 = cleanNum(r[4]);
+
+    // Recovery Score
+    const histScore = Math.min(10,(rev24+rev25)/20000);
+    const recencyScore = rev25>0?8:rev24>0?5:2;
+    const isIgniteBonus = type==='ignite'?2:0;
+    const score = Math.min(10, 0.35*histScore + 0.35*recencyScore + 0.20*5 + 0.10*isIgniteBonus + isIgniteBonus*0.5);
+
+    const bucket = score>=6?'Reclaim Now':score>=4?'Reapproach Later':'Low Priority';
+    clients.push({adv,mkt,rev24,rev25,rev26,score,bucket,isIgnite:type==='ignite'});
+  }
+
+  clients.sort((a,b)=>b.score-a.score);
+  state[key] = clients;
+
+  // Merge and re-render if both files loaded
+  renderReclaim();
+  updateSummaryCards([
+    {label:'Former Clients',value:clients.length,sub:type==='ignite'?'Ignite buyers':'All revenue'},
+    {label:'2024 Pool',value:fmt(clients.reduce((s,c)=>s+c.rev24,0)),sub:'Former spend'},
+    {label:'2025 Pool',value:fmt(clients.reduce((s,c)=>s+c.rev25,0)),sub:'Most recent year'},
+    {label:'Reclaim Now',value:clients.filter(c=>c.bucket==='Reclaim Now').length,sub:'Top priority accounts'}
+  ]);
+}
+
+function renderReclaim() {
+  const ignite = state.reclaimIgnite||[];
+  const all = state.reclaimAll||[];
+
+  // Mark which accounts are Ignite buyers
+  const igniteNames = new Set(ignite.map(c=>c.adv.toLowerCase()));
+  const combined = [...ignite];
+  all.forEach(c => {
+    if (!igniteNames.has(c.adv.toLowerCase())) combined.push(c);
+  });
+  combined.sort((a,b)=>b.score-a.score);
+
+  if (!combined.length) return;
+
+  const el = document.getElementById('reclaim-content');
+  el.innerHTML = `
+    <div style="margin-bottom:12px;">
+      <span style="font-size:.75rem;color:var(--dim);">${combined.length} former clients across both files</span>
+    </div>
+    <div class="mobile-scroll">
+    <table class="bp-table">
+      <thead><tr>
+        <th class="text-left">Advertiser</th>
+        <th class="text-right accent">Score</th>
+        <th class="text-left">Bucket</th>
+        <th class="text-right hide-mobile">2024</th>
+        <th class="text-right">2025</th>
+        <th class="text-right hide-mobile">2026</th>
+        <th class="text-left hide-mobile">Type</th>
+      </tr></thead>
+      <tbody>
+        ${combined.map(c=>{
+          const bucketEl = c.bucket==='Reclaim Now'?`<span class="badge-now">RECLAIM NOW</span>`:
+                           c.bucket==='Reapproach Later'?`<span class="badge-reclaim">REAPPROACH</span>`:
+                           `<span style="font-size:.68rem;color:var(--dim);">Low Priority</span>`;
+          return `<tr>
+            <td><strong style="color:#fff;">${c.adv}</strong></td>
+            <td class="text-right">${scoreBadge(c.score)}</td>
+            <td>${bucketEl}</td>
+            <td class="text-right hide-mobile" style="color:var(--dim);">${c.rev24?fmt(c.rev24):'—'}</td>
+            <td class="text-right" style="color:#fff;font-weight:600;">${c.rev25?fmt(c.rev25):'—'}</td>
+            <td class="text-right hide-mobile" style="color:var(--dim);">${c.rev26?fmt(c.rev26):'—'}</td>
+            <td class="hide-mobile">${c.isIgnite?'<span class="badge-ignite">IGNITE BUYER</span>':'<span style="font-size:.68rem;color:var(--dim);">All revenue</span>'}</td>
+          </tr>`;
+        }).join('')}
+      </tbody>
+    </table></div>`;
+}
+
+// ─── REBUILD ───────────────────────────────────────────────────────────────
+// Expected columns: Name, Category, City, State, Zip, Est Revenue, Notes (flexible)
+function parseRebuild(rows, fname) {
+  let hRow = 0;
+  for (let i=0;i<Math.min(5,rows.length);i++) {
+    const r = rows[i].join('').toLowerCase();
+    if (r.includes('name') || r.includes('category') || r.includes('company')) { hRow=i; break; }
+  }
+  const headers = (rows[hRow]||[]).map(h=>String(h).toLowerCase());
+  const col = k => headers.findIndex(h=>h.includes(k));
+  const cName = col('name')>=0?col('name'):col('company')>=0?col('company'):0;
+  const cCat  = col('category')>=0?col('category'):1;
+  const cCity = col('city')>=0?col('city'):2;
+  const cZip  = col('zip')>=0?col('zip'):col('postal')>=0?col('postal'):4;
+  const cRev  = col('revenue')>=0?col('revenue'):col('spend')>=0?col('spend'):5;
+  const cNote = col('note')>=0?col('note'):6;
+
+  const prospects = [];
+  for (let i=hRow+1;i<rows.length;i++) {
+    const r=rows[i];
+    if(!r||!r[cName]||String(r[cName]).trim()==='') continue;
+    const name = String(r[cName]||'').trim();
+    const cat  = String(r[cCat]||'').trim();
+    const city = String(r[cCity]||'').trim();
+    const zip  = String(r[cZip]||'').trim().replace(/\D/g,'').substring(0,5);
+    const rev  = cleanNum(r[cRev]);
+    const note = String(r[cNote]||'').trim();
+
+    const catScore = IGNITE_CATEGORIES.some(c=>cat.toLowerCase().includes(c.toLowerCase()))?8:5;
+    const spendScore = Math.min(10,rev/15000);
+    const score = Math.min(10, 0.35*spendScore + 0.30*catScore + 0.20*6 + 0.15*5);
+
+    prospects.push({name,cat,city,zip,rev,note,score,dist:null});
+  }
+
+  state.rebuild = prospects;
+  filterRebuild();
+  buildCategoryFilters(prospects);
+  document.getElementById('rebuild-upload').style.display='none';
+}
+
+function buildCategoryFilters(prospects) {
+  const cats = [...new Set(prospects.map(p=>p.cat).filter(Boolean))].sort();
+  const el = document.getElementById('categoryFilters');
+  el.innerHTML = cats.map(c=>`
+    <button onclick="toggleCat(this,'${c.replace(/'/g,"\\'")}');filterRebuild()"
+      style="font-size:.68rem;padding:3px 9px;border-radius:999px;border:1px solid var(--border);background:var(--surface2);color:var(--dim);cursor:pointer;"
+      data-cat="${c}">${c}</button>`).join('');
+}
+
+let activeCats = new Set();
+function toggleCat(btn, cat) {
+  if (activeCats.has(cat)) { activeCats.delete(cat); btn.style.background='var(--surface2)'; btn.style.color='var(--dim)'; btn.style.borderColor='var(--border)'; }
+  else { activeCats.add(cat); btn.style.background='var(--teal-dim)'; btn.style.color='var(--teal)'; btn.style.borderColor='var(--teal-border)'; }
+}
+
+async function updateGeoFilter() {
+  const zip = document.getElementById('zipInput').value.replace(/\D/g,'');
+  if (zip.length===5) {
+    try {
+      const r = await fetch(`https://api.zippopotam.us/us/${zip}`);
+      if (r.ok) {
+        const d = await r.json();
+        state.geoCenter = {lat:parseFloat(d.places[0].latitude), lng:parseFloat(d.places[0].longitude), zip};
+        filterRebuild();
+      }
+    } catch(e) {}
+  }
+}
+
+function haversine(lat1,lng1,lat2,lng2) {
+  const R=3958.8, dLat=(lat2-lat1)*Math.PI/180, dLng=(lng2-lng1)*Math.PI/180;
+  const a=Math.sin(dLat/2)**2+Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)*Math.sin(dLng/2)**2;
+  return R*2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a));
+}
+
+const zipCache = {};
+async function getZipLatLng(zip) {
+  if (zipCache[zip]) return zipCache[zip];
+  try {
+    const r = await fetch(`https://api.zippopotam.us/us/${zip}`);
+    if (r.ok) { const d=await r.json(); const v={lat:parseFloat(d.places[0].latitude),lng:parseFloat(d.places[0].longitude)}; zipCache[zip]=v; return v; }
+  } catch(e) {}
+  return null;
+}
+
+async function filterRebuild() {
+  if (!state.rebuild) return;
+  const radius = parseInt(document.getElementById('radiusSlider').value);
+  let prospects = [...state.rebuild];
+
+  // Category filter
+  if (activeCats.size>0) prospects = prospects.filter(p=>activeCats.has(p.cat));
+
+  // Geography filter
+  if (state.geoCenter && radius>0) {
+    // Async distance calculation
+    for (const p of prospects) {
+      if (p.zip && p.zip.length===5 && !p._lat) {
+        const ll = await getZipLatLng(p.zip);
+        if (ll) { p._lat=ll.lat; p._lng=ll.lng; }
+      }
+      if (p._lat) p.dist = haversine(state.geoCenter.lat, state.geoCenter.lng, p._lat, p._lng);
+    }
+    prospects = prospects.filter(p => p._lat ? p.dist<=radius : true);
+    prospects.forEach(p => { if (!p._lat) p.dist = null; });
+  } else {
+    prospects.forEach(p => p.dist=null);
+  }
+
+  prospects.sort((a,b)=>b.score-a.score);
+  renderRebuild(prospects, radius);
+}
+
+function renderRebuild(prospects, radius) {
+  const el = document.getElementById('rebuild-content');
+  const total = prospects.reduce((s,p)=>s+(p.rev||0),0);
+
+  updateSummaryCards([
+    {label:'Prospects',value:prospects.length,sub:radius>0?`Within ${radius} miles`:'All prospects'},
+    {label:'Total Potential',value:fmt(total),sub:'Estimated spend potential'},
+    {label:'Top Category',value:prospects[0]?.cat||'—',sub:'Highest ranked'},
+    {label:'Top Prospect',value:prospects[0]?.name||'—',sub:prospects[0]?fmt(prospects[0].rev):''}
+  ]);
+
+  el.innerHTML = `
+    <div style="margin-bottom:12px;font-size:.75rem;color:var(--dim);">${prospects.length} prospects${radius>0&&state.geoCenter?` within ${radius} miles of ${state.geoCenter.zip}`:''}</div>
+    <div class="mobile-scroll">
+    <table class="bp-table">
+      <thead><tr>
+        <th class="text-left">Prospect</th>
+        <th class="text-left hide-mobile">Category</th>
+        <th class="text-right accent">Score</th>
+        <th class="text-right hide-mobile">Est. Revenue</th>
+        <th class="text-right hide-mobile">Distance</th>
+        <th class="text-left hide-mobile">City</th>
+        <th class="text-left">Notes</th>
+      </tr></thead>
+      <tbody>
+        ${prospects.map(p=>`
+          <tr>
+            <td><strong style="color:#fff;">${p.name}</strong></td>
+            <td class="hide-mobile"><span class="badge-reclaim">${p.cat||'—'}</span></td>
+            <td class="text-right">${scoreBadge(p.score)}</td>
+            <td class="text-right hide-mobile" style="color:#fff;font-weight:600;">${p.rev?fmt(p.rev):'—'}</td>
+            <td class="text-right hide-mobile" style="color:var(--dim);">${p.dist!=null?p.dist.toFixed(1)+' mi':'—'}</td>
+            <td class="hide-mobile" style="color:var(--dim);font-size:.78rem;">${p.city||'—'}</td>
+            <td style="font-size:.7rem;color:var(--dim);">${p.note?p.note.substring(0,80):'—'}</td>
+          </tr>`).join('')}
+      </tbody>
+    </table></div>`;
+}
+
+// ─── INIT ───────────────────────────────────────────────────────────────────
+buildCategoryFilters([]);
+updateSummaryCards([
+  {label:'Upload Files',value:'↑',sub:'Start by uploading a file in any tab'},
+  {label:'Score',value:'Auto',sub:'Scoring applied on upload'},
+  {label:'Geography',value:'Zip+Radius',sub:'Rebuild tab — filter by distance'},
+  {label:'Market',value:'Enter name',sub:'Top-right corner'}
+]);
+</script>
+</body>
+</html>
