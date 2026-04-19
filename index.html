@@ -257,6 +257,7 @@ function scoreBadge(s, breakdown) {
   const tip = breakdown ? " title=\""+breakdown+"\" style=\"cursor:help;\"" : "";
   return `<span class="score-badge ${cls}"${tip}>${s100}</span>`;
 }
+function updateSummaryCards(cards) {
   document.getElementById('summaryCards').innerHTML = cards.map(c=>
     `<div class="card card-teal p-4">
       <div style="font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--dim);">${c.label}</div>
