@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8"/>
@@ -136,14 +136,25 @@
     <div id="panel-rebuild" class="p-5 hidden">
       <div class="section-header">Rebuild — Net New Prospects</div>
       <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-5">
-        <!-- Upload -->
-        <div id="rebuild-upload" class="upload-zone p-6 text-center" onclick="document.getElementById('rebuild-file').click()"
-             ondragover="event.preventDefault();this.classList.add('drag')" ondragleave="this.classList.remove('drag')"
-             ondrop="event.preventDefault();this.classList.remove('drag');handleFile('rebuild',event.dataTransfer.files[0])">
-          <div style="font-size:1.5rem;margin-bottom:6px;">🏗️</div>
-          <div style="font-weight:600;font-size:.85rem;">Upload Prospect List</div>
-          <div style="font-size:.72rem;color:var(--dim);margin-top:4px;">CSV with Name, Category, City, Zip, Est. Revenue</div>
-          <input type="file" id="rebuild-file" accept=".csv,.xlsx,.xls" style="display:none" onchange="handleFile('rebuild',this.files[0])"/>
+        <!-- Upload or Discover -->
+        <div style="display:flex;flex-direction:column;gap:10px;">
+          <div id="rebuild-upload" class="upload-zone p-5 text-center" onclick="document.getElementById('rebuild-file').click()"
+               ondragover="event.preventDefault();this.classList.add('drag')" ondragleave="this.classList.remove('drag')"
+               ondrop="event.preventDefault();this.classList.remove('drag');handleFile('rebuild',event.dataTransfer.files[0])">
+            <div style="font-size:1.3rem;margin-bottom:5px;">📄</div>
+            <div style="font-weight:600;font-size:.8rem;">Upload Your List</div>
+            <div style="font-size:.68rem;color:var(--dim);margin-top:3px;">CSV: Name, Category, City, Zip, Revenue</div>
+            <input type="file" id="rebuild-file" accept=".csv,.xlsx,.xls" style="display:none" onchange="handleFile('rebuild',this.files[0])"/>
+          </div>
+          <div style="text-align:center;font-size:.68rem;color:var(--dim);">or</div>
+          <button id="discoverBtn" onclick="discoverProspects()"
+            style="background:linear-gradient(135deg,rgba(0,188,212,.2),rgba(0,188,212,.08));border:1px solid var(--teal-border);border-radius:8px;padding:14px;cursor:pointer;color:var(--teal);font-weight:700;font-size:.85rem;transition:all .2s;"
+            onmouseover="this.style.background='linear-gradient(135deg,rgba(0,188,212,.3),rgba(0,188,212,.15))'" 
+            onmouseout="this.style.background='linear-gradient(135deg,rgba(0,188,212,.2),rgba(0,188,212,.08))'">
+            🔍 Auto-Discover Prospects
+            <div style="font-size:.68rem;font-weight:400;color:rgba(0,188,212,.7);margin-top:3px;">Set zip + radius + categories → go</div>
+          </button>
+          <div id="discoverStatus" style="font-size:.7rem;color:var(--dim);text-align:center;"></div>
         </div>
         <!-- Geography -->
         <div class="card p-4 md:col-span-2">
@@ -711,6 +722,106 @@ function renderRebuild(prospects, radius) {
           </tr>`).join('')}
       </tbody>
     </table></div>`;
+}
+
+// --- DISCOVER (OpenStreetMap Overpass API) ---
+const CATEGORY_CONFIG = {
+  'Healthcare':             { tags:[['amenity','hospital'],['amenity','clinic'],['amenity','doctors']], estRev:75000, anchorScore:9 },
+  'Dental':                 { tags:[['amenity','dentist']], estRev:25000, anchorScore:6 },
+  'Legal':                  { tags:[['office','lawyer'],['office','attorney']], estRev:30000, anchorScore:6 },
+  'Financial / Credit Union':{ tags:[['amenity','bank'],['amenity','credit_union']], estRev:50000, anchorScore:8 },
+  'Auto Dealer':            { tags:[['shop','car'],['shop','car_dealer']], estRev:60000, anchorScore:8 },
+  'Fitness / Wellness':     { tags:[['leisure','fitness_centre'],['amenity','gym']], estRev:20000, anchorScore:5 },
+  'QSR / Food':             { tags:[['amenity','restaurant'],['amenity','fast_food']], estRev:15000, anchorScore:4 },
+  'Real Estate':            { tags:[['office','real_estate_agent'],['office','estate_agent']], estRev:20000, anchorScore:5 },
+  'In-Home Services':       { tags:[['trade','plumber'],['trade','electrician'],['craft','roofer']], estRev:18000, anchorScore:5 },
+  'Education':              { tags:[['amenity','university'],['amenity','college']], estRev:80000, anchorScore:9 },
+  'Entertainment':          { tags:[['amenity','theatre'],['amenity','cinema'],['amenity','casino'],['leisure','bowling_alley']], estRev:60000, anchorScore:8 },
+  'Senior Living':          { tags:[['amenity','nursing_home']], estRev:35000, anchorScore:6 },
+  'Home Improvement':       { tags:[['shop','furniture'],['shop','hardware'],['shop','building_materials']], estRev:25000, anchorScore:5 },
+  'Insurance':              { tags:[['office','insurance']], estRev:20000, anchorScore:5 }
+};
+
+async function discoverProspects() {
+  const zip = document.getElementById('zipInput').value.replace(/\D/g,'');
+  if (zip.length!==5) { alert('Enter a valid 5-digit ZIP code first.'); return; }
+  const radiusMi = parseInt(document.getElementById('radiusSlider').value)||25;
+  const radiusM  = Math.round(radiusMi * 1609.34);
+  const status = document.getElementById('discoverStatus');
+  const btn = document.getElementById('discoverBtn');
+
+  let center = (state.geoCenter && state.geoCenter.zip===zip) ? state.geoCenter : null;
+  if (!center) {
+    status.textContent = 'Looking up ZIP code...';
+    try {
+      const r = await fetch('https://api.zippopotam.us/us/'+zip);
+      if (!r.ok) { alert('Could not find that ZIP code.'); return; }
+      const d = await r.json();
+      center = { lat:parseFloat(d.places[0].latitude), lng:parseFloat(d.places[0].longitude),
+                 zip, city:d.places[0]['place name'], state:d.places[0]['state abbreviation'] };
+      state.geoCenter = center;
+    } catch(e) { status.textContent='ZIP lookup failed.'; return; }
+  }
+
+  const cats = activeCats.size>0 ? [...activeCats] : Object.keys(CATEGORY_CONFIG);
+  btn.disabled=true; btn.style.opacity='.6';
+  status.innerHTML='<span style="color:var(--teal);">Searching '+radiusMi+' mi around '+center.city+', '+center.state+'...</span>';
+
+  const lines = [];
+  cats.forEach(cat => {
+    const cfg = CATEGORY_CONFIG[cat]; if(!cfg) return;
+    cfg.tags.forEach(function(pair) {
+      const k=pair[0], v=pair[1];
+      const geo = '(around:'+radiusM+','+center.lat+','+center.lng+')';
+      lines.push('node["'+k+'"="'+v+'"]'+geo+';');
+      lines.push('way["'+k+'"="'+v+'"]'+geo+';');
+    });
+  });
+  const query = '[out:json][timeout:30];(\n'+lines.join('\n')+'\n);out center tags;';
+
+  try {
+    const resp = await fetch('https://overpass-api.de/api/interpreter',
+      {method:'POST', body:'data='+encodeURIComponent(query)});
+    if (!resp.ok) throw new Error('Overpass error');
+    const data = await resp.json();
+
+    const seen = new Set();
+    const prospects = [];
+    (data.elements||[]).forEach(function(el) {
+      const tags = el.tags||{};
+      const name = tags.name||tags.brand||tags.operator||'';
+      if (name.length<2 || seen.has(name.toLowerCase())) return;
+      seen.add(name.toLowerCase());
+
+      let matchedCat='', cfg=null;
+      for (const cat of cats) {
+        const c = CATEGORY_CONFIG[cat]; if(!c) continue;
+        if (c.tags.some(function(p){return tags[p[0]]===p[1];})) { matchedCat=cat; cfg=c; break; }
+      }
+      if (!matchedCat) return;
+
+      const lat = el.center?el.center.lat:el.lat;
+      const lng = el.center?el.center.lon:el.lon;
+      const dist = (lat&&lng) ? haversine(center.lat,center.lng,lat,lng) : null;
+      const city = tags['addr:city']||tags['addr:town']||center.city;
+      const addr = [tags['addr:housenumber'],tags['addr:street'],city].filter(Boolean).join(' ');
+
+      const spendScore = Math.min(10,cfg.estRev/10000);
+      const distScore  = dist!=null ? Math.max(1,10-(dist/radiusMi)*5) : 5;
+      const score = parseFloat(Math.min(10,0.35*spendScore+0.30*cfg.anchorScore+0.20*distScore+0.15*5).toFixed(1));
+
+      prospects.push({name,cat:matchedCat,city,addr,zip:'',website:tags.website||tags['contact:website']||'',phone:tags.phone||'',dist,estRev:cfg.estRev,score,_lat:lat,_lng:lng});
+    });
+    prospects.sort(function(a,b){return b.score-a.score;});
+    state.rebuild = prospects;
+    btn.disabled=false; btn.style.opacity='1';
+    status.innerHTML='<span style="color:var(--green);">Found '+prospects.length+' prospects within '+radiusMi+' miles of '+center.city+'</span>';
+    renderRebuild(prospects, radiusMi);
+  } catch(e) {
+    btn.disabled=false; btn.style.opacity='1';
+    status.textContent='Discovery failed. Try again or upload a list.';
+    console.error(e);
+  }
 }
 
 // ─── INIT ───────────────────────────────────────────────────────────────────
