@@ -248,7 +248,6 @@ const fmt = n => {
   const abs = Math.abs(n);
   const s = abs>=1000000 ? '$'+(abs/1000000).toFixed(1)+'M' : abs>=1000 ? '$'+Math.round(abs).toLocaleString() : '$'+Math.round(abs);
   return n<0 ? '-'+s : s;
-};
 const pct = v => v!=null ? Math.round(v)+'%' : '—';
 
 function scoreBadge(s, breakdown) {
@@ -693,62 +692,63 @@ async function filterRebuild() {
 }
 
 function renderRebuild(prospects, radius) {
-  const el = document.getElementById('rebuild-content');
-  const total = prospects.reduce((s,p)=>s+(p.rev||0),0);
-
+  const el = document.getElementById("rebuild-content");
+  const t1=prospects.filter(p=>p.score>=85).length, t2=prospects.filter(p=>p.score>=70&&p.score<85).length, t3=prospects.filter(p=>p.score>=55&&p.score<70).length;
   updateSummaryCards([
-    {label:'Prospects',value:prospects.length,sub:radius>0?`Within ${radius} miles`:'All prospects'},
-    {label:'Total Potential',value:fmt(total),sub:'Estimated spend potential'},
-    {label:'Top Category',value:prospects[0]?.cat||'—',sub:'Highest ranked'},
-    {label:'Top Prospect',value:prospects[0]?.name||'—',sub:prospects[0]?fmt(prospects[0].rev):''}
+    {label:"Prospects",value:prospects.length,sub:radius>0&&state.geoCenter?"Within "+radius+" miles":"All prospects"},
+    {label:"Tier 1 — Must Pursue",value:t1,sub:"Score 85+"},
+    {label:"Tier 2 — Strong Target",value:t2,sub:"Score 70–84"},
+    {label:"Tier 3 — Develop",value:t3,sub:"Score 55–69"}
   ]);
-
+  function tierBadge(s) {
+    if (s>=85) return "<span style=\"background:rgba(52,211,153,.15);color:var(--green);border:1px solid rgba(52,211,153,.3);border-radius:4px;padding:1px 7px;font-size:.65rem;font-weight:700;\">T1 MUST PURSUE</span>";
+    if (s>=70) return "<span style=\"background:rgba(0,188,212,.12);color:var(--teal);border:1px solid rgba(0,188,212,.3);border-radius:4px;padding:1px 7px;font-size:.65rem;font-weight:700;\">T2 STRONG</span>";
+    if (s>=55) return "<span style=\"background:rgba(251,191,36,.12);color:var(--yellow);border:1px solid rgba(251,191,36,.3);border-radius:4px;padding:1px 7px;font-size:.65rem;\">T3 DEVELOP</span>";
+    return "<span style=\"color:var(--dim);font-size:.65rem;\">Low Priority</span>";
+  }
+  const locInfo = radius>0&&state.geoCenter ? " within "+radius+" mi of "+state.geoCenter.zip : "";
   el.innerHTML = `
-    <div style="margin-bottom:12px;font-size:.75rem;color:var(--dim);">${prospects.length} prospects${radius>0&&state.geoCenter?` within ${radius} miles of ${state.geoCenter.zip}`:''}</div>
+    <div style="margin-bottom:12px;font-size:.75rem;color:var(--dim);">${prospects.length} rebuild targets${locInfo}</div>
     <div class="mobile-scroll">
     <table class="bp-table">
       <thead><tr>
-        <th style="width:32px;text-align:center;padding:8px 4px;" title="Add to plan"></th>
-        <th class="text-left">Prospect</th>
-        <th class="text-left hide-mobile">Category</th>
-        <th class="text-right accent">Score</th>
-        <th class="text-right hide-mobile">Est. Revenue</th>
-        <th class="text-right hide-mobile">Distance</th>
-        <th class="text-left hide-mobile">City</th>
-        <th class="text-left">Notes</th>
+        <th style="width:32px;text-align:center;padding:8px 4px;"></th>
+        <th class="text-left">Advertiser Name</th>
+        <th class="text-left">Category</th>
+        <th class="text-right accent" style="width:90px;">Score</th>
+        <th class="text-left hide-mobile" style="width:140px;">Tier</th>
       </tr></thead>
       <tbody>
-        ${prospects.map(p=>`
-          <tr>
-            ${makeCheckbox("rebuild",{name:p.name,cat:p.cat,estRev:p.estRev,score:p.score})}
+        ${prospects.map(p=>{
+          const breakdown = `Spend Potential: ${p.sp||"-"}/30 | Marketing Readiness: ${p.mr||"-"}/20 | Anchor Status: ${p.as_||"-"}/20 | Multi-Location: ${p.ml||"-"}/15 | Category Fit: ${p.cf||"-"}/15`;
+          return `<tr>
+            ${makeCheckbox("rebuild",{name:p.name,cat:p.cat,estRev:p.estRev,score:p.score/10})}
             <td><strong style="color:#fff;">${p.name}</strong></td>
-            <td class="hide-mobile"><span class="badge-reclaim">${p.cat||'—'}</span></td>
-            <td class="text-right">${scoreBadge(p.score)}</td>
-            <td class="text-right hide-mobile" style="color:#fff;font-weight:600;">${p.rev?fmt(p.rev):'—'}</td>
-            <td class="text-right hide-mobile" style="color:var(--dim);">${p.dist!=null?p.dist.toFixed(1)+' mi':'—'}</td>
-            <td class="hide-mobile" style="color:var(--dim);font-size:.78rem;">${p.city||'—'}</td>
-            <td style="font-size:.7rem;color:var(--dim);">${p.note?p.note.substring(0,80):'—'}</td>
-          </tr>`).join('')}
+            <td style="color:var(--dim);font-size:.8rem;">${p.cat||"-"}</td>
+            <td class="text-right"><span class="score-badge ${p.score>=80?"score-high":p.score>=60?"score-mid":"score-low"}" title="${breakdown}" style="cursor:help;">${p.score}</span></td>
+            <td class="hide-mobile">${tierBadge(p.score)}</td>
+          </tr>`;
+        }).join("")}
       </tbody>
     </table></div>`;
 }
 
 // --- DISCOVER (OpenStreetMap Overpass API) ---
 const CATEGORY_CONFIG = {
-  'Healthcare':             { tags:[['amenity','hospital'],['amenity','clinic'],['amenity','doctors']], estRev:75000, anchorScore:9 },
-  'Dental':                 { tags:[['amenity','dentist']], estRev:25000, anchorScore:6 },
-  'Legal':                  { tags:[['office','lawyer'],['office','attorney']], estRev:30000, anchorScore:6 },
-  'Financial / Credit Union':{ tags:[['amenity','bank'],['amenity','credit_union']], estRev:50000, anchorScore:8 },
-  'Auto Dealer':            { tags:[['shop','car'],['shop','car_dealer']], estRev:60000, anchorScore:8 },
-  'Fitness / Wellness':     { tags:[['leisure','fitness_centre'],['amenity','gym']], estRev:20000, anchorScore:5 },
-  'QSR / Food':             { tags:[['amenity','restaurant'],['amenity','fast_food']], estRev:15000, anchorScore:4 },
-  'Real Estate':            { tags:[['office','real_estate_agent'],['office','estate_agent']], estRev:20000, anchorScore:5 },
-  'In-Home Services':       { tags:[['trade','plumber'],['trade','electrician'],['craft','roofer']], estRev:18000, anchorScore:5 },
-  'Education':              { tags:[['amenity','university'],['amenity','college']], estRev:80000, anchorScore:9 },
-  'Entertainment':          { tags:[['amenity','theatre'],['amenity','cinema'],['amenity','casino'],['leisure','bowling_alley']], estRev:60000, anchorScore:8 },
-  'Senior Living':          { tags:[['amenity','nursing_home']], estRev:35000, anchorScore:6 },
-  'Home Improvement':       { tags:[['shop','furniture'],['shop','hardware'],['shop','building_materials']], estRev:25000, anchorScore:5 },
-  'Insurance':              { tags:[['office','insurance']], estRev:20000, anchorScore:5 }
+  'Healthcare':              { tags:[['amenity','hospital'],['amenity','clinic'],['amenity','doctors'],['healthcare','doctor']], sp:28, mr:16, as_:18, ml:8,  cf:15 },
+  'Education':               { tags:[['amenity','university'],['amenity','college']], sp:26, mr:15, as_:18, ml:8,  cf:13 },
+  'Casino':                  { tags:[['amenity','casino'],['leisure','casino']], sp:30, mr:18, as_:20, ml:12, cf:15 },
+  'Auto Dealer':             { tags:[['shop','car'],['shop','car_dealer']], sp:22, mr:14, as_:14, ml:12, cf:13 },
+  'Financial':               { tags:[['amenity','bank'],['amenity','credit_union']], sp:24, mr:14, as_:16, ml:13, cf:13 },
+  'Legal':                   { tags:[['office','lawyer'],['office','attorney']], sp:18, mr:12, as_:10, ml:6,  cf:13 },
+  'In-Home Services':        { tags:[['trade','plumber'],['trade','electrician'],['craft','roofer'],['craft','plumber']], sp:20, mr:12, as_:8,  ml:10, cf:13 },
+  'Fitness & Wellness':      { tags:[['leisure','fitness_centre'],['amenity','gym']], sp:12, mr:13, as_:8,  ml:13, cf:12 },
+  'Private School':          { tags:[['amenity','school']], sp:14, mr:11, as_:12, ml:5,  cf:11 },
+  'Home Improvement Franchise': { tags:[['shop','hardware'],['shop','furniture'],['shop','building_materials']], sp:16, mr:12, as_:8,  ml:15, cf:13 },
+  'Golf Simulator':          { tags:[['leisure','golf_course'],['sport','golf']], sp:14, mr:13, as_:8,  ml:13, cf:13 },
+  'Senior Living':           { tags:[['amenity','nursing_home']], sp:18, mr:10, as_:12, ml:8,  cf:11 },
+  'Entertainment':           { tags:[['amenity','theatre'],['amenity','cinema'],['leisure','bowling_alley']], sp:16, mr:14, as_:14, ml:10, cf:12 }
+};
 };
 
 async function discoverProspects() {
@@ -817,11 +817,14 @@ async function discoverProspects() {
 
       const spendScore = Math.min(10,cfg.estRev/10000);
       const distScore  = dist!=null ? Math.max(1,10-(dist/radiusMi)*5) : 5;
-      const score = parseFloat(Math.min(10,0.35*spendScore+0.35*cfg.anchorScore+0.20*distScore+0.10*7).toFixed(1));
-
-      prospects.push({name,cat:matchedCat,city,addr,zip:'',website:tags.website||tags['contact:website']||'',phone:tags.phone||'',dist,estRev:cfg.estRev,score,_lat:lat,_lng:lng});
+      // 5-factor 100-point score
+      const mrBonus = (tags.website||tags["contact:website"])?5:(tags.phone||tags["contact:phone"])?2:0;
+      const mlBonus = (tags.brand||tags.operator||tags.network)?8:0;
+      const distPenalty = dist!=null ? Math.max(0, Math.round((dist/radiusMi)*5)) : 0;
+      const score = Math.min(100, (cfg.sp) + Math.min(cfg.mr,cfg.mr+mrBonus) + (cfg.as_) + Math.min(15,cfg.ml+mlBonus) + (cfg.cf) - distPenalty);
+      const sp=cfg.sp, mr=Math.min(20,cfg.mr+mrBonus), as_=cfg.as_, ml=Math.min(15,cfg.ml+mlBonus), cf=cfg.cf;
+      prospects.push({name,cat:matchedCat,city,addr,zip:"",dist,estRev:cfg.sp*3500,score,sp,mr,as_,ml,cf,_lat:lat,_lng:lng});
     });
-    prospects.sort(function(a,b){return b.score-a.score;});
     state.rebuild = prospects;
     btn.disabled=false; btn.style.opacity='1';
     status.innerHTML='<span style="color:var(--green);">Found '+prospects.length+' prospects within '+radiusMi+' miles of '+center.city+'</span>';
