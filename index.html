@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8"/>
@@ -8,10 +8,10 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
     :root {
-      --teal:#00bcd4; --teal-dim:rgba(0,188,212,.12); --teal-border:rgba(0,188,212,.3);
-      --bg:#080d1a; --surface:#0f1629; --surface2:#141d35; --surface3:#1a2540;
-      --border:rgba(255,255,255,.07); --text:#e2e8f0; --dim:#64748b;
-      --green:#34d399; --red:#f87171; --yellow:#fbbf24; --orange:#fb923c;
+      --teal:#00bcd4;--teal-dim:rgba(0,188,212,.12);--teal-border:rgba(0,188,212,.3);
+      --bg:#080d1a;--surface:#0f1629;--surface2:#141d35;--surface3:#1a2540;
+      --border:rgba(255,255,255,.07);--text:#e2e8f0;--dim:#64748b;
+      --green:#34d399;--red:#f87171;--yellow:#fbbf24;--orange:#fb923c;
     }
     *{box-sizing:border-box;}
     body{background:var(--bg);font-family:'Inter',system-ui,sans-serif;color:var(--text);margin:0;min-height:100vh;}
@@ -21,9 +21,8 @@
     .card{background:var(--surface);border:1px solid var(--border);border-radius:8px;}
     .card-teal{border-top:2px solid var(--teal);}
     .upload-zone{border:2px dashed var(--teal-border);border-radius:8px;background:var(--teal-dim);transition:all .2s;cursor:pointer;}
-    .upload-zone:hover{border-color:var(--teal);background:rgba(0,188,212,.18);}
-    .upload-zone.drag{border-color:var(--teal);background:rgba(0,188,212,.25);}
-    .bp-table{width:100%;border-collapse:collapse;background:transparent;}
+    .upload-zone:hover,.upload-zone.drag{border-color:var(--teal);background:rgba(0,188,212,.18);}
+    .bp-table{width:100%;border-collapse:collapse;}
     .bp-table thead th{background:var(--surface2);color:var(--dim);font-size:.68rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;padding:10px 12px;border-bottom:1px solid var(--teal-border);white-space:nowrap;}
     .bp-table thead th.accent{color:var(--teal);}
     .bp-table tbody tr{border-bottom:1px solid var(--border);}
@@ -33,11 +32,11 @@
     .score-high{background:rgba(52,211,153,.15);color:var(--green);border:1px solid rgba(52,211,153,.3);}
     .score-mid{background:rgba(251,191,36,.12);color:var(--yellow);border:1px solid rgba(251,191,36,.3);}
     .score-low{background:rgba(248,113,113,.12);color:var(--red);border:1px solid rgba(248,113,113,.3);}
+    .badge-now{background:rgba(52,211,153,.15);color:var(--green);border:1px solid rgba(52,211,153,.3);border-radius:3px;padding:1px 7px;font-size:.65rem;font-weight:700;}
+    .badge-reclaim{background:rgba(251,146,60,.15);color:var(--orange);border:1px solid rgba(251,146,60,.3);border-radius:3px;padding:1px 7px;font-size:.65rem;}
     .badge-ignite{background:rgba(0,188,212,.15);color:var(--teal);border:1px solid var(--teal-border);border-radius:3px;padding:1px 6px;font-size:.65rem;font-weight:700;}
-    .badge-reclaim{background:rgba(251,146,60,.15);color:var(--orange);border:1px solid rgba(251,146,60,.3);border-radius:3px;padding:1px 6px;font-size:.65rem;}
-    .badge-now{background:rgba(52,211,153,.15);color:var(--green);border:1px solid rgba(52,211,153,.3);border-radius:3px;padding:1px 6px;font-size:.65rem;font-weight:700;}
-    .range-slider{-webkit-appearance:none;appearance:none;width:100%;height:6px;border-radius:3px;background:var(--surface2);outline:none;}
-    .range-slider::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;width:18px;height:18px;border-radius:50%;background:var(--teal);cursor:pointer;}
+    .range-slider{-webkit-appearance:none;width:100%;height:6px;border-radius:3px;background:var(--surface2);outline:none;}
+    .range-slider::-webkit-slider-thumb{-webkit-appearance:none;width:18px;height:18px;border-radius:50%;background:var(--teal);cursor:pointer;}
     .section-header{font-size:.68rem;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:var(--teal);margin-bottom:12px;}
     .mobile-scroll{overflow-x:auto;}
     @media(max-width:768px){.hide-mobile{display:none;}}
@@ -55,13 +54,13 @@
         <div id="marketLabel" style="font-size:.68rem;color:var(--dim);letter-spacing:.05em;">IGNITE GROWTH INTELLIGENCE</div>
       </div>
     </div>
-    <div class="flex items-center gap-2">
-      <input id="marketInput" type="text" placeholder="Market name (e.g. Utica, NY)" 
+    <div class="flex items-center gap-3">
+      <input id="marketInput" type="text" placeholder="Market name (e.g. Utica, NY)"
         style="background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:6px 12px;color:var(--text);font-size:.78rem;width:200px;outline:none;"
         oninput="document.getElementById('marketLabel').textContent=this.value||'IGNITE GROWTH INTELLIGENCE'"/>
       <a href="https://ignitegrowthintelligence.github.io/igi-command-center/" target="_blank"
         style="background:var(--teal-dim);border:1px solid var(--teal-border);color:var(--teal);border-radius:6px;padding:6px 12px;font-size:.75rem;text-decoration:none;">
-        ← Command Center
+        Command Center
       </a>
     </div>
   </div>
@@ -74,22 +73,22 @@
   <!-- Tabs -->
   <div style="background:var(--surface);border:1px solid var(--border);border-radius:8px;overflow:hidden;">
     <div style="background:var(--surface);border-bottom:1px solid var(--border);padding:10px 16px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
-      <button onclick="switchTab('close')"    id="tab-close"    class="tab-active    px-4 py-2 text-sm transition-all">Close Now</button>
-      <button onclick="switchTab('protect')"  id="tab-protect"  class="tab-inactive  px-4 py-2 text-sm transition-all">Protect &amp; Expand</button>
-      <button onclick="switchTab('reclaim')"  id="tab-reclaim"  class="tab-inactive  px-4 py-2 text-sm transition-all">Reclaim</button>
-      <button onclick="switchTab('rebuild')"  id="tab-rebuild"  class="tab-inactive  px-4 py-2 text-sm transition-all">Rebuild</button>
+      <button onclick="switchTab('close')"   id="tab-close"   class="tab-active   px-4 py-2 text-sm transition-all">Close Now</button>
+      <button onclick="switchTab('protect')" id="tab-protect" class="tab-inactive px-4 py-2 text-sm transition-all">Protect &amp; Expand</button>
+      <button onclick="switchTab('reclaim')" id="tab-reclaim" class="tab-inactive px-4 py-2 text-sm transition-all">Reclaim</button>
+      <button onclick="switchTab('rebuild')" id="tab-rebuild" class="tab-inactive px-4 py-2 text-sm transition-all">Rebuild</button>
     </div>
 
     <!-- CLOSE NOW -->
     <div id="panel-close" class="p-5">
       <div class="section-header">Close Now — Blueprint Pipeline</div>
-      <div id="close-upload" class="upload-zone p-8 text-center mb-4" onclick="document.getElementById('close-file').click()" 
+      <div class="upload-zone p-8 text-center mb-4" onclick="document.getElementById('f-close').click()"
            ondragover="event.preventDefault();this.classList.add('drag')" ondragleave="this.classList.remove('drag')"
            ondrop="event.preventDefault();this.classList.remove('drag');handleFile('close',event.dataTransfer.files[0])">
         <div style="font-size:2rem;margin-bottom:8px;">📋</div>
         <div style="font-weight:600;color:var(--text);">Upload Blueprint Pipeline</div>
         <div style="font-size:.75rem;color:var(--dim);margin-top:4px;">CSV or Excel — drop here or click to browse</div>
-        <input type="file" id="close-file" accept=".csv,.xlsx,.xls" style="display:none" onchange="handleFile('close',this.files[0])"/>
+        <input type="file" id="f-close" accept=".csv,.xlsx,.xls" style="display:none" onchange="handleFile('close',this.files[0])"/>
       </div>
       <div id="close-content"></div>
     </div>
@@ -97,13 +96,13 @@
     <!-- PROTECT & EXPAND -->
     <div id="panel-protect" class="p-5 hidden">
       <div class="section-header">Protect &amp; Expand — Current Active Clients</div>
-      <div id="protect-upload" class="upload-zone p-8 text-center mb-4" onclick="document.getElementById('protect-file').click()"
+      <div class="upload-zone p-8 text-center mb-4" onclick="document.getElementById('f-protect').click()"
            ondragover="event.preventDefault();this.classList.add('drag')" ondragleave="this.classList.remove('drag')"
            ondrop="event.preventDefault();this.classList.remove('drag');handleFile('protect',event.dataTransfer.files[0])">
         <div style="font-size:2rem;margin-bottom:8px;">📊</div>
         <div style="font-weight:600;color:var(--text);">Upload Current Client Revenue Report</div>
         <div style="font-size:.75rem;color:var(--dim);margin-top:4px;">Basic Revenue Report — CSV or Excel</div>
-        <input type="file" id="protect-file" accept=".csv,.xlsx,.xls" style="display:none" onchange="handleFile('protect',this.files[0])"/>
+        <input type="file" id="f-protect" accept=".csv,.xlsx,.xls" style="display:none" onchange="handleFile('protect',this.files[0])"/>
       </div>
       <div id="protect-content"></div>
     </div>
@@ -112,21 +111,19 @@
     <div id="panel-reclaim" class="p-5 hidden">
       <div class="section-header">Reclaim — Former Clients</div>
       <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-        <div id="reclaim-all-upload" class="upload-zone p-6 text-center" onclick="document.getElementById('reclaim-all-file').click()"
+        <div class="upload-zone p-6 text-center" onclick="document.getElementById('f-reclaim-all').click()"
              ondragover="event.preventDefault();this.classList.add('drag')" ondragleave="this.classList.remove('drag')"
              ondrop="event.preventDefault();this.classList.remove('drag');handleFile('reclaim-all',event.dataTransfer.files[0])">
           <div style="font-size:1.5rem;margin-bottom:6px;">📁</div>
           <div style="font-weight:600;font-size:.85rem;">5-Year Non-Returning — All Revenue</div>
-          <div style="font-size:.72rem;color:var(--dim);margin-top:4px;">Broad former client universe</div>
-          <input type="file" id="reclaim-all-file" accept=".csv,.xlsx,.xls" style="display:none" onchange="handleFile('reclaim-all',this.files[0])"/>
+          <input type="file" id="f-reclaim-all" accept=".csv,.xlsx,.xls" style="display:none" onchange="handleFile('reclaim-all',this.files[0])"/>
         </div>
-        <div id="reclaim-ignite-upload" class="upload-zone p-6 text-center" onclick="document.getElementById('reclaim-ignite-file').click()"
+        <div class="upload-zone p-6 text-center" onclick="document.getElementById('f-reclaim-ign').click()"
              ondragover="event.preventDefault();this.classList.add('drag')" ondragleave="this.classList.remove('drag')"
              ondrop="event.preventDefault();this.classList.remove('drag');handleFile('reclaim-ignite',event.dataTransfer.files[0])">
           <div style="font-size:1.5rem;margin-bottom:6px;">🎯</div>
           <div style="font-weight:600;font-size:.85rem;">5-Year Non-Returning — Ignite Only</div>
-          <div style="font-size:.72rem;color:var(--dim);margin-top:4px;">Former Ignite buyers — highest priority</div>
-          <input type="file" id="reclaim-ignite-file" accept=".csv,.xlsx,.xls" style="display:none" onchange="handleFile('reclaim-ignite',this.files[0])"/>
+          <input type="file" id="f-reclaim-ign" accept=".csv,.xlsx,.xls" style="display:none" onchange="handleFile('reclaim-ignite',this.files[0])"/>
         </div>
       </div>
       <div id="reclaim-content"></div>
@@ -136,27 +133,23 @@
     <div id="panel-rebuild" class="p-5 hidden">
       <div class="section-header">Rebuild — Net New Prospects</div>
       <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-5">
-        <!-- Upload or Discover -->
         <div style="display:flex;flex-direction:column;gap:10px;">
-          <div id="rebuild-upload" class="upload-zone p-5 text-center" onclick="document.getElementById('rebuild-file').click()"
+          <div class="upload-zone p-5 text-center" onclick="document.getElementById('f-rebuild').click()"
                ondragover="event.preventDefault();this.classList.add('drag')" ondragleave="this.classList.remove('drag')"
                ondrop="event.preventDefault();this.classList.remove('drag');handleFile('rebuild',event.dataTransfer.files[0])">
             <div style="font-size:1.3rem;margin-bottom:5px;">📄</div>
             <div style="font-weight:600;font-size:.8rem;">Upload Your List</div>
             <div style="font-size:.68rem;color:var(--dim);margin-top:3px;">CSV: Name, Category, City, Zip, Revenue</div>
-            <input type="file" id="rebuild-file" accept=".csv,.xlsx,.xls" style="display:none" onchange="handleFile('rebuild',this.files[0])"/>
+            <input type="file" id="f-rebuild" accept=".csv,.xlsx,.xls" style="display:none" onchange="handleFile('rebuild',this.files[0])"/>
           </div>
           <div style="text-align:center;font-size:.68rem;color:var(--dim);">or</div>
           <button id="discoverBtn" onclick="discoverProspects()"
-            style="background:linear-gradient(135deg,rgba(0,188,212,.2),rgba(0,188,212,.08));border:1px solid var(--teal-border);border-radius:8px;padding:14px;cursor:pointer;color:var(--teal);font-weight:700;font-size:.85rem;transition:all .2s;"
-            onmouseover="this.style.background='linear-gradient(135deg,rgba(0,188,212,.3),rgba(0,188,212,.15))'" 
-            onmouseout="this.style.background='linear-gradient(135deg,rgba(0,188,212,.2),rgba(0,188,212,.08))'">
+            style="background:linear-gradient(135deg,rgba(0,188,212,.2),rgba(0,188,212,.08));border:1px solid var(--teal-border);border-radius:8px;padding:14px;cursor:pointer;color:var(--teal);font-weight:700;font-size:.85rem;">
             🔍 Auto-Discover Prospects
             <div style="font-size:.68rem;font-weight:400;color:rgba(0,188,212,.7);margin-top:3px;">Set ZIP + radius, then tap to discover</div>
           </button>
           <div id="discoverStatus" style="font-size:.7rem;color:var(--dim);text-align:center;"></div>
         </div>
-        <!-- Geography -->
         <div class="card p-4 md:col-span-2">
           <div style="font-size:.7rem;font-weight:700;color:var(--teal);letter-spacing:.07em;text-transform:uppercase;margin-bottom:12px;">Geography Filter</div>
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -167,8 +160,8 @@
                 oninput="updateGeoFilter()"/>
             </div>
             <div>
-              <label style="font-size:.72rem;color:var(--dim);">Market Name / Geography Description</label>
-              <input id="geoDesc" type="text" placeholder="e.g. Oneida County, Central NY"
+              <label style="font-size:.72rem;color:var(--dim);">Market Description</label>
+              <input id="geoDesc" type="text" placeholder="e.g. Oneida County, NY"
                 style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:8px 12px;color:var(--text);font-size:.85rem;margin-top:4px;outline:none;"/>
             </div>
           </div>
@@ -180,870 +173,580 @@
             <input type="range" id="radiusSlider" class="range-slider" min="0" max="100" value="25" step="5"
               oninput="document.getElementById('radiusLabel').textContent=this.value+' miles';filterRebuild()"/>
             <div style="display:flex;justify-content:space-between;font-size:.65rem;color:var(--dim);margin-top:2px;">
-              <span>0 mi</span><span>25 mi</span><span>50 mi</span><span>75 mi</span><span>100 mi</span>
+              <span>0 mi</span><span>25</span><span>50</span><span>75</span><span>100 mi</span>
             </div>
           </div>
-          <!-- Category filter -->
         </div>
       </div>
       <div id="rebuild-content"></div>
     </div>
-
   </div>
 </div>
 
-<script>
-// ─── STATE ─────────────────────────────────────────────────────────────────
-const state = {
-  close: null, protect: null,
-  reclaimAll: null, reclaimIgnite: null,
-  rebuild: null, geoCenter: null
-};
-
-const IGNITE_CATEGORIES = [
-  'In-Home Services','Legal','Healthcare','Auto Dealer','Financial / Credit Union',
-  'QSR / Food','Fitness / Wellness','Dental','Real Estate','Retail','Education',
-  'Entertainment','Senior Living','Home Improvement','Insurance'
-];
-
-// ─── TAB SWITCHING ─────────────────────────────────────────────────────────
-function switchTab(t) {
-  ['close','protect','reclaim','rebuild'].forEach(id => {
-    document.getElementById('panel-'+id).classList.toggle('hidden', id!==t);
-    const btn = document.getElementById('tab-'+id);
-    btn.className = (id===t?'tab-active':'tab-inactive')+' px-4 py-2 text-sm transition-all';
-  });
-}
-
-// ─── FILE HANDLING ─────────────────────────────────────────────────────────
-function handleFile(section, file) {
-  if (!file) return;
-  const reader = new FileReader();
-  reader.onload = e => {
-    try {
-      const wb = XLSX.read(e.target.result, {type:'array', raw:false});
-      const ws = wb.Sheets[wb.SheetNames[0]];
-      const rows = XLSX.utils.sheet_to_json(ws, {header:1, defval:''});
-      processFile(section, rows, file.name);
-    } catch(err) { alert('DEBUG Error\nType: '+err.constructor.name+'\nMsg: '+err.message+'\nSection: '+section+'\nStack: '+(err.stack||'').split('\n')[1]); }
-  };
-  reader.readAsArrayBuffer(file);
-}
-
-function processFile(section, rows, fname) {
-  if (section === 'close')          { parseClose(rows, fname); }
-  else if (section === 'protect')   { parseProtect(rows, fname); }
-  else if (section === 'reclaim-all')    { parseReclaim(rows, 'all', fname); }
-  else if (section === 'reclaim-ignite') { parseReclaim(rows, 'ignite', fname); }
-  else if (section === 'rebuild')   { parseRebuild(rows, fname); }
-}
-
-// ─── UTILITIES ─────────────────────────────────────────────────────────────
-const fmt = n => {
-  if (!n && n!==0) return '—';
-  const abs = Math.abs(n);
-  const s = abs>=1000000 ? '$'+(abs/1000000).toFixed(1)+'M' : abs>=1000 ? '$'+Math.round(abs).toLocaleString() : '$'+Math.round(abs);
-  return n<0 ? '-'+s : s;
-const pct = v => v!=null ? Math.round(v)+'%' : '—';
-
-function scoreBadge(s, breakdown) {
-  const s100 = Math.round(s*10);
-  const cls = s100>=80?"score-high":s100>=60?"score-mid":"score-low";
-  const tip = breakdown ? " title=\""+breakdown+"\" style=\"cursor:help;\"" : "";
-  return `<span class="score-badge ${cls}"${tip}>${s100}</span>`;
-}
-function updateSummaryCards(cards) {
-  document.getElementById('summaryCards').innerHTML = cards.map(c=>
-    `<div class="card card-teal p-4">
-      <div style="font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--dim);">${c.label}</div>
-      <div style="font-size:1.5rem;font-weight:800;color:#fff;margin:4px 0;">${c.value}</div>
-      <div style="font-size:.72rem;color:var(--dim);">${c.sub||''}</div>
-    </div>`
-  ).join('');
-}
-
-function cleanNum(s) {
-  if (!s && s!==0) return 0;
-  const str = String(s).replace(/[$,\s()]/g,'');
-  if (!str||str==='-') return 0;
-  const v = parseFloat(str);
-  return isNaN(v)?0:(String(s).includes('(')?-v:v);
-}
-
-// ─── CLOSE NOW ─────────────────────────────────────────────────────────────
-function parseClose(rows, fname) {
-  // Find "Returning for Remaining 2026" section
-  let headerRow = -1, dataStart = -1, dataEnd = rows.length;
-  for (let i=0;i<rows.length;i++) {
-    const r = rows[i].join('|');
-    if (r.includes('Returning for Remaining')) { headerRow = i+1; dataStart = i+2; }
-    if (dataStart>0 && r.includes('Non Returning')) { dataEnd = i; break; }
-  }
-
-  // Summary row (first data row)
-  const sumRow = rows[0]||[];
-  const budget = cleanNum(sumRow[1]);
-  const booked = cleanNum(sumRow[2]);
-  const pitched = cleanNum(sumRow[3]);
-  const projected = cleanNum(sumRow[4]);
-
-  let deals = [];
-  if (dataStart>0) {
-    const headers = rows[headerRow]||[];
-    for (let i=dataStart;i<dataEnd;i++) {
-      const r = rows[i];
-      if (!r||!r[0]||String(r[0]).trim()==='') continue;
-      const acct = String(r[0]).trim();
-      const rev = cleanNum(r[1]);
-      const closing = String(r[2]||'').trim();
-      const notes = String(r[3]||'').trim();
-      const type = String(r[4]||'').trim();
-      const conf = String(r[6]||'').trim();
-      const closeDate = String(r[7]||'').trim();
-      const daysIn = cleanNum(r[8]);
-      const lyRev = cleanNum(r[9]);
-      const apr = cleanNum(r[10]);
-      const may = cleanNum(r[11]);
-      const jun = cleanNum(r[12]);
-
-      // Pipeline Priority Score
-      const sizeScore = Math.min(10, rev/10000);
-      const confNum = conf==='95%'?9.5:conf==='75%'?7.5:conf==='50%'?5:conf==='-'?3:5;
-      const stalenessScore = daysIn>90?1:daysIn>60?4:daysIn>30?6:8;
-      const leaderScore = rev>50000?2:0;
-      const score = Math.min(10, 0.30*sizeScore + 0.25*confNum + 0.25*stalenessScore + 0.20*leaderScore + leaderScore);
-
-      const isIgnite = (type||'').toUpperCase().includes('IGNITE');
-      deals.push({acct,rev,closing,notes,type,conf,closeDate,daysIn,lyRev,apr,may,jun,score,isIgnite});
-    }
-  }
-
-  deals.sort((a,b)=>b.score-a.score);
-  state.close = deals;
-
-  updateSummaryCards([
-    {label:'Budget',value:fmt(budget),sub:'Total market goal'},
-    {label:'Booked',value:fmt(booked),sub:pct(budget?booked/budget*100:null)+' of budget'},
-    {label:'Pipeline',value:fmt(pitched),sub:'Pending close'},
-    {label:'Deals',value:deals.length,sub:'Returning accounts'}
-  ]);
-
-  const el = document.getElementById('close-content');
-  document.getElementById('close-upload').style.display='none';
-
-  el.innerHTML = `
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
-      <div style="font-size:.75rem;color:var(--dim);">${fname} — ${deals.length} pending opportunities</div>
-      <button onclick="document.getElementById('close-upload').style.display='block';document.getElementById('close-content').innerHTML=''"
-        style="font-size:.7rem;color:var(--teal);background:var(--teal-dim);border:1px solid var(--teal-border);padding:3px 8px;border-radius:4px;cursor:pointer;">Replace file</button>
-    </div>
-    <div class="mobile-scroll">
-    <table class="bp-table">
-      <thead><tr>
-        <th style="width:32px;text-align:center;padding:8px 4px;" title="Add to plan"></th>
-        <th style="width:32px;"></th><th class="text-left">Account</th>
-        <th class="text-right accent">Score</th>
-        <th class="text-right">Revenue</th>
-        <th class="text-right hide-mobile">Confidence</th>
-        <th class="text-right hide-mobile">Days Pending</th>
-        <th class="text-left hide-mobile">Type</th>
-        <th class="text-right hide-mobile">Apr</th>
-        <th class="text-right hide-mobile">May</th>
-        <th class="text-right hide-mobile">Jun</th>
-        <th class="text-left">Status / Notes</th>
-      </tr></thead>
-      <tbody>
-        ${deals.map(d=>`
-          <tr>
-            ${makeCheckbox("close",{name:d.acct,cat:d.type,rev:d.rev,score:d.score})}
-            <td><strong style="color:#fff;">${d.acct}</strong>${d.isIgnite?'<span class="badge-ignite" style="margin-left:6px;">IGNITE</span>':''}</td>
-            <td class="text-right">${scoreBadge(d.score)}</td>
-            <td class="text-right" style="color:#fff;font-weight:600;">${fmt(d.rev)}</td>
-            <td class="text-right hide-mobile" style="color:${d.conf==='95%'?'var(--green)':d.conf==='75%'?'var(--yellow)':'var(--dim)'};">${d.conf||'—'}</td>
-            <td class="text-right hide-mobile" style="color:${d.daysIn>60?'var(--red)':d.daysIn>30?'var(--yellow)':'var(--dim)'};">${d.daysIn||'—'}</td>
-            <td class="hide-mobile" style="color:var(--dim);font-size:.72rem;">${d.type.replace(/,/g,', ')}</td>
-            <td class="text-right hide-mobile" style="color:var(--dim);">${d.apr?fmt(d.apr):'—'}</td>
-            <td class="text-right hide-mobile" style="color:var(--dim);">${d.may?fmt(d.may):'—'}</td>
-            <td class="text-right hide-mobile" style="color:var(--dim);">${d.jun?fmt(d.jun):'—'}</td>
-            <td style="font-size:.7rem;color:var(--dim);max-width:220px;">${d.notes?d.notes.split('\n')[0].substring(0,80)+(d.notes.length>80?'…':''):'—'}</td>
-          </tr>`).join('')}
-      </tbody>
-    </table></div>`;
-}
-
-// ─── PROTECT & EXPAND ──────────────────────────────────────────────────────
-function parseProtect(rows, fname) {
-  // Expect: Market | AE Name | Advertiser | Agency | months... | Total 2025 | months 2026 | Total 2026 | Grand Total
-  // Find header row
-  let hRow = 0;
-  for (let i=0;i<Math.min(10,rows.length);i++) {
-    if (rows[i].join('').toLowerCase().includes('advertiser') && rows[i].join('').toLowerCase().includes('market')) {
-      hRow = i; break;
-    }
-  }
-
-  const headers = rows[hRow]||[];
-  // Find 2026 total column and grand total
-  let col2025Total=-1, col2026Total=-1, colGrand=-1;
-  headers.forEach((h,i)=>{
-    const s=String(h).toLowerCase();
-    if(s.includes('total') && col2025Total<0) col2025Total=i;
-    else if(s.includes('total') && col2025Total>=0 && col2026Total<0) col2026Total=i;
-    else if(s.includes('grand') || (s.includes('total') && col2026Total>=0 && colGrand<0)) colGrand=i;
-  });
-
-  // Aggregate by advertiser
-  const adMap = {};
-  for (let i=hRow+1;i<rows.length;i++) {
-    const r = rows[i];
-    if (!r||!r[2]||String(r[2]).trim()===''||String(r[2]).toLowerCase()==='total') continue;
-    const mkt = String(r[0]||'').trim();
-    const ae = String(r[1]||'').trim();
-    const adv = String(r[2]||'').trim();
-    const rev25 = col2025Total>=0?cleanNum(r[col2025Total]):0;
-    const rev26 = col2026Total>=0?cleanNum(r[col2026Total]):0;
-    const grand = colGrand>=0?cleanNum(r[colGrand]):rev25+rev26;
-
-    if (!mkt && !ae) continue; // skip blank rows
-    const key = adv;
-    if (!adMap[key]) adMap[key] = {adv,ae,mkt,rev25:0,rev26:0,grand:0};
-    adMap[key].rev25 += rev25;
-    adMap[key].rev26 += rev26;
-    adMap[key].grand += grand;
-  }
-
-  let clients = Object.values(adMap).filter(c=>c.grand>0);
-
-  // Score each client
-  clients.forEach(c => {
-    const traj = c.rev26>c.rev25*1.1?1:c.rev26<c.rev25*0.9?-1:0;
-    const spendScore = Math.min(10, c.grand/15000);
-    const trajScore = traj===1?8:traj===0?5:2;
-    const categoryScore = 5; // neutral without category data
-    c.score = Math.min(10, 0.40*spendScore + 0.25*trajScore + 0.20*categoryScore + 0.15*(c.rev26>0?7:2));
-    c.trend = traj;
-  });
-
-  clients.sort((a,b)=>b.score-a.score);
-  state.protect = clients;
-
-  const total26 = clients.reduce((s,c)=>s+c.rev26,0);
-  const total25 = clients.reduce((s,c)=>s+c.rev25,0);
-
-  updateSummaryCards([
-    {label:'Active Clients',value:clients.length,sub:'Current advertisers'},
-    {label:'2025 Revenue',value:fmt(total25),sub:'Full year base'},
-    {label:'2026 Revenue',value:fmt(total26),sub:'Current pace'},
-    {label:'Avg Spend',value:fmt(clients.length?total26/clients.length:0),sub:'Per advertiser 2026'}
-  ]);
-
-  document.getElementById('protect-upload').style.display='none';
-  document.getElementById('protect-content').innerHTML = `
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
-      <div style="font-size:.75rem;color:var(--dim);">${fname} — ${clients.length} active clients</div>
-      <button onclick="document.getElementById('protect-upload').style.display='block';document.getElementById('protect-content').innerHTML=''"
-        style="font-size:.7rem;color:var(--teal);background:var(--teal-dim);border:1px solid var(--teal-border);padding:3px 8px;border-radius:4px;cursor:pointer;">Replace file</button>
-    </div>
-    <div class="mobile-scroll">
-    <table class="bp-table">
-      <thead><tr>
-        <th style="width:32px;text-align:center;padding:8px 4px;" title="Add to plan"></th>
-        <th style="width:32px;"></th><th class="text-left">Advertiser</th>
-        <th class="text-left hide-mobile">AE</th>
-        <th class="text-right accent">Score</th>
-        <th class="text-right">2025 Revenue</th>
-        <th class="text-right">2026 Revenue</th>
-        <th class="text-right hide-mobile">Trend</th>
-        <th class="text-right">Grand Total</th>
-        <th class="text-left hide-mobile">Action</th>
-      </tr></thead>
-      <tbody>
-        ${clients.map(c=>{
-          const trendIcon = c.trend===1?'<span style="color:var(--green);">▲ Growing</span>':c.trend===-1?'<span style="color:var(--red);">▼ Declining</span>':'<span style="color:var(--dim);">→ Stable</span>';
-          const action = c.score>=7?'<span class="badge-now">PROTECT NOW</span>':c.trend===1?'<span class="badge-ignite">EXPAND</span>':'<span style="font-size:.68rem;color:var(--dim);">Monitor</span>';
-          return `<tr>
-            ${makeCheckbox("protect",{name:c.adv,cat:"Active Client",rev:c.rev26,score:c.score})}
-            <td><strong style="color:#fff;">${c.adv}</strong></td>
-            <td class="hide-mobile" style="color:var(--dim);font-size:.78rem;">${c.ae}</td>
-            <td class="text-right">${scoreBadge(c.score)}</td>
-            <td class="text-right" style="color:var(--dim);">${fmt(c.rev25)}</td>
-            <td class="text-right" style="color:#fff;font-weight:600;">${fmt(c.rev26)}</td>
-            <td class="text-right hide-mobile">${trendIcon}</td>
-            <td class="text-right" style="color:var(--dim);">${fmt(c.grand)}</td>
-            <td class="hide-mobile">${action}</td>
-          </tr>`;
-        }).join('')}
-      </tbody>
-    </table></div>`;
-}
-
-// ─── RECLAIM ───────────────────────────────────────────────────────────────
-function parseReclaim(rows, type, fname) {
-  // Format: Market | Advertiser | 2024 | 2025 | 2026
-  let hRow = 0;
-  for (let i=0;i<Math.min(5,rows.length);i++) {
-    const r = rows[i].join('').toLowerCase();
-    if (r.includes('advertiser') || r.includes('market')) { hRow=i; break; }
-  }
-
-  const key = type==='ignite'?'reclaimIgnite':'reclaimAll';
-  const clients = [];
-
-  for (let i=hRow+1;i<rows.length;i++) {
-    const r = rows[i];
-    if (!r||!r[1]||String(r[1]).trim()==='Total'||String(r[1]).trim()==='') continue;
-    const mkt = String(r[0]||'').trim();
-    const adv = String(r[1]||'').trim();
-    if (!adv) continue;
-    const rev24 = cleanNum(r[2]);
-    const rev25 = cleanNum(r[3]);
-    const rev26 = cleanNum(r[4]);
-
-    // Recovery Score
-    const histScore = Math.min(10,(rev24+rev25)/20000);
-    const recencyScore = rev25>0?8:rev24>0?5:2;
-    const isIgniteBonus = type==='ignite'?2:0;
-    const score = Math.min(10, 0.35*histScore + 0.35*recencyScore + 0.20*5 + 0.10*isIgniteBonus + isIgniteBonus*0.5);
-
-    const bucket = score>=6?'Reclaim Now':score>=4?'Reapproach Later':'Low Priority';
-    clients.push({adv,mkt,rev24,rev25,rev26,score,bucket,isIgnite:type==='ignite'});
-  }
-
-  clients.sort((a,b)=>b.score-a.score);
-  state[key] = clients;
-
-  // Merge and re-render if both files loaded
-  renderReclaim();
-  updateSummaryCards([
-    {label:'Former Clients',value:clients.length,sub:type==='ignite'?'Ignite buyers':'All revenue'},
-    {label:'2024 Pool',value:fmt(clients.reduce((s,c)=>s+c.rev24,0)),sub:'Former spend'},
-    {label:'2025 Pool',value:fmt(clients.reduce((s,c)=>s+c.rev25,0)),sub:'Most recent year'},
-    {label:'Reclaim Now',value:clients.filter(c=>c.bucket==='Reclaim Now').length,sub:'Top priority accounts'}
-  ]);
-}
-
-function renderReclaim() {
-  const ignite = state.reclaimIgnite||[];
-  const all = state.reclaimAll||[];
-
-  // Mark which accounts are Ignite buyers
-  const igniteNames = new Set(ignite.map(c=>c.adv.toLowerCase()));
-  const combined = [...ignite];
-  all.forEach(c => {
-    if (!igniteNames.has(c.adv.toLowerCase())) combined.push(c);
-  });
-  combined.sort((a,b)=>b.score-a.score);
-
-  if (!combined.length) return;
-
-  const el = document.getElementById('reclaim-content');
-  el.innerHTML = `
-    <div style="margin-bottom:12px;">
-      <span style="font-size:.75rem;color:var(--dim);">${combined.length} former clients across both files</span>
-    </div>
-    <div class="mobile-scroll">
-    <table class="bp-table">
-      <thead><tr>
-        <th style="width:32px;text-align:center;padding:8px 4px;" title="Add to plan"></th>
-        <th class="text-left">Advertiser</th>
-        <th class="text-right accent">Score</th>
-        <th class="text-left">Bucket</th>
-        <th class="text-right hide-mobile">2024</th>
-        <th class="text-right">2025</th>
-        <th class="text-right hide-mobile">2026</th>
-        <th class="text-left hide-mobile">Type</th>
-      </tr></thead>
-      <tbody>
-        ${combined.map(c=>{
-          const bucketEl = c.bucket==='Reclaim Now'?`<span class="badge-now">RECLAIM NOW</span>`:
-                           c.bucket==='Reapproach Later'?`<span class="badge-reclaim">REAPPROACH</span>`:
-                           `<span style="font-size:.68rem;color:var(--dim);">Low Priority</span>`;
-          return `<tr>
-            ${makeCheckbox("reclaim",{name:c.adv,cat:c.isIgnite?"Former Ignite":"Former Client",rev:c.rev25,score:c.score})}
-            <td><strong style="color:#fff;">${c.adv}</strong></td>
-            <td class="text-right">${scoreBadge(c.score)}</td>
-            <td>${bucketEl}</td>
-            <td class="text-right hide-mobile" style="color:var(--dim);">${c.rev24?fmt(c.rev24):'—'}</td>
-            <td class="text-right" style="color:#fff;font-weight:600;">${c.rev25?fmt(c.rev25):'—'}</td>
-            <td class="text-right hide-mobile" style="color:var(--dim);">${c.rev26?fmt(c.rev26):'—'}</td>
-            <td class="hide-mobile">${c.isIgnite?'<span class="badge-ignite">IGNITE BUYER</span>':'<span style="font-size:.68rem;color:var(--dim);">All revenue</span>'}</td>
-          </tr>`;
-        }).join('')}
-      </tbody>
-    </table></div>`;
-}
-
-// ─── REBUILD ───────────────────────────────────────────────────────────────
-// Expected columns: Name, Category, City, State, Zip, Est Revenue, Notes (flexible)
-function parseRebuild(rows, fname) {
-  let hRow = 0;
-  for (let i=0;i<Math.min(5,rows.length);i++) {
-    const r = rows[i].join('').toLowerCase();
-    if (r.includes('name') || r.includes('category') || r.includes('company')) { hRow=i; break; }
-  }
-  const headers = (rows[hRow]||[]).map(h=>String(h).toLowerCase());
-  const col = k => headers.findIndex(h=>h.includes(k));
-  const cName = col('name')>=0?col('name'):col('company')>=0?col('company'):0;
-  const cCat  = col('category')>=0?col('category'):1;
-  const cCity = col('city')>=0?col('city'):2;
-  const cZip  = col('zip')>=0?col('zip'):col('postal')>=0?col('postal'):4;
-  const cRev  = col('revenue')>=0?col('revenue'):col('spend')>=0?col('spend'):5;
-  const cNote = col('note')>=0?col('note'):6;
-
-  const prospects = [];
-  for (let i=hRow+1;i<rows.length;i++) {
-    const r=rows[i];
-    if(!r||!r[cName]||String(r[cName]).trim()==='') continue;
-    const name = String(r[cName]||'').trim();
-    const cat  = String(r[cCat]||'').trim();
-    const city = String(r[cCity]||'').trim();
-    const zip  = String(r[cZip]||'').trim().replace(/\D/g,'').substring(0,5);
-    const rev  = cleanNum(r[cRev]);
-    const note = String(r[cNote]||'').trim();
-
-    const catScore = IGNITE_CATEGORIES.some(c=>cat.toLowerCase().includes(c.toLowerCase()))?8:5;
-    const spendScore = Math.min(10,rev/15000);
-    const score = Math.min(10, 0.35*spendScore + 0.30*catScore + 0.20*6 + 0.15*5);
-
-    prospects.push({name,cat,city,zip,rev,note,score,dist:null});
-  }
-
-  state.rebuild = prospects;
-  filterRebuild();
-  buildCategoryFilters(prospects);
-  document.getElementById('rebuild-upload').style.display='none';
-}
-
-function buildCategoryFilters(prospects) { /* no-op - categories now automatic */ }
-
-
-
-
-
-
-
-let activeCats = new Set();
-function toggleCat(btn, cat) {
-  if (activeCats.has(cat)) { activeCats.delete(cat); btn.style.background='var(--surface2)'; btn.style.color='var(--dim)'; btn.style.borderColor='var(--border)'; }
-  else { activeCats.add(cat); btn.style.background='var(--teal-dim)'; btn.style.color='var(--teal)'; btn.style.borderColor='var(--teal-border)'; }
-}
-
-async function updateGeoFilter() {
-  const zip = document.getElementById('zipInput').value.replace(/\D/g,'');
-  if (zip.length===5) {
-    try {
-      const r = await fetch('https://nominatim.openstreetmap.org/search?postalcode='+zip+'&country=US&format=json&limit=1',{headers:{'User-Agent':'IGI-ReIgnite/1.0'}});
-      if (r.ok) {
-        const d = await r.json();
-        if(d&&d[0]) { state.geoCenter={lat:parseFloat(d[0].lat),lng:parseFloat(d[0].lon),zip}; }
-        filterRebuild();
-      }
-    } catch(e) {}
-  }
-}
-
-function haversine(lat1,lng1,lat2,lng2) {
-  const R=3958.8, dLat=(lat2-lat1)*Math.PI/180, dLng=(lng2-lng1)*Math.PI/180;
-  const a=Math.sin(dLat/2)**2+Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)*Math.sin(dLng/2)**2;
-  return R*2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a));
-}
-
-const zipCache = {};
-async function getZipLatLng(zip) {
-  if (zipCache[zip]) return zipCache[zip];
-  try {
-    const r = await fetch('https://nominatim.openstreetmap.org/search?postalcode='+zip+'&country=US&format=json&limit=1',{headers:{'User-Agent':'IGI-ReIgnite/1.0'}});
-    if(r.ok){const d=await r.json();if(d&&d[0]){const v={lat:parseFloat(d[0].lat),lng:parseFloat(d[0].lon)}; zipCache[zip]=v; return v;}}
-  } catch(e) {}
-  return null;
-}
-
-async function filterRebuild() {
-  if (!state.rebuild) return;
-  const radius = parseInt(document.getElementById('radiusSlider').value);
-  let prospects = [...state.rebuild];
-
-  // Category filter
-  if (activeCats.size>0) prospects = prospects.filter(p=>activeCats.has(p.cat));
-
-  // Geography filter
-  if (state.geoCenter && radius>0) {
-    // Async distance calculation
-    for (const p of prospects) {
-      if (p.zip && p.zip.length===5 && !p._lat) {
-        const ll = await getZipLatLng(p.zip);
-        if (ll) { p._lat=ll.lat; p._lng=ll.lng; }
-      }
-      if (p._lat) p.dist = haversine(state.geoCenter.lat, state.geoCenter.lng, p._lat, p._lng);
-    }
-    prospects = prospects.filter(p => p._lat ? p.dist<=radius : true);
-    prospects.forEach(p => { if (!p._lat) p.dist = null; });
-  } else {
-    prospects.forEach(p => p.dist=null);
-  }
-
-  prospects.sort((a,b)=>b.score-a.score);
-  renderRebuild(prospects, radius);
-}
-
-function renderRebuild(prospects, radius) {
-  const el = document.getElementById("rebuild-content");
-  const t1=prospects.filter(p=>p.score>=85).length, t2=prospects.filter(p=>p.score>=70&&p.score<85).length, t3=prospects.filter(p=>p.score>=55&&p.score<70).length;
-  updateSummaryCards([
-    {label:"Prospects",value:prospects.length,sub:radius>0&&state.geoCenter?"Within "+radius+" miles":"All prospects"},
-    {label:"Tier 1 — Must Pursue",value:t1,sub:"Score 85+"},
-    {label:"Tier 2 — Strong Target",value:t2,sub:"Score 70–84"},
-    {label:"Tier 3 — Develop",value:t3,sub:"Score 55–69"}
-  ]);
-  function tierBadge(s) {
-    if (s>=85) return "<span style=\"background:rgba(52,211,153,.15);color:var(--green);border:1px solid rgba(52,211,153,.3);border-radius:4px;padding:1px 7px;font-size:.65rem;font-weight:700;\">T1 MUST PURSUE</span>";
-    if (s>=70) return "<span style=\"background:rgba(0,188,212,.12);color:var(--teal);border:1px solid rgba(0,188,212,.3);border-radius:4px;padding:1px 7px;font-size:.65rem;font-weight:700;\">T2 STRONG</span>";
-    if (s>=55) return "<span style=\"background:rgba(251,191,36,.12);color:var(--yellow);border:1px solid rgba(251,191,36,.3);border-radius:4px;padding:1px 7px;font-size:.65rem;\">T3 DEVELOP</span>";
-    return "<span style=\"color:var(--dim);font-size:.65rem;\">Low Priority</span>";
-  }
-  const locInfo = radius>0&&state.geoCenter ? " within "+radius+" mi of "+state.geoCenter.zip : "";
-  el.innerHTML = `
-    <div style="margin-bottom:12px;font-size:.75rem;color:var(--dim);">${prospects.length} rebuild targets${locInfo}</div>
-    <div class="mobile-scroll">
-    <table class="bp-table">
-      <thead><tr>
-        <th style="width:32px;text-align:center;padding:8px 4px;"></th>
-        <th class="text-left">Advertiser Name</th>
-        <th class="text-left">Category</th>
-        <th class="text-right accent" style="width:90px;">Score</th>
-        <th class="text-left hide-mobile" style="width:140px;">Tier</th>
-      </tr></thead>
-      <tbody>
-        ${prospects.map(p=>{
-          const breakdown = `Spend Potential: ${p.sp||"-"}/30 | Marketing Readiness: ${p.mr||"-"}/20 | Anchor Status: ${p.as_||"-"}/20 | Multi-Location: ${p.ml||"-"}/15 | Category Fit: ${p.cf||"-"}/15`;
-          return `<tr>
-            ${makeCheckbox("rebuild",{name:p.name,cat:p.cat,estRev:p.estRev,score:p.score/10})}
-            <td><strong style="color:#fff;">${p.name}</strong></td>
-            <td style="color:var(--dim);font-size:.8rem;">${p.cat||"-"}</td>
-            <td class="text-right"><span class="score-badge ${p.score>=80?"score-high":p.score>=60?"score-mid":"score-low"}" title="${breakdown}" style="cursor:help;">${p.score}</span></td>
-            <td class="hide-mobile">${tierBadge(p.score)}</td>
-          </tr>`;
-        }).join("")}
-      </tbody>
-    </table></div>`;
-}
-
-// --- DISCOVER (OpenStreetMap Overpass API) ---
-const CATEGORY_CONFIG = {
-  'Healthcare':              { tags:[['amenity','hospital'],['amenity','clinic'],['amenity','doctors'],['healthcare','doctor']], sp:28, mr:16, as_:18, ml:8,  cf:15 },
-  'Education':               { tags:[['amenity','university'],['amenity','college']], sp:26, mr:15, as_:18, ml:8,  cf:13 },
-  'Casino':                  { tags:[['amenity','casino'],['leisure','casino']], sp:30, mr:18, as_:20, ml:12, cf:15 },
-  'Auto Dealer':             { tags:[['shop','car'],['shop','car_dealer']], sp:22, mr:14, as_:14, ml:12, cf:13 },
-  'Financial':               { tags:[['amenity','bank'],['amenity','credit_union']], sp:24, mr:14, as_:16, ml:13, cf:13 },
-  'Legal':                   { tags:[['office','lawyer'],['office','attorney']], sp:18, mr:12, as_:10, ml:6,  cf:13 },
-  'In-Home Services':        { tags:[['trade','plumber'],['trade','electrician'],['craft','roofer'],['craft','plumber']], sp:20, mr:12, as_:8,  ml:10, cf:13 },
-  'Fitness & Wellness':      { tags:[['leisure','fitness_centre'],['amenity','gym']], sp:12, mr:13, as_:8,  ml:13, cf:12 },
-  'Private School':          { tags:[['amenity','school']], sp:14, mr:11, as_:12, ml:5,  cf:11 },
-  'Home Improvement Franchise': { tags:[['shop','hardware'],['shop','furniture'],['shop','building_materials']], sp:16, mr:12, as_:8,  ml:15, cf:13 },
-  'Golf Simulator':          { tags:[['leisure','golf_course'],['sport','golf']], sp:14, mr:13, as_:8,  ml:13, cf:13 },
-  'Senior Living':           { tags:[['amenity','nursing_home']], sp:18, mr:10, as_:12, ml:8,  cf:11 },
-  'Entertainment':           { tags:[['amenity','theatre'],['amenity','cinema'],['leisure','bowling_alley']], sp:16, mr:14, as_:14, ml:10, cf:12 }
-};
-};
-
-async function discoverProspects() {
-  const zip = document.getElementById('zipInput').value.replace(/\D/g,'');
-  if (zip.length!==5) { alert('Enter a valid 5-digit ZIP code first.'); return; }
-  const radiusMi = parseInt(document.getElementById('radiusSlider').value)||25;
-  const radiusM  = Math.round(radiusMi * 1609.34);
-  const status = document.getElementById('discoverStatus');
-  const btn = document.getElementById('discoverBtn');
-
-  let center = (state.geoCenter && state.geoCenter.zip===zip) ? state.geoCenter : null;
-  if (!center) {
-    status.textContent = 'Looking up ZIP code...';
-    try {
-      const r = await fetch('https://nominatim.openstreetmap.org/search?postalcode='+zip+'&country=US&format=json&limit=1',{headers:{'User-Agent':'IGI-ReIgnite/1.0'}});
-      if (!r.ok) { status.textContent='ZIP lookup failed. Check your connection.'; btn.disabled=false; btn.style.opacity='1'; return; }
-      const d = await r.json(); if(!d||!d[0]){alert('ZIP code not found.');btn.disabled=false;btn.style.opacity='1';return;}
-      center={lat:parseFloat(d[0].lat),lng:parseFloat(d[0].lon),zip,city:d[0].display_name.split(',')[0],state:''}; state.geoCenter=center;
-    } catch(e) { status.textContent='ZIP lookup failed.'; return; }
-  }
-
-  const cats = activeCats.size>0 ? [...activeCats] : Object.keys(CATEGORY_CONFIG);
-  btn.disabled=true; btn.style.opacity='.6';
-  status.innerHTML='<span style="color:var(--teal);">Searching '+radiusMi+' mi around '+center.city+', '+center.state+'...</span>';
-
-  const lines = [];
-  cats.forEach(cat => {
-    const cfg = CATEGORY_CONFIG[cat]; if(!cfg) return;
-    cfg.tags.forEach(function(pair) {
-      const k=pair[0], v=pair[1];
-      const geo = '(around:'+radiusM+','+center.lat+','+center.lng+')';
-      lines.push('node["'+k+'"="'+v+'"]'+geo+';');
-      lines.push('way["'+k+'"="'+v+'"]'+geo+';');
-    });
-  });
-  const query = '[out:json][timeout:30];(\n'+lines.join('\n')+'\n);out center tags;';
-
-  try {
-    const resp = await fetch('https://overpass-api.de/api/interpreter',
-      {method:'POST', body:'data='+encodeURIComponent(query)});
-    if (!resp.ok) throw new Error('Overpass error');
-    const data = await resp.json();
-
-    const seen = new Set();
-    const prospects = [];
-    (data.elements||[]).forEach(function(el) {
-      const tags = el.tags||{};
-      const name = tags.name||tags.brand||tags.operator||'';
-      if (name.length<2 || seen.has(name.toLowerCase())) return;
-      seen.add(name.toLowerCase());
-
-      let matchedCat='', cfg=null;
-      for (const cat of cats) {
-        const c = CATEGORY_CONFIG[cat]; if(!c) continue;
-        if (c.tags.some(function(p){return tags[p[0]]===p[1];})) { matchedCat=cat; cfg=c; break; }
-      }
-      if (!matchedCat) return;
-
-      const lat = el.center?el.center.lat:el.lat;
-      const lng = el.center?el.center.lon:el.lon;
-      const dist = (lat&&lng) ? haversine(center.lat,center.lng,lat,lng) : null;
-      const city = tags['addr:city']||tags['addr:town']||center.city;
-      const addr = [tags['addr:housenumber'],tags['addr:street'],city].filter(Boolean).join(' ');
-
-      const spendScore = Math.min(10,cfg.estRev/10000);
-      const distScore  = dist!=null ? Math.max(1,10-(dist/radiusMi)*5) : 5;
-      // 5-factor 100-point score
-      const mrBonus = (tags.website||tags["contact:website"])?5:(tags.phone||tags["contact:phone"])?2:0;
-      const mlBonus = (tags.brand||tags.operator||tags.network)?8:0;
-      const distPenalty = dist!=null ? Math.max(0, Math.round((dist/radiusMi)*5)) : 0;
-      const score = Math.min(100, (cfg.sp) + Math.min(cfg.mr,cfg.mr+mrBonus) + (cfg.as_) + Math.min(15,cfg.ml+mlBonus) + (cfg.cf) - distPenalty);
-      const sp=cfg.sp, mr=Math.min(20,cfg.mr+mrBonus), as_=cfg.as_, ml=Math.min(15,cfg.ml+mlBonus), cf=cfg.cf;
-      prospects.push({name,cat:matchedCat,city,addr,zip:"",dist,estRev:cfg.sp*3500,score,sp,mr,as_,ml,cf,_lat:lat,_lng:lng});
-    });
-    state.rebuild = prospects;
-    btn.disabled=false; btn.style.opacity='1';
-    status.innerHTML='<span style="color:var(--green);">Found '+prospects.length+' prospects within '+radiusMi+' miles of '+center.city+'</span>';
-    renderRebuild(prospects, radiusMi);
-  } catch(e) {
-    btn.disabled=false; btn.style.opacity='1';
-    status.textContent='Discovery failed. Try again or upload a list.';
-    console.error(e);
-  }
-}
-
-// ─── PLAN STATE & FUNCTIONS ─────────────────────────────────────────────────
-const plan = { close:[], protect:[], reclaim:[], rebuild:[] };
-
-function planKey(section, name) { return section+'::'+name; }
-
-function isInPlan(section, name) {
-  return plan[section] && plan[section].some(function(a){return a.name===name;});
-}
-
-function addToPlan(section, account) {
-  if (!plan[section]) plan[section]=[];
-  if (!isInPlan(section, account.name)) {
-    plan[section].push(account);
-    savePlanLocal();
-    updatePlanFab();
-    refreshPlanModal();
-  }
-}
-
-function removeFromPlan(section, name) {
-  if (plan[section]) plan[section] = plan[section].filter(function(a){return a.name!==name;});
-  savePlanLocal();
-  updatePlanFab();
-  refreshPlanModal();
-  // Uncheck checkbox in table
-  const cb = document.getElementById('cb-'+section+'-'+name.replace(/[^a-z0-9]/gi,''));
-  if (cb) cb.checked=false;
-}
-
-function clearPlan() {
-  Object.keys(plan).forEach(function(s){plan[s]=[];});
-  savePlanLocal();
-  updatePlanFab();
-  refreshPlanModal();
-  // Uncheck all checkboxes
-  document.querySelectorAll('.plan-cb').forEach(function(cb){cb.checked=false;});
-}
-
-function togglePlan() {
-  const modal = document.getElementById('planModal');
-  modal.style.display = modal.style.display==='none' ? 'block' : 'none';
-  if (modal.style.display==='block') refreshPlanModal();
-}
-
-function updatePlanFab() {
-  const total = Object.values(plan).reduce(function(s,a){return s+a.length;},0);
-  const fab = document.getElementById('planFab');
-  document.getElementById('planCount').textContent = total;
-  fab.style.display = total>0 ? 'block' : 'none';
-}
-
-function refreshPlanModal() {
-  document.getElementById('planMarketLabel').textContent =
-    document.getElementById('marketInput').value || 'Market Plan';
-
-  const labels = {close:'🔴 Close Now',protect:'🟢 Protect & Expand',reclaim:'🟡 Reclaim',rebuild:'🔵 Rebuild'};
-  let html = '';
-  Object.entries(labels).forEach(function(entry) {
-    const s=entry[0], label=entry[1];
-    const items = plan[s]||[];
-    if (!items.length) return;
-    html += '<div style="margin-bottom:20px;">';
-    html += '<div style="font-size:.68rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--teal);margin-bottom:8px;">'+label+' ('+items.length+')</div>';
-    items.forEach(function(a) {
-      const score100 = Math.round(a.score*10);
-      const scColor = score100>=80?'var(--green)':score100>=60?'var(--yellow)':'var(--red)';
-      html += '<div style="display:flex;align-items:center;gap:10px;padding:8px 10px;background:var(--surface2);border:1px solid var(--border);border-radius:6px;margin-bottom:6px;">';
-      html += '<div style="flex:1;min-width:0;">';
-      html += '<div style="font-weight:600;color:#fff;font-size:.82rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">'+a.name+'</div>';
-      html += '<div style="font-size:.68rem;color:var(--dim);">'+(a.cat||a.type||'')+(a.estRev||a.rev||a.revenue?(' &bull; Est. '+fmt(a.estRev||a.rev||a.revenue)):'')+'</div>';
-      html += '</div>';
-      html += '<span style="font-size:.75rem;font-weight:700;color:'+scColor+';">'+score100+'</span>';
-      html += '<button onclick="removeFromPlan(\''+s+'\',\''+a.name.replace(/'/g,"\\'")+'\')" style="background:none;border:none;color:var(--dim);cursor:pointer;font-size:.9rem;padding:2px 4px;">✕</button>';
-      html += '</div>';
-    });
-    html += '</div>';
-  });
-  if (!html) html='<div style="text-align:center;color:var(--dim);padding:40px 0;font-size:.85rem;">Check accounts in any tab to add them here.</div>';
-  document.getElementById('planContent').innerHTML = html;
-  document.getElementById('planUrlBar').style.display='none';
-}
-
-function savePlanLocal() {
-  try { localStorage.setItem('reignite_plan', JSON.stringify(plan)); } catch(e){}
-}
-
-function loadPlanLocal() {
-  try {
-    const d = JSON.parse(localStorage.getItem('reignite_plan')||'{}');
-    Object.keys(plan).forEach(function(s){if(d[s]) plan[s]=d[s];});
-    updatePlanFab();
-  } catch(e){}
-}
-
-function savePlanUrl() {
-  const market = document.getElementById('marketInput').value||'';
-  const payload = JSON.stringify({market, plan, created: new Date().toISOString().split('T')[0]});
-  const encoded = btoa(unescape(encodeURIComponent(payload))).replace(/\+/g,'-').replace(/\//g,'_').replace(/=/g,'');
-  const url = location.href.split('#')[0]+'#plan='+encoded;
-  document.getElementById('planUrlInput').value = url;
-  document.getElementById('planUrlBar').style.display='block';
-  history.replaceState(null,'',url);
-}
-
-function copyPlanUrl() {
-  const inp = document.getElementById('planUrlInput');
-  navigator.clipboard.writeText(inp.value).then(function(){
-    const btn = inp.nextElementSibling;
-    btn.textContent='Copied!'; setTimeout(function(){btn.textContent='Copy';},2000);
-  });
-}
-
-function loadPlanFromUrl() {
-  const hash = location.hash;
-  if (!hash.includes('plan=')) return;
-  try {
-    const encoded = hash.split('plan=')[1];
-    const decoded = decodeURIComponent(escape(atob(encoded.replace(/-/g,'+').replace(/_/g,'/'))));
-    const data = JSON.parse(decoded);
-    if (data.market) document.getElementById('marketInput').value=data.market;
-    if (data.plan) {
-      Object.keys(plan).forEach(function(s){if(data.plan[s]) plan[s]=data.plan[s];});
-      updatePlanFab();
-    }
-  } catch(e){ console.warn('Could not load plan from URL',e); }
-}
-
-function exportPlan() {
-  const market = document.getElementById('marketInput').value||'Market';
-  const labels = {close:'Close Now',protect:'Protect & Expand',reclaim:'Reclaim',rebuild:'Rebuild'};
-  let csv = 'Section,Account,Category,Estimated Revenue,Score\n';
-  Object.entries(labels).forEach(function(entry) {
-    const s=entry[0], label=entry[1];
-    (plan[s]||[]).forEach(function(a) {
-      const row = [label, a.name, (a.cat||a.type||''), (a.estRev||a.rev||a.revenue||''), Math.round(a.score*10)];
-      csv += row.map(function(v){return '"'+(String(v||'')).replace(/"/g,'""')+'"';}).join(',')+'\n';
-    });
-  });
-  const blob = new Blob([csv],{type:'text/csv'});
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href=url; a.download=market.replace(/\s/g,'_')+'_ReIgnite_Plan.csv'; a.click();
-}
-
-// Account registry — avoids JSON-in-HTML-attribute problems
-const _acctReg = {}; let _regIdx = 0;
-function makeCheckbox(section, account) {
-  const rid = "r"+(++_regIdx); _acctReg[rid]=account;
-  const cbId = "cb-"+section+"-"+rid;
-  const checked = isInPlan(section, account.name) ? "checked" : "";
-  const safeName = (account.name||"").replace(/"/g,"&quot;");
-  return "<td style=\"padding:6px 12px;text-align:center;\">"+
-    "<input type=\"checkbox\" id=\""+cbId+"\" class=\"plan-cb\" "+checked+" "+
-    "data-section=\""+section+"\" data-rid=\""+rid+"\" data-name=\""+safeName+"\" "+
-    "onchange=\"cbChange(this)\" "+
-    "style=\"width:15px;height:15px;cursor:pointer;accent-color:var(--teal);\" title=\"Add to plan\"/>"+
-  "</td>";
-}
-function cbChange(cb) {
-  const s=cb.dataset.section, rid=cb.dataset.rid, name=cb.dataset.name;
-  if(cb.checked){addToPlan(s,_acctReg[rid]||{name});}else{removeFromPlan(s,name);}
-}
-// ─── INIT ───────────────────────────────────────────────────────────────────
-// buildCategoryFilters removed - categories are automatic
-updateSummaryCards([
-  {label:'Upload Files',value:'↑',sub:'Start by uploading a file in any tab'},
-  {label:'Score',value:'Auto',sub:'Scoring applied on upload'},
-  {label:'Geography',value:'Zip+Radius',sub:'Rebuild tab — filter by distance'},
-  {label:'Market',value:'Enter name',sub:'Top-right corner'}
-]);
-</script>
 <!-- Floating Plan Button -->
 <div id="planFab" onclick="togglePlan()" style="display:none;position:fixed;bottom:24px;right:24px;z-index:1000;
   background:var(--teal);color:#000;font-weight:800;border-radius:999px;padding:12px 20px;cursor:pointer;
-  box-shadow:0 4px 20px rgba(0,188,212,.4);font-size:.85rem;transition:all .2s;user-select:none;">
+  box-shadow:0 4px 20px rgba(0,188,212,.4);font-size:.85rem;">
   📋 Plan (<span id="planCount">0</span>)
 </div>
 
 <!-- Plan Modal -->
-<div id="planModal" style="display:none;position:fixed;inset:0;z-index:2000;background:rgba(0,0,0,.7);backdrop-filter:blur(4px);">
-  <div style="position:absolute;right:0;top:0;bottom:0;width:min(480px,100%);background:var(--surface);
-       border-left:1px solid var(--teal-border);display:flex;flex-direction:column;overflow:hidden;">
-    <!-- Header -->
+<div id="planModal" style="display:none;position:fixed;inset:0;z-index:2000;background:rgba(0,0,0,.7);">
+  <div style="position:absolute;right:0;top:0;bottom:0;width:min(480px,100%);background:var(--surface);border-left:1px solid var(--teal-border);display:flex;flex-direction:column;">
     <div style="padding:16px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-shrink:0;">
       <div>
         <div style="font-weight:800;font-size:1rem;color:#fff;">Market Attack Plan</div>
         <div id="planMarketLabel" style="font-size:.72rem;color:var(--dim);margin-top:2px;"></div>
       </div>
-      <div style="display:flex;gap:8px;align-items:center;">
-        <button onclick="savePlanUrl()" style="background:var(--teal-dim);border:1px solid var(--teal-border);color:var(--teal);border-radius:6px;padding:6px 12px;font-size:.75rem;font-weight:700;cursor:pointer;">
-          🔗 Save URL
-        </button>
-        <button onclick="togglePlan()" style="background:var(--surface2);border:1px solid var(--border);color:var(--dim);border-radius:6px;padding:6px 10px;font-size:.85rem;cursor:pointer;">✕</button>
+      <div style="display:flex;gap:8px;">
+        <button onclick="savePlanUrl()" style="background:var(--teal-dim);border:1px solid var(--teal-border);color:var(--teal);border-radius:6px;padding:6px 12px;font-size:.75rem;font-weight:700;cursor:pointer;">🔗 Save URL</button>
+        <button onclick="togglePlan()" style="background:var(--surface2);border:1px solid var(--border);color:var(--dim);border-radius:6px;padding:6px 10px;cursor:pointer;">✕</button>
       </div>
     </div>
-    <!-- Copy URL bar -->
     <div id="planUrlBar" style="display:none;padding:10px 16px;background:var(--surface2);border-bottom:1px solid var(--border);flex-shrink:0;">
-      <div style="font-size:.65rem;color:var(--dim);margin-bottom:4px;">Share or bookmark this URL to access your plan from any device:</div>
+      <div style="font-size:.65rem;color:var(--dim);margin-bottom:4px;">Share this URL to access your plan from any device:</div>
       <div style="display:flex;gap:6px;">
         <input id="planUrlInput" readonly style="flex:1;background:var(--surface);border:1px solid var(--border);border-radius:4px;padding:5px 8px;color:var(--teal);font-size:.7rem;outline:none;"/>
         <button onclick="copyPlanUrl()" style="background:var(--teal);color:#000;border:none;border-radius:4px;padding:5px 10px;font-size:.72rem;font-weight:700;cursor:pointer;">Copy</button>
       </div>
     </div>
-    <!-- Plan content -->
     <div id="planContent" style="flex:1;overflow-y:auto;padding:16px 20px;"></div>
-    <!-- Footer -->
     <div style="padding:12px 20px;border-top:1px solid var(--border);display:flex;gap:8px;flex-shrink:0;">
       <button onclick="clearPlan()" style="flex:1;background:rgba(248,113,113,.1);border:1px solid rgba(248,113,113,.3);color:var(--red);border-radius:6px;padding:8px;font-size:.78rem;cursor:pointer;">Clear All</button>
       <button onclick="exportPlan()" style="flex:1;background:var(--teal-dim);border:1px solid var(--teal-border);color:var(--teal);border-radius:6px;padding:8px;font-size:.78rem;font-weight:700;cursor:pointer;">Export CSV</button>
     </div>
   </div>
 </div>
+
+<script>
+// ─── STATE ──────────────────────────────────────────────────────────────────
+const state = { close:null, protect:null, reclaimAll:null, reclaimIgnite:null, rebuild:null, geoCenter:null };
+const plan  = { close:[], protect:[], reclaim:[], rebuild:[] };
+const _acctReg = {}; let _regIdx = 0;
+const zipCache = {};
+
+// ─── UTILITIES ───────────────────────────────────────────────────────────────
+function fmt(n) {
+  if (!n && n!==0) return '—';
+  const abs = Math.abs(n);
+  const s = abs>=1000000 ? '$'+(abs/1000000).toFixed(1)+'M' : abs>=1000 ? '$'+Math.round(abs).toLocaleString() : '$'+Math.round(abs);
+  return n<0 ? '-'+s : s;
+}
+function fmtSOB(n) {
+  if (!n && n!==0) return '—';
+  const neg = n<0; const abs = Math.abs(n);
+  const s = abs>=1000 ? '$'+(abs/1000).toFixed(1)+'M' : '$'+abs.toLocaleString()+'K';
+  return neg ? '-'+s : s;
+}
+function pct(v) { return v!=null ? Math.round(v)+'%' : '—'; }
+function cleanNum(s) {
+  const str = String(s||'').replace(/[$,\s()]/g,'').trim();
+  if (!str||str==='-') return 0;
+  const neg = String(s||'').includes('(');
+  const v = parseFloat(str);
+  return isNaN(v) ? 0 : (neg ? -v : v);
+}
+function scoreBadge(s, tip) {
+  const s100 = typeof s === 'number' && s <= 10 ? Math.round(s*10) : Math.round(s);
+  const cls = s100>=80?'score-high':s100>=60?'score-mid':'score-low';
+  const t = tip ? ' title="'+tip+'" style="cursor:help;"' : '';
+  return '<span class="score-badge '+cls+'"'+t+'>'+s100+'</span>';
+}
+function tierBadge(s) {
+  if (s>=85) return '<span class="badge-now">T1 MUST PURSUE</span>';
+  if (s>=70) return '<span class="badge-ignite">T2 STRONG</span>';
+  if (s>=55) return '<span class="badge-reclaim">T3 DEVELOP</span>';
+  return '<span style="color:var(--dim);font-size:.65rem;">Low Priority</span>';
+}
+
+// ─── TAB SWITCHING ────────────────────────────────────────────────────────────
+function switchTab(t) {
+  ['close','protect','reclaim','rebuild'].forEach(function(id) {
+    const p = document.getElementById('panel-'+id);
+    const b = document.getElementById('tab-'+id);
+    if (p) p.classList.toggle('hidden', id!==t);
+    if (b) b.className = (id===t?'tab-active':'tab-inactive')+' px-4 py-2 text-sm transition-all';
+  });
+}
+
+// ─── PLAN ────────────────────────────────────────────────────────────────────
+function makeCheckbox(section, account) {
+  const rid = 'r'+(++_regIdx);
+  _acctReg[rid] = account;
+  const cbId = 'cb-'+section+'-'+rid;
+  const checked = isInPlan(section, account.name) ? 'checked' : '';
+  const safeName = (account.name||'').replace(/"/g,'&quot;');
+  return '<td style="padding:6px 12px;text-align:center;">'
+    +'<input type="checkbox" id="'+cbId+'" class="plan-cb" '+checked+' '
+    +'data-section="'+section+'" data-rid="'+rid+'" data-name="'+safeName+'" '
+    +'onchange="cbChange(this)" '
+    +'style="width:15px;height:15px;cursor:pointer;accent-color:var(--teal);" title="Add to plan"/>'
+    +'</td>';
+}
+function cbChange(cb) {
+  var s=cb.dataset.section, rid=cb.dataset.rid, name=cb.dataset.name;
+  if (cb.checked) { addToPlan(s, _acctReg[rid]||{name:name}); } else { removeFromPlan(s, name); }
+}
+function isInPlan(section, name) { return plan[section] && plan[section].some(function(a){return a.name===name;}); }
+function addToPlan(section, account) {
+  if (!plan[section]) plan[section]=[];
+  if (!isInPlan(section, account.name)) { plan[section].push(account); savePlanLocal(); updatePlanFab(); refreshPlanModal(); }
+}
+function removeFromPlan(section, name) {
+  if (plan[section]) plan[section]=plan[section].filter(function(a){return a.name!==name;});
+  savePlanLocal(); updatePlanFab(); refreshPlanModal();
+  var cb=document.getElementById('cb-'+section+'-'+name.replace(/[^a-z0-9]/gi,''));
+  if (cb) cb.checked=false;
+}
+function clearPlan() {
+  Object.keys(plan).forEach(function(s){plan[s]=[];});
+  savePlanLocal(); updatePlanFab(); refreshPlanModal();
+  document.querySelectorAll('.plan-cb').forEach(function(cb){cb.checked=false;});
+}
+function togglePlan() {
+  var m=document.getElementById('planModal');
+  m.style.display = m.style.display==='none'?'block':'none';
+  if (m.style.display==='block') refreshPlanModal();
+}
+function updatePlanFab() {
+  var total=Object.values(plan).reduce(function(s,a){return s+a.length;},0);
+  var fab=document.getElementById('planFab');
+  document.getElementById('planCount').textContent=total;
+  fab.style.display=total>0?'block':'none';
+}
+function refreshPlanModal() {
+  document.getElementById('planMarketLabel').textContent = document.getElementById('marketInput').value||'Market Plan';
+  var labels={close:'🔴 Close Now',protect:'🟢 Protect & Expand',reclaim:'🟡 Reclaim',rebuild:'🔵 Rebuild'};
+  var html='';
+  Object.entries(labels).forEach(function(entry) {
+    var s=entry[0], label=entry[1], items=plan[s]||[];
+    if (!items.length) return;
+    html+='<div style="margin-bottom:20px;"><div style="font-size:.68rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--teal);margin-bottom:8px;">'+label+' ('+items.length+')</div>';
+    items.forEach(function(a) {
+      var sc=Math.round((a.score||0)*10);
+      html+='<div style="display:flex;align-items:center;gap:10px;padding:8px 10px;background:var(--surface2);border:1px solid var(--border);border-radius:6px;margin-bottom:6px;">';
+      html+='<div style="flex:1;"><div style="font-weight:600;color:#fff;font-size:.82rem;">'+a.name+'</div>';
+      html+='<div style="font-size:.68rem;color:var(--dim);">'+(a.cat||a.type||'')+(a.rev?(' • '+fmt(a.rev)):'')+'</div></div>';
+      html+='<span style="font-size:.75rem;font-weight:700;color:'+(sc>=80?'var(--green)':sc>=60?'var(--yellow)':'var(--red)')+';">'+sc+'</span>';
+      html+='<button onclick="removeFromPlan(\''+s+'\',\''+a.name.replace(/\\/g,'\\\\').replace(/'/g,"\\'")+'\');" style="background:none;border:none;color:var(--dim);cursor:pointer;font-size:.9rem;">✕</button>';
+      html+='</div>';
+    });
+    html+='</div>';
+  });
+  if (!html) html='<div style="text-align:center;color:var(--dim);padding:40px 0;">Check accounts in any tab to add them here.</div>';
+  document.getElementById('planContent').innerHTML=html;
+  document.getElementById('planUrlBar').style.display='none';
+}
+function savePlanLocal() { try{localStorage.setItem('reignite_plan',JSON.stringify(plan));}catch(e){} }
+function loadPlanLocal() {
+  try { var d=JSON.parse(localStorage.getItem('reignite_plan')||'{}'); Object.keys(plan).forEach(function(s){if(d[s])plan[s]=d[s];}); updatePlanFab(); } catch(e){}
+}
+function savePlanUrl() {
+  var market=document.getElementById('marketInput').value||'';
+  var payload=JSON.stringify({market:market,plan:plan,created:new Date().toISOString().split('T')[0]});
+  var encoded=btoa(unescape(encodeURIComponent(payload))).replace(/\+/g,'-').replace(/\//g,'_').replace(/=/g,'');
+  var url=location.href.split('#')[0]+'#plan='+encoded;
+  document.getElementById('planUrlInput').value=url;
+  document.getElementById('planUrlBar').style.display='block';
+  history.replaceState(null,'',url);
+}
+function copyPlanUrl() {
+  var inp=document.getElementById('planUrlInput');
+  navigator.clipboard.writeText(inp.value).then(function(){var b=inp.nextElementSibling;b.textContent='Copied!';setTimeout(function(){b.textContent='Copy';},2000);});
+}
+function loadPlanFromUrl() {
+  var hash=location.hash;
+  if (!hash.includes('plan=')) return;
+  try {
+    var encoded=hash.split('plan=')[1];
+    var decoded=decodeURIComponent(escape(atob(encoded.replace(/-/g,'+').replace(/_/g,'/'))));
+    var data=JSON.parse(decoded);
+    if (data.market) document.getElementById('marketInput').value=data.market;
+    if (data.plan) { Object.keys(plan).forEach(function(s){if(data.plan[s])plan[s]=data.plan[s];}); updatePlanFab(); }
+  } catch(e){}
+}
+function exportPlan() {
+  var market=document.getElementById('marketInput').value||'Market';
+  var labels={close:'Close Now',protect:'Protect & Expand',reclaim:'Reclaim',rebuild:'Rebuild'};
+  var csv='Section,Account,Category,Estimated Revenue,Score\n';
+  Object.entries(labels).forEach(function(entry){
+    var s=entry[0],label=entry[1];
+    (plan[s]||[]).forEach(function(a){
+      csv+=[label,a.name,a.cat||a.type||'',a.rev||a.estRev||'',Math.round((a.score||0)*10)].map(function(v){return '"'+String(v||'').replace(/"/g,'""')+'"';}).join(',')+'\n';
+    });
+  });
+  var blob=new Blob([csv],{type:'text/csv'});
+  var url=URL.createObjectURL(blob);
+  var a=document.createElement('a');a.href=url;a.download=market.replace(/\s/g,'_')+'_Plan.csv';a.click();
+}
+
+// ─── SUMMARY CARDS ────────────────────────────────────────────────────────────
+function updateSummaryCards(cards) {
+  document.getElementById('summaryCards').innerHTML = cards.map(function(c) {
+    return '<div class="card card-teal p-4"><div style="font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--dim);">'+c.label+'</div><div style="font-size:1.5rem;font-weight:800;color:#fff;margin:4px 0;">'+c.value+'</div><div style="font-size:.72rem;color:var(--dim);">'+(c.sub||'')+'</div></div>';
+  }).join('');
+}
+
+// ─── FILE HANDLING ────────────────────────────────────────────────────────────
+function handleFile(section, file) {
+  if (!file) return;
+  var reader = new FileReader();
+  reader.onload = function(e) {
+    try {
+      var wb = XLSX.read(e.target.result, {type:'array', raw:false});
+      var ws = wb.Sheets[wb.SheetNames[0]];
+      var rows = XLSX.utils.sheet_to_json(ws, {header:1, defval:''});
+      if (section==='close')          parseClose(rows, file.name);
+      else if (section==='protect')   parseProtect(rows, file.name);
+      else if (section==='reclaim-all')    parseReclaim(rows, 'all', file.name);
+      else if (section==='reclaim-ignite') parseReclaim(rows, 'ignite', file.name);
+      else if (section==='rebuild')   parseRebuild(rows, file.name);
+    } catch(err) { alert('Error reading file: '+err.message); }
+  };
+  reader.readAsArrayBuffer(file);
+}
+
+// ─── CLOSE NOW ───────────────────────────────────────────────────────────────
+function parseClose(rows, fname) {
+  var headerRow=-1, dataStart=-1, dataEnd=rows.length;
+  for (var i=0; i<rows.length; i++) {
+    var r = rows[i].join('|');
+    if (r.includes('Returning for Remaining')) { headerRow=i+1; dataStart=i+2; }
+    if (dataStart>0 && r.includes('Non Returning')) { dataEnd=i; break; }
+  }
+  var sumRow=rows[0]||[], budget=cleanNum(sumRow[1]), booked=cleanNum(sumRow[2]), pitched=cleanNum(sumRow[3]);
+  var deals=[];
+  if (dataStart>0) {
+    for (var i=dataStart; i<dataEnd; i++) {
+      var r=rows[i];
+      if (!r||!r[0]||String(r[0]).trim()==='') continue;
+      var acct=String(r[0]).trim(), rev=cleanNum(r[1]), closing=String(r[2]||'').trim();
+      var notes=String(r[3]||'').trim(), type=String(r[4]||'').trim();
+      var conf=String(r[6]||'').trim(), daysIn=cleanNum(r[8]);
+      var apr=cleanNum(r[10]), may=cleanNum(r[11]), jun=cleanNum(r[12]);
+      var sizeScore=Math.min(10,rev/10000);
+      var confNum=conf==='95%'?9.5:conf==='75%'?7.5:conf==='50%'?5:3;
+      var staleScore=daysIn>90?1:daysIn>60?4:daysIn>30?6:8;
+      var score=Math.min(10, 0.30*sizeScore+0.25*confNum+0.25*staleScore+0.20*(rev>50000?2:0));
+      deals.push({name:acct, acct:acct, rev:rev, closing:closing, notes:notes, type:type, conf:conf, daysIn:daysIn, apr:apr, may:may, jun:jun, score:score, isIgnite:(type||'').toUpperCase().includes('IGNITE')});
+    }
+  }
+  deals.sort(function(a,b){return b.score-a.score;});
+  state.close=deals;
+  updateSummaryCards([
+    {label:'Budget',value:fmt(budget),sub:'Total goal'},
+    {label:'Booked',value:fmt(booked),sub:budget?pct(booked/budget*100)+' of budget':''},
+    {label:'Pipeline',value:fmt(pitched),sub:'Pending close'},
+    {label:'Deals',value:deals.length,sub:'Returning accounts'}
+  ]);
+  document.getElementById('close-content').innerHTML =
+    '<div style="margin-bottom:12px;font-size:.75rem;color:var(--dim);">'+fname+' — '+deals.length+' opportunities</div>'
+    +'<div class="mobile-scroll"><table class="bp-table"><thead><tr>'
+    +'<th style="width:32px;"></th><th class="text-left">Account</th>'
+    +'<th class="text-right accent">Score</th><th class="text-right">Revenue</th>'
+    +'<th class="text-right hide-mobile">Confidence</th><th class="text-right hide-mobile">Days</th>'
+    +'<th class="text-left hide-mobile">Type</th><th class="text-left">Notes</th>'
+    +'</tr></thead><tbody>'
+    +deals.map(function(d){
+      return '<tr>'+makeCheckbox('close',d)
+        +'<td><strong style="color:#fff;">'+d.acct+'</strong>'+(d.isIgnite?'<span class="badge-ignite" style="margin-left:6px;">IGNITE</span>':'')+'</td>'
+        +'<td class="text-right">'+scoreBadge(d.score,'Size: '+Math.round(d.rev/1000)+'K | Conf: '+d.conf+' | Age: '+d.daysIn+' days')+'</td>'
+        +'<td class="text-right" style="color:#fff;font-weight:600;">'+fmt(d.rev)+'</td>'
+        +'<td class="text-right hide-mobile" style="color:'+(d.conf==='95%'?'var(--green)':d.conf==='75%'?'var(--yellow)':'var(--dim)')+';">'+d.conf+'</td>'
+        +'<td class="text-right hide-mobile" style="color:'+(d.daysIn>60?'var(--red)':d.daysIn>30?'var(--yellow)':'var(--dim)')+';">'+d.daysIn+'</td>'
+        +'<td class="hide-mobile" style="color:var(--dim);font-size:.72rem;">'+d.type+'</td>'
+        +'<td style="font-size:.7rem;color:var(--dim);max-width:200px;">'+(d.notes?d.notes.split('\n')[0].substring(0,70):'—')+'</td>'
+        +'</tr>';
+    }).join('')+'</tbody></table></div>';
+}
+
+// ─── PROTECT & EXPAND ─────────────────────────────────────────────────────────
+function parseProtect(rows, fname) {
+  var hRow=0;
+  for (var i=0; i<Math.min(10,rows.length); i++) {
+    if (rows[i].join('').toLowerCase().includes('advertiser')&&rows[i].join('').toLowerCase().includes('market')) { hRow=i; break; }
+  }
+  var headers=rows[hRow]||[], col2025=-1, col2026=-1;
+  headers.forEach(function(h,i){ if (String(h).toLowerCase().includes('total')&&col2025<0) col2025=i; else if (String(h).toLowerCase().includes('total')&&col2025>=0&&col2026<0) col2026=i; });
+  var adMap={};
+  for (var i=hRow+1; i<rows.length; i++) {
+    var r=rows[i]; if (!r||!r[2]||String(r[2]).toLowerCase()==='total') continue;
+    var adv=String(r[2]).trim(), ae=String(r[1]||'').trim();
+    var r25=col2025>=0?cleanNum(r[col2025]):0, r26=col2026>=0?cleanNum(r[col2026]):0;
+    if (!adv) continue;
+    if (!adMap[adv]) adMap[adv]={name:adv,adv:adv,ae:ae,rev25:0,rev26:0};
+    adMap[adv].rev25+=r25; adMap[adv].rev26+=r26;
+  }
+  var clients=Object.values(adMap).filter(function(c){return (c.rev25+c.rev26)>0;});
+  clients.forEach(function(c){
+    var traj=c.rev26>c.rev25*1.1?1:c.rev26<c.rev25*0.9?-1:0;
+    c.trend=traj; c.rev=c.rev26;
+    c.score=Math.min(10,0.40*Math.min(10,(c.rev25+c.rev26)/15000)+0.25*(traj===1?8:traj===0?5:2)+0.20*5+0.15*(c.rev26>0?7:2));
+  });
+  clients.sort(function(a,b){return b.score-a.score;});
+  state.protect=clients;
+  var t25=clients.reduce(function(s,c){return s+c.rev25;},0), t26=clients.reduce(function(s,c){return s+c.rev26;},0);
+  updateSummaryCards([
+    {label:'Active Clients',value:clients.length,sub:'Current advertisers'},
+    {label:'2025 Revenue',value:fmt(t25),sub:'Full year base'},
+    {label:'2026 Revenue',value:fmt(t26),sub:'Current pace'},
+    {label:'Avg Spend',value:fmt(clients.length?t26/clients.length:0),sub:'Per advertiser'}
+  ]);
+  document.getElementById('protect-content').innerHTML =
+    '<div style="margin-bottom:12px;font-size:.75rem;color:var(--dim);">'+fname+' — '+clients.length+' clients</div>'
+    +'<div class="mobile-scroll"><table class="bp-table"><thead><tr>'
+    +'<th style="width:32px;"></th><th class="text-left">Advertiser</th>'
+    +'<th class="text-left hide-mobile">AE</th><th class="text-right accent">Score</th>'
+    +'<th class="text-right">2025</th><th class="text-right">2026</th>'
+    +'<th class="text-right hide-mobile">Trend</th><th class="text-left hide-mobile">Action</th>'
+    +'</tr></thead><tbody>'
+    +clients.map(function(c){
+      var ti=c.trend===1?'<span style="color:var(--green);">▲</span>':c.trend===-1?'<span style="color:var(--red);">▼</span>':'<span style="color:var(--dim);">→</span>';
+      var act=c.score>=7?'<span class="badge-now">PROTECT</span>':c.trend===1?'<span class="badge-ignite">EXPAND</span>':'<span style="font-size:.68rem;color:var(--dim);">Monitor</span>';
+      return '<tr>'+makeCheckbox('protect',c)
+        +'<td><strong style="color:#fff;">'+c.adv+'</strong></td>'
+        +'<td class="hide-mobile" style="color:var(--dim);font-size:.78rem;">'+c.ae+'</td>'
+        +'<td class="text-right">'+scoreBadge(c.score)+'</td>'
+        +'<td class="text-right" style="color:var(--dim);">'+fmt(c.rev25)+'</td>'
+        +'<td class="text-right" style="color:#fff;font-weight:600;">'+fmt(c.rev26)+'</td>'
+        +'<td class="text-right hide-mobile">'+ti+'</td><td class="hide-mobile">'+act+'</td></tr>';
+    }).join('')+'</tbody></table></div>';
+}
+
+// ─── RECLAIM ──────────────────────────────────────────────────────────────────
+function parseReclaim(rows, type, fname) {
+  var hRow=0;
+  for (var i=0; i<Math.min(5,rows.length); i++) { if (rows[i].join('').toLowerCase().includes('advertiser')) { hRow=i; break; } }
+  var clients=[];
+  for (var i=hRow+1; i<rows.length; i++) {
+    var r=rows[i]; if (!r||!r[1]||String(r[1]).trim()==='Total'||String(r[1]).trim()==='') continue;
+    var adv=String(r[1]).trim(), r24=cleanNum(r[2]), r25=cleanNum(r[3]), r26=cleanNum(r[4]);
+    var histScore=Math.min(10,(r24+r25)/20000), recScore=r25>0?8:r24>0?5:2;
+    var score=Math.min(10, 0.35*histScore+0.35*recScore+0.20*5+0.10*(type==='ignite'?2:0));
+    var bucket=score>=6?'Reclaim Now':score>=4?'Reapproach Later':'Low Priority';
+    clients.push({name:adv,adv:adv,rev24:r24,rev25:r25,rev26:r26,score:score,bucket:bucket,isIgnite:type==='ignite',rev:r25});
+  }
+  clients.sort(function(a,b){return b.score-a.score;});
+  if (type==='ignite') state.reclaimIgnite=clients; else state.reclaimAll=clients;
+  renderReclaim();
+  updateSummaryCards([
+    {label:'Former Clients',value:clients.length,sub:type==='ignite'?'Ignite buyers':'All revenue'},
+    {label:'2024 Pool',value:fmt(clients.reduce(function(s,c){return s+c.rev24;},0)),sub:'Former spend'},
+    {label:'2025 Pool',value:fmt(clients.reduce(function(s,c){return s+c.rev25;},0)),sub:'Most recent year'},
+    {label:'Reclaim Now',value:clients.filter(function(c){return c.bucket==='Reclaim Now';}).length,sub:'Top priority'}
+  ]);
+}
+function renderReclaim() {
+  var ign=state.reclaimIgnite||[], all=state.reclaimAll||[];
+  var ignNames=new Set(ign.map(function(c){return c.adv.toLowerCase();}));
+  var combined=[...ign];
+  all.forEach(function(c){ if (!ignNames.has(c.adv.toLowerCase())) combined.push(c); });
+  combined.sort(function(a,b){return b.score-a.score;});
+  if (!combined.length) return;
+  document.getElementById('reclaim-content').innerHTML =
+    '<div style="margin-bottom:12px;font-size:.75rem;color:var(--dim);">'+combined.length+' former clients</div>'
+    +'<div class="mobile-scroll"><table class="bp-table"><thead><tr>'
+    +'<th style="width:32px;"></th><th class="text-left">Advertiser</th>'
+    +'<th class="text-right accent">Score</th><th class="text-left">Bucket</th>'
+    +'<th class="text-right hide-mobile">2024</th><th class="text-right">2025</th>'
+    +'<th class="text-left hide-mobile">Type</th>'
+    +'</tr></thead><tbody>'
+    +combined.map(function(c){
+      var b=c.bucket==='Reclaim Now'?'<span class="badge-now">RECLAIM NOW</span>':c.bucket==='Reapproach Later'?'<span class="badge-reclaim">REAPPROACH</span>':'<span style="font-size:.68rem;color:var(--dim);">Low Priority</span>';
+      return '<tr>'+makeCheckbox('reclaim',c)
+        +'<td><strong style="color:#fff;">'+c.adv+'</strong></td>'
+        +'<td class="text-right">'+scoreBadge(c.score)+'</td>'
+        +'<td>'+b+'</td>'
+        +'<td class="text-right hide-mobile" style="color:var(--dim);">'+(c.rev24?fmt(c.rev24):'—')+'</td>'
+        +'<td class="text-right" style="color:#fff;font-weight:600;">'+(c.rev25?fmt(c.rev25):'—')+'</td>'
+        +'<td class="hide-mobile">'+(c.isIgnite?'<span class="badge-ignite">IGNITE</span>':'<span style="font-size:.68rem;color:var(--dim);">All revenue</span>')+'</td>'
+        +'</tr>';
+    }).join('')+'</tbody></table></div>';
+}
+
+// ─── REBUILD (upload) ─────────────────────────────────────────────────────────
+function parseRebuild(rows, fname) {
+  var hRow=0;
+  for (var i=0; i<Math.min(5,rows.length); i++) { if (rows[i].join('').toLowerCase().includes('name')||rows[i].join('').toLowerCase().includes('category')) { hRow=i; break; } }
+  var headers=(rows[hRow]||[]).map(function(h){return String(h).toLowerCase();});
+  function col(k){return headers.findIndex(function(h){return h.includes(k);});}
+  var cName=col('name')>=0?col('name'):0, cCat=col('category')>=0?col('category'):1;
+  var cZip=col('zip')>=0?col('zip'):4, cRev=col('revenue')>=0?col('revenue'):5;
+  var prospects=[];
+  for (var i=hRow+1; i<rows.length; i++) {
+    var r=rows[i]; if (!r||!r[cName]||String(r[cName]).trim()==='') continue;
+    var name=String(r[cName]).trim(), cat=String(r[cCat]||'').trim();
+    var rev=cleanNum(r[cRev]);
+    var score=Math.round(Math.min(100, 0.35*Math.min(30,rev/3500)+0.30*12+0.20*10+0.15*10));
+    prospects.push({name:name,cat:cat,rev:rev,score:score,dist:null,estRev:rev});
+  }
+  prospects.sort(function(a,b){return b.score-a.score;});
+  state.rebuild=prospects;
+  renderRebuild(prospects, 0);
+}
+
+// ─── REBUILD (auto-discover) ─────────────────────────────────────────────────
+var CATEGORY_CONFIG = {
+  'Healthcare':              {tags:[['amenity','hospital'],['amenity','clinic'],['amenity','doctors']], sp:28, mr:16, as_:18, ml:8,  cf:15},
+  'Education':               {tags:[['amenity','university'],['amenity','college']], sp:26, mr:15, as_:18, ml:8,  cf:13},
+  'Casino':                  {tags:[['amenity','casino']], sp:30, mr:18, as_:20, ml:12, cf:15},
+  'Auto Dealer':             {tags:[['shop','car'],['shop','car_dealer']], sp:22, mr:14, as_:14, ml:12, cf:13},
+  'Financial':               {tags:[['amenity','bank'],['amenity','credit_union']], sp:24, mr:14, as_:16, ml:13, cf:13},
+  'Legal':                   {tags:[['office','lawyer'],['office','attorney']], sp:18, mr:12, as_:10, ml:6,  cf:13},
+  'In-Home Services':        {tags:[['trade','plumber'],['trade','electrician'],['craft','roofer']], sp:20, mr:12, as_:8, ml:10, cf:13},
+  'Fitness & Wellness':      {tags:[['leisure','fitness_centre'],['amenity','gym']], sp:12, mr:13, as_:8,  ml:13, cf:12},
+  'Private School':          {tags:[['amenity','school']], sp:14, mr:11, as_:12, ml:5,  cf:11},
+  'Home Improvement':        {tags:[['shop','hardware'],['shop','furniture'],['shop','building_materials']], sp:16, mr:12, as_:8, ml:15, cf:13},
+  'Golf Simulator':          {tags:[['leisure','golf_course'],['sport','golf']], sp:14, mr:13, as_:8, ml:13, cf:13},
+  'Senior Living':           {tags:[['amenity','nursing_home']], sp:18, mr:10, as_:12, ml:8, cf:11},
+  'Entertainment':           {tags:[['amenity','theatre'],['amenity','cinema'],['amenity','casino'],['leisure','bowling_alley']], sp:16, mr:14, as_:14, ml:10, cf:12}
+};
+
+function haversine(lat1,lng1,lat2,lng2) {
+  var R=3958.8, dLat=(lat2-lat1)*Math.PI/180, dLng=(lng2-lng1)*Math.PI/180;
+  var a=Math.sin(dLat/2)*Math.sin(dLat/2)+Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)*Math.sin(dLng/2)*Math.sin(dLng/2);
+  return R*2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a));
+}
+
+async function updateGeoFilter() {
+  var zip=document.getElementById('zipInput').value.replace(/\D/g,'');
+  if (zip.length===5) {
+    try {
+      var r=await fetch('https://nominatim.openstreetmap.org/search?postalcode='+zip+'&country=US&format=json&limit=1',{headers:{'User-Agent':'IGI-ReIgnite/1.0'}});
+      if (r.ok) { var d=await r.json(); if(d&&d[0]) { state.geoCenter={lat:parseFloat(d[0].lat),lng:parseFloat(d[0].lon),zip:zip}; filterRebuild(); } }
+    } catch(e) {}
+  }
+}
+
+async function getZipLatLng(zip) {
+  if (zipCache[zip]) return zipCache[zip];
+  try {
+    var r=await fetch('https://nominatim.openstreetmap.org/search?postalcode='+zip+'&country=US&format=json&limit=1',{headers:{'User-Agent':'IGI-ReIgnite/1.0'}});
+    if (r.ok) { var d=await r.json(); if(d&&d[0]) { var v={lat:parseFloat(d[0].lat),lng:parseFloat(d[0].lon)}; zipCache[zip]=v; return v; } }
+  } catch(e) {}
+  return null;
+}
+
+async function filterRebuild() {
+  if (!state.rebuild) return;
+  var radius=parseInt(document.getElementById('radiusSlider').value);
+  var prospects=[...state.rebuild];
+  if (state.geoCenter && radius>0) {
+    for (var i=0; i<prospects.length; i++) {
+      var p=prospects[i];
+      if (p.zip && p.zip.length===5 && !p._lat) { var ll=await getZipLatLng(p.zip); if(ll){p._lat=ll.lat;p._lng=ll.lng;} }
+      if (p._lat) p.dist=haversine(state.geoCenter.lat,state.geoCenter.lng,p._lat,p._lng);
+    }
+    prospects=prospects.filter(function(p){return p._lat?p.dist<=radius:true;});
+  } else { prospects.forEach(function(p){p.dist=null;}); }
+  prospects.sort(function(a,b){return b.score-a.score;});
+  renderRebuild(prospects, radius);
+}
+
+async function discoverProspects() {
+  var zip=document.getElementById('zipInput').value.replace(/\D/g,'');
+  if (zip.length!==5) { alert('Enter a valid 5-digit ZIP code first.'); return; }
+  var radiusMi=parseInt(document.getElementById('radiusSlider').value)||25;
+  var radiusM=Math.round(radiusMi*1609.34);
+  var status=document.getElementById('discoverStatus'), btn=document.getElementById('discoverBtn');
+  var center=state.geoCenter&&state.geoCenter.zip===zip?state.geoCenter:null;
+  if (!center) {
+    status.textContent='Looking up ZIP code...';
+    try {
+      var r=await fetch('https://nominatim.openstreetmap.org/search?postalcode='+zip+'&country=US&format=json&limit=1',{headers:{'User-Agent':'IGI-ReIgnite/1.0'}});
+      if (!r.ok) { status.textContent='ZIP lookup failed.'; return; }
+      var d=await r.json();
+      if (!d||!d[0]) { alert('ZIP code not found.'); return; }
+      center={lat:parseFloat(d[0].lat),lng:parseFloat(d[0].lon),zip:zip,city:d[0].display_name.split(',')[0],state:''};
+      state.geoCenter=center;
+    } catch(e) { status.textContent='ZIP lookup failed. Check connection.'; return; }
+  }
+  btn.disabled=true; btn.style.opacity='.6';
+  status.innerHTML='<span style="color:var(--teal);">Searching '+radiusMi+' mi around '+center.city+'...</span>';
+  var lines=[];
+  Object.values(CATEGORY_CONFIG).forEach(function(cfg) {
+    cfg.tags.forEach(function(pair) {
+      var geo='(around:'+radiusM+','+center.lat+','+center.lng+')';
+      lines.push('node["'+pair[0]+'"="'+pair[1]+'"]'+geo+';');
+      lines.push('way["'+pair[0]+'"="'+pair[1]+'"]'+geo+';');
+    });
+  });
+  var query='[out:json][timeout:30];(\n'+lines.join('\n')+'\n);out center tags;';
+  try {
+    var resp=await fetch('https://overpass-api.de/api/interpreter',{method:'POST',body:'data='+encodeURIComponent(query)});
+    if (!resp.ok) throw new Error('Overpass API error');
+    var data=await resp.json();
+    var seen=new Set(), prospects=[];
+    (data.elements||[]).forEach(function(el) {
+      var tags=el.tags||{}, name=tags.name||tags.brand||tags.operator||'';
+      if (name.length<2||seen.has(name.toLowerCase())) return;
+      seen.add(name.toLowerCase());
+      var matchedCat='', cfg=null;
+      for (var cat in CATEGORY_CONFIG) {
+        var c=CATEGORY_CONFIG[cat];
+        if (c.tags.some(function(p){return tags[p[0]]===p[1];})) { matchedCat=cat; cfg=c; break; }
+      }
+      if (!matchedCat) return;
+      var lat=el.center?el.center.lat:el.lat, lng=el.center?el.center.lon:el.lon;
+      var dist=(lat&&lng)?haversine(center.lat,center.lng,lat,lng):null;
+      var city=tags['addr:city']||tags['addr:town']||center.city;
+      var mrBonus=(tags.website||tags['contact:website'])?5:(tags.phone||tags['contact:phone'])?2:0;
+      var mlBonus=(tags.brand||tags.operator||tags.network)?8:0;
+      var distPenalty=dist!=null?Math.max(0,Math.round((dist/radiusMi)*5)):0;
+      var score=Math.min(100,cfg.sp+Math.min(cfg.mr,cfg.mr+mrBonus)+cfg.as_+Math.min(15,cfg.ml+mlBonus)+cfg.cf-distPenalty);
+      var sp=cfg.sp, mr=Math.min(20,cfg.mr+mrBonus), as_=cfg.as_, ml=Math.min(15,cfg.ml+mlBonus), cf=cfg.cf;
+      prospects.push({name:name,cat:matchedCat,city:city,dist:dist,estRev:cfg.sp*3500,score:score,sp:sp,mr:mr,as_:as_,ml:ml,cf:cf,_lat:lat,_lng:lng});
+    });
+    prospects.sort(function(a,b){return b.score-a.score;});
+    state.rebuild=prospects;
+    btn.disabled=false; btn.style.opacity='1';
+    status.innerHTML='<span style="color:var(--green);">Found '+prospects.length+' prospects within '+radiusMi+' miles of '+center.city+'</span>';
+    renderRebuild(prospects, radiusMi);
+  } catch(e) {
+    btn.disabled=false; btn.style.opacity='1';
+    status.textContent='Discovery failed. Try again or upload a list.';
+  }
+}
+
+function renderRebuild(prospects, radius) {
+  var t1=prospects.filter(function(p){return p.score>=85;}).length;
+  var t2=prospects.filter(function(p){return p.score>=70&&p.score<85;}).length;
+  var t3=prospects.filter(function(p){return p.score>=55&&p.score<70;}).length;
+  updateSummaryCards([
+    {label:'Prospects',value:prospects.length,sub:radius>0&&state.geoCenter?'Within '+radius+' miles':'All prospects'},
+    {label:'T1 Must Pursue',value:t1,sub:'Score 85+'},
+    {label:'T2 Strong Target',value:t2,sub:'Score 70–84'},
+    {label:'T3 Develop',value:t3,sub:'Score 55–69'}
+  ]);
+  var locInfo=radius>0&&state.geoCenter?' within '+radius+' mi of '+state.geoCenter.zip:'';
+  document.getElementById('rebuild-content').innerHTML =
+    '<div style="margin-bottom:12px;font-size:.75rem;color:var(--dim);">'+prospects.length+' rebuild targets'+locInfo+'</div>'
+    +'<div class="mobile-scroll"><table class="bp-table"><thead><tr>'
+    +'<th style="width:32px;"></th><th class="text-left">Advertiser Name</th>'
+    +'<th class="text-left">Category</th>'
+    +'<th class="text-right accent" style="width:80px;">Score</th>'
+    +'<th class="text-left hide-mobile">Tier</th>'
+    +'</tr></thead><tbody>'
+    +prospects.map(function(p){
+      var tip='Spend Potential: '+p.sp+'/30 | Marketing Readiness: '+p.mr+'/20 | Anchor Status: '+p.as_+'/20 | Multi-Location: '+p.ml+'/15 | Category Fit: '+p.cf+'/15';
+      return '<tr>'+makeCheckbox('rebuild',p)
+        +'<td><strong style="color:#fff;">'+p.name+'</strong></td>'
+        +'<td style="color:var(--dim);font-size:.8rem;">'+(p.cat||'—')+'</td>'
+        +'<td class="text-right"><span class="score-badge '+(p.score>=80?'score-high':p.score>=60?'score-mid':'score-low')+'" title="'+tip+'" style="cursor:help;">'+p.score+'</span></td>'
+        +'<td class="hide-mobile">'+tierBadge(p.score)+'</td>'
+        +'</tr>';
+    }).join('')+'</tbody></table></div>';
+}
+
+// ─── INIT ─────────────────────────────────────────────────────────────────────
+loadPlanLocal();
+loadPlanFromUrl();
+updateSummaryCards([
+  {label:'Upload Files',value:'↑',sub:'Start by uploading a file in any tab'},
+  {label:'Score',value:'Auto',sub:'Scoring applied on upload'},
+  {label:'Geography',value:'ZIP+Radius',sub:'Rebuild tab — filter by distance'},
+  {label:'Market',value:'Enter name',sub:'Top-right corner'}
+]);
+</script>
 </body>
 </html>
-
-
-
-
