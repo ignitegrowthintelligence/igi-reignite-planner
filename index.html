@@ -761,9 +761,7 @@ async function discoverProspects() {
     try {
       const r = await fetch('https://api.zippopotam.us/us/'+zip);
       if (!r.ok) { alert('Could not find that ZIP code.'); return; }
-      const d = await r.json();
-      center = { lat:parseFloat(d.places[0].latitude), lng:parseFloat(d.places[0].longitude),
-                 zip, city:d.places[0]['place name'], state:d.places[0]['state abbreviation'] };
+      const d = await r.json(); if(!d||!d[0]){alert('ZIP code not found. Try another.');return;} center={lat:parseFloat(d[0].lat),lng:parseFloat(d[0].lon),zip,city:d[0].display_name.split(',')[0],state:''}; state.geoCenter=center;
       state.geoCenter = center;
     } catch(e) { status.textContent='ZIP lookup failed.'; return; }
   }
@@ -1037,6 +1035,7 @@ updateSummaryCards([
 </div>
 </body>
 </html>
+
 
 
 
