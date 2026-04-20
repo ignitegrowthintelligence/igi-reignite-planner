@@ -614,14 +614,13 @@ function parseRebuild(rows, fname) {
   document.getElementById('rebuild-upload').style.display='none';
 }
 
-function buildCategoryFilters(prospects) {
-  const cats = [...new Set(prospects.map(p=>p.cat).filter(Boolean))].sort();
-  const el = document.getElementById('categoryFilters');
-  el.innerHTML = cats.map(c=>`
-    <button onclick="toggleCat(this,'${c.replace(/'/g,"\\'")}');filterRebuild()"
-      style="font-size:.68rem;padding:3px 9px;border-radius:999px;border:1px solid var(--border);background:var(--surface2);color:var(--dim);cursor:pointer;"
-      data-cat="${c}">${c}</button>`).join('');
-}
+function buildCategoryFilters(prospects) { /* no-op - categories now automatic */ }
+
+
+
+
+
+
 
 let activeCats = new Set();
 function toggleCat(btn, cat) {
@@ -993,7 +992,7 @@ function cbChange(cb) {
   if(cb.checked){addToPlan(s,_acctReg[rid]||{name});}else{removeFromPlan(s,name);}
 }
 // ─── INIT ───────────────────────────────────────────────────────────────────
-buildCategoryFilters([]);
+// buildCategoryFilters removed - categories are automatic
 updateSummaryCards([
   {label:'Upload Files',value:'↑',sub:'Start by uploading a file in any tab'},
   {label:'Score',value:'Auto',sub:'Scoring applied on upload'},
