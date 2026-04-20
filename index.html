@@ -974,14 +974,23 @@ function exportPlan() {
   a.href=url; a.download=market.replace(/\s/g,'_')+'_ReIgnite_Plan.csv'; a.click();
 }
 
+// Account registry — avoids JSON-in-HTML-attribute problems
+const _acctReg = {}; let _regIdx = 0;
 function makeCheckbox(section, account) {
-  const cbId = 'cb-'+section+'-'+account.name.replace(/[^a-z0-9]/gi,'');
-  const checked = isInPlan(section, account.name) ? 'checked' : '';
-  return '<td style="padding:6px 12px;text-align:center;">'
-    +'<input type="checkbox" id="'+cbId+'" class="plan-cb" '+checked+' '
-    +'onchange="this.checked?addToPlan(\''+section+'\','+JSON.stringify(account).replace(/'/g,"\\'")+'):removeFromPlan(\''+section+'\',\''+account.name.replace(/'/g,"\\'")+'\');" '
-    +'style="width:15px;height:15px;cursor:pointer;accent-color:var(--teal);" title="Add to plan"/>'
-    +'</td>';
+  const rid = "r"+(++_regIdx); _acctReg[rid]=account;
+  const cbId = "cb-"+section+"-"+rid;
+  const checked = isInPlan(section, account.name) ? "checked" : "";
+  const safeName = (account.name||"").replace(/"/g,"&quot;");
+  return "<td style=\"padding:6px 12px;text-align:center;\">"+
+    "<input type=\"checkbox\" id=\""+cbId+"\" class=\"plan-cb\" "+checked+" "+
+    "data-section=\""+section+"\" data-rid=\""+rid+"\" data-name=\""+safeName+"\" "+
+    "onchange=\"cbChange(this)\" "+
+    "style=\"width:15px;height:15px;cursor:pointer;accent-color:var(--teal);\" title=\"Add to plan\"/>"+
+  "</td>";
+}
+function cbChange(cb) {
+  const s=cb.dataset.section, rid=cb.dataset.rid, name=cb.dataset.name;
+  if(cb.checked){addToPlan(s,_acctReg[rid]||{name});}else{removeFromPlan(s,name);}
 }
 // ─── INIT ───────────────────────────────────────────────────────────────────
 buildCategoryFilters([]);
