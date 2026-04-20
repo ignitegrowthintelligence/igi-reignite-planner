@@ -225,7 +225,7 @@ function handleFile(section, file) {
       const ws = wb.Sheets[wb.SheetNames[0]];
       const rows = XLSX.utils.sheet_to_json(ws, {header:1, defval:''});
       processFile(section, rows, file.name);
-    } catch(err) { alert('Error reading file: '+err.message); }
+    } catch(err) { alert('DEBUG Error\nType: '+err.constructor.name+'\nMsg: '+err.message+'\nSection: '+section+'\nStack: '+(err.stack||'').split('\n')[1]); }
   };
   reader.readAsArrayBuffer(file);
 }
