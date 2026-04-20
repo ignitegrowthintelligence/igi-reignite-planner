@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8"/>
@@ -95,18 +95,28 @@
 
     <!-- PROTECT & EXPAND -->
     <div id="panel-protect" class="p-5 hidden">
+    <div id="panel-protect" class="p-5 hidden">
       <div class="section-header">Protect &amp; Expand — Current Active Clients</div>
-      <div class="upload-zone p-8 text-center mb-4" onclick="document.getElementById('f-protect').click()"
-           ondragover="event.preventDefault();this.classList.add('drag')" ondragleave="this.classList.remove('drag')"
-           ondrop="event.preventDefault();this.classList.remove('drag');handleFile('protect',event.dataTransfer.files[0])">
-        <div style="font-size:2rem;margin-bottom:8px;">📊</div>
-        <div style="font-weight:600;color:var(--text);">Upload Current Client Revenue Report</div>
-        <div style="font-size:.75rem;color:var(--dim);margin-top:4px;">Basic Revenue Report — CSV or Excel</div>
-        <input type="file" id="f-protect" accept=".csv,.xlsx,.xls" style="display:none" onchange="handleFile('protect',this.files[0])"/>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+        <div class="upload-zone p-6 text-center" onclick="document.getElementById('f-protect').click()"
+             ondragover="event.preventDefault();this.classList.add('drag')" ondragleave="this.classList.remove('drag')"
+             ondrop="event.preventDefault();this.classList.remove('drag');handleFile('protect',event.dataTransfer.files[0])">
+          <div style="font-size:1.5rem;margin-bottom:6px;">📊</div>
+          <div style="font-weight:600;font-size:.85rem;">All Revenue Report</div>
+          <div style="font-size:.72rem;color:var(--dim);margin-top:4px;">Total revenue by client — all product lines</div>
+          <input type="file" id="f-protect" accept=".csv,.xlsx,.xls" style="display:none" onchange="handleFile('protect',this.files[0])"/>
+        </div>
+        <div class="upload-zone p-6 text-center" onclick="document.getElementById('f-protect-ign').click()"
+             ondragover="event.preventDefault();this.classList.add('drag')" ondragleave="this.classList.remove('drag')"
+             ondrop="event.preventDefault();this.classList.remove('drag');handleFile('protect-ignite',event.dataTransfer.files[0])">
+          <div style="font-size:1.5rem;margin-bottom:6px;">🎯</div>
+          <div style="font-weight:600;font-size:.85rem;">Ignite Revenue Only <span style="font-size:.68rem;color:var(--dim);font-weight:400;">(optional)</span></div>
+          <div style="font-size:.72rem;color:var(--dim);margin-top:4px;">Ignite-only report — shows Ignite vs. Broadcast split</div>
+          <input type="file" id="f-protect-ign" accept=".csv,.xlsx,.xls" style="display:none" onchange="handleFile('protect-ignite',this.files[0])"/>
+        </div>
       </div>
       <div id="protect-content"></div>
     </div>
-
     <!-- RECLAIM -->
     <div id="panel-reclaim" class="p-5 hidden">
       <div class="section-header">Reclaim — Former Clients</div>
@@ -220,7 +230,7 @@
 
 <script>
 // ─── STATE ──────────────────────────────────────────────────────────────────
-const state = { close:null, protect:null, reclaimAll:null, reclaimIgnite:null, rebuild:null, geoCenter:null };
+const state = { close:null, protect:null, reclaimAll:null, reclaimIgnite:null, protectIgnite:null, rebuild:null, geoCenter:null };
 const plan  = { close:[], protect:[], reclaim:[], rebuild:[] };
 const _acctReg = {}; let _regIdx = 0;
 const zipCache = {};
@@ -400,6 +410,7 @@ function handleFile(section, file) {
       else if (section==='protect')   parseProtect(rows, file.name);
       else if (section==='reclaim-all')    parseReclaim(rows, 'all', file.name);
       else if (section==='reclaim-ignite') parseReclaim(rows, 'ignite', file.name);
+      else if (section==='protect-ignite') parseProtectIgnite(rows, file.name);
       else if (section==='rebuild')   parseRebuild(rows, file.name);
     } catch(err) { alert('Error reading file: '+err.message); }
   };
@@ -485,32 +496,65 @@ function parseProtect(rows, fname) {
   });
   clients.sort(function(a,b){return b.score-a.score;});
   state.protect=clients;
-  var t25=clients.reduce(function(s,c){return s+c.rev25;},0), t26=clients.reduce(function(s,c){return s+c.rev26;},0);
+  renderProtect(clients, fname);
+}
+
+// parseProtectIgnite — parses Ignite-only revenue file and merges into protect view
+function parseProtectIgnite(rows, fname) {
+  var hRow=0;
+  for (var i=0; i<Math.min(10,rows.length); i++) { if (rows[i].join("").toLowerCase().includes("advertiser")&&rows[i].join("").toLowerCase().includes("market")) { hRow=i; break; } }
+  var headers=rows[hRow]||[], col2025=-1, col2026=-1;
+  headers.forEach(function(h,i){ if (String(h).toLowerCase().includes("total")&&col2025<0) col2025=i; else if (String(h).toLowerCase().includes("total")&&col2025>=0&&col2026<0) col2026=i; });
+  var ignMap={};
+  for (var i=hRow+1; i<rows.length; i++) {
+    var r=rows[i]; if (!r||!r[2]||String(r[2]).toLowerCase()==="total") continue;
+    var adv=String(r[2]).trim();
+    var r25=col2025>=0?cleanNum(r[col2025]):0, r26=col2026>=0?cleanNum(r[col2026]):0;
+    if (!adv) continue;
+    if (!ignMap[adv]) ignMap[adv]={ign25:0,ign26:0};
+    ignMap[adv].ign25+=r25; ignMap[adv].ign26+=r26;
+  }
+  state.protectIgnite=ignMap;
+  // Re-render protect view with the new split data
+  if (state.protect) renderProtect(state.protect, fname);
+  console.log("Ignite file loaded:", Object.keys(ignMap).length, "clients");
+}
+
+function renderProtect(clients, extraNote) {
+  var hasIgnite = state.protectIgnite && Object.keys(state.protectIgnite).length>0;
+  var total26=clients.reduce(function(s,c){return s+c.rev26;},0);
+  var total25=clients.reduce(function(s,c){return s+c.rev25;},0);
+  var ign26=0; if(hasIgnite) clients.forEach(function(c){ var d=state.protectIgnite[c.adv]; if(d) ign26+=d.ign26; });
+  var bcast26=hasIgnite?total26-ign26:null;
   updateSummaryCards([
-    {label:'Active Clients',value:clients.length,sub:'Current advertisers'},
-    {label:'2025 Revenue',value:fmt(t25),sub:'Full year base'},
-    {label:'2026 Revenue',value:fmt(t26),sub:'Current pace'},
-    {label:'Avg Spend',value:fmt(clients.length?t26/clients.length:0),sub:'Per advertiser'}
+    {label:"Active Clients",value:clients.length,sub:"Current advertisers"},
+    {label:"2026 Total",value:fmt(total26),sub:"Current pace"},
+    {label:"2026 Ignite",value:hasIgnite?fmt(ign26):"Upload Ignite file",sub:hasIgnite?pct(total26?ign26/total26*100:null)+" of total":""},
+    {label:"2026 Broadcast",value:hasIgnite?fmt(bcast26):"Upload Ignite file",sub:hasIgnite?pct(total26?bcast26/total26*100:null)+" of total":""}
   ]);
-  document.getElementById('protect-content').innerHTML =
-    '<div style="margin-bottom:12px;font-size:.75rem;color:var(--dim);">'+fname+' — '+clients.length+' clients</div>'
-    +'<div class="mobile-scroll"><table class="bp-table"><thead><tr>'
-    +'<th style="width:32px;"></th><th class="text-left">Advertiser</th>'
-    +'<th class="text-left hide-mobile">AE</th><th class="text-right accent">Score</th>'
-    +'<th class="text-right">2025</th><th class="text-right">2026</th>'
-    +'<th class="text-right hide-mobile">Trend</th><th class="text-left hide-mobile">Action</th>'
-    +'</tr></thead><tbody>'
-    +clients.map(function(c){
-      var ti=c.trend===1?'<span style="color:var(--green);">▲</span>':c.trend===-1?'<span style="color:var(--red);">▼</span>':'<span style="color:var(--dim);">→</span>';
-      var act=c.score>=7?'<span class="badge-now">PROTECT</span>':c.trend===1?'<span class="badge-ignite">EXPAND</span>':'<span style="font-size:.68rem;color:var(--dim);">Monitor</span>';
-      return '<tr>'+makeCheckbox('protect',c)
-        +'<td><strong style="color:#fff;">'+c.adv+'</strong></td>'
-        +'<td class="hide-mobile" style="color:var(--dim);font-size:.78rem;">'+c.ae+'</td>'
-        +'<td class="text-right">'+scoreBadge(c.score)+'</td>'
-        +'<td class="text-right" style="color:var(--dim);">'+fmt(c.rev25)+'</td>'
-        +'<td class="text-right" style="color:#fff;font-weight:600;">'+fmt(c.rev26)+'</td>'
-        +'<td class="text-right hide-mobile">'+ti+'</td><td class="hide-mobile">'+act+'</td></tr>';
-    }).join('')+'</tbody></table></div>';
+  document.getElementById("protect-content").innerHTML =
+    "<div style=\"margin-bottom:12px;font-size:.75rem;color:var(--dim);\">"+clients.length+" active clients"+(hasIgnite?" — Ignite/Broadcast split loaded":"")+"</div>"
+    +"<div class=\"mobile-scroll\"><table class=\"bp-table\"><thead><tr>"
+    +"<th style=\"width:32px;\"></th><th class=\"text-left\">Advertiser</th>"
+    +"<th class=\"text-left hide-mobile\">AE</th><th class=\"text-right accent\">Score</th>"
+    +"<th class=\"text-right\">2025 Total</th><th class=\"text-right\">2026 Total</th>"
+    +(hasIgnite?"<th class=\"text-right hide-mobile\" style=\"color:var(--teal);\">Ignite</th><th class=\"text-right hide-mobile\" style=\"color:var(--orange);\">Broadcast</th>":"")
+    +"<th class=\"text-right hide-mobile\">Trend</th><th class=\"text-left hide-mobile\">Action</th>"
+    +"</tr></thead><tbody>"
+    +clients.map(function(c) {
+      var ign=hasIgnite&&state.protectIgnite[c.adv]?state.protectIgnite[c.adv]:null;
+      var ign26=ign?ign.ign26:null, bcast26=ign?Math.max(0,c.rev26-ign.ign26):null;
+      var ti=c.trend===1?"<span style=\"color:var(--green);\">▲</span>":c.trend===-1?"<span style=\"color:var(--red);\">▼</span>":"<span style=\"color:var(--dim);\">→</span>";
+      var act=c.score>=7?"<span class=\"badge-now\">PROTECT</span>":c.trend===1?"<span class=\"badge-ignite\">EXPAND</span>":"<span style=\"font-size:.68rem;color:var(--dim);\">Monitor</span>";
+      return "<tr>"+makeCheckbox("protect",c)
+        +"<td><strong style=\"color:#fff;\">"+c.adv+"</strong></td>"
+        +"<td class=\"hide-mobile\" style=\"color:var(--dim);font-size:.78rem;\">"+c.ae+"</td>"
+        +"<td class=\"text-right\">"+scoreBadge(c.score)+"</td>"
+        +"<td class=\"text-right\" style=\"color:var(--dim);\">"+fmt(c.rev25)+"</td>"
+        +"<td class=\"text-right\" style=\"color:#fff;font-weight:600;\">"+fmt(c.rev26)+"</td>"
+        +(hasIgnite?"<td class=\"text-right hide-mobile\" style=\"color:var(--teal);\">"+( ign26!=null?fmt(ign26):"—")+"</td><td class=\"text-right hide-mobile\" style=\"color:var(--orange);\">"+( bcast26!=null?fmt(bcast26):"—")+"</td>":"")
+        +"<td class=\"text-right hide-mobile\">"+ti+"</td><td class=\"hide-mobile\">"+act+"</td></tr>";
+    }).join("")+"</tbody></table></div>";
 }
 
 // ─── RECLAIM ──────────────────────────────────────────────────────────────────
