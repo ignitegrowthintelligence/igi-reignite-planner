@@ -633,10 +633,10 @@ async function updateGeoFilter() {
   const zip = document.getElementById('zipInput').value.replace(/\D/g,'');
   if (zip.length===5) {
     try {
-      const r = await fetch(`https://api.zippopotam.us/us/${zip}`);
+      const r = await fetch('https://nominatim.openstreetmap.org/search?postalcode='+zip+'&country=US&format=json&limit=1',{headers:{'User-Agent':'IGI-ReIgnite/1.0'}});
       if (r.ok) {
         const d = await r.json();
-        state.geoCenter = {lat:parseFloat(d.places[0].latitude), lng:parseFloat(d.places[0].longitude), zip};
+        if(d&&d[0]) { state.geoCenter={lat:parseFloat(d[0].lat),lng:parseFloat(d[0].lon),zip}; }
         filterRebuild();
       }
     } catch(e) {}
@@ -653,8 +653,8 @@ const zipCache = {};
 async function getZipLatLng(zip) {
   if (zipCache[zip]) return zipCache[zip];
   try {
-    const r = await fetch(`https://api.zippopotam.us/us/${zip}`);
-    if (r.ok) { const d=await r.json(); const v={lat:parseFloat(d.places[0].latitude),lng:parseFloat(d.places[0].longitude)}; zipCache[zip]=v; return v; }
+    const r = await fetch('https://nominatim.openstreetmap.org/search?postalcode='+zip+'&country=US&format=json&limit=1',{headers:{'User-Agent':'IGI-ReIgnite/1.0'}});
+    if(r.ok){const d=await r.json();if(d&&d[0]){const v={lat:parseFloat(d[0].lat),lng:parseFloat(d[0].lon)}; zipCache[zip]=v; return v;}}
   } catch(e) {}
   return null;
 }
@@ -759,10 +759,10 @@ async function discoverProspects() {
   if (!center) {
     status.textContent = 'Looking up ZIP code...';
     try {
-      const r = await fetch('https://api.zippopotam.us/us/'+zip);
-      if (!r.ok) { alert('Could not find that ZIP code.'); return; }
-      const d = await r.json(); if(!d||!d[0]){alert('ZIP code not found. Try another.');return;} center={lat:parseFloat(d[0].lat),lng:parseFloat(d[0].lon),zip,city:d[0].display_name.split(',')[0],state:''}; state.geoCenter=center;
-      state.geoCenter = center;
+      const r = await fetch('https://nominatim.openstreetmap.org/search?postalcode='+zip+'&country=US&format=json&limit=1',{headers:{'User-Agent':'IGI-ReIgnite/1.0'}});
+      if (!r.ok) { status.textContent='ZIP lookup failed. Check your connection.'; btn.disabled=false; btn.style.opacity='1'; return; }
+      const d = await r.json(); if(!d||!d[0]){alert('ZIP code not found.');btn.disabled=false;btn.style.opacity='1';return;}
+      center={lat:parseFloat(d[0].lat),lng:parseFloat(d[0].lon),zip,city:d[0].display_name.split(',')[0],state:''}; state.geoCenter=center;
     } catch(e) { status.textContent='ZIP lookup failed.'; return; }
   }
 
