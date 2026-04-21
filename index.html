@@ -77,6 +77,7 @@
       <button onclick="switchTab('protect')" id="tab-protect" class="tab-inactive px-4 py-2 text-sm transition-all">Protect &amp; Expand</button>
       <button onclick="switchTab('reclaim')" id="tab-reclaim" class="tab-inactive px-4 py-2 text-sm transition-all">Reclaim</button>
       <button onclick="switchTab('rebuild')" id="tab-rebuild" class="tab-inactive px-4 py-2 text-sm transition-all">Rebuild</button>
+      <button onclick="switchTab('plan')"   id="tab-plan"   class="tab-inactive px-4 py-2 text-sm transition-all">📋 Plan (<span id="planCount">0</span>)</button>
     </div>
 
     <!-- CLOSE NOW -->
@@ -138,6 +139,34 @@
       <div id="reclaim-content"></div>
     </div>
 
+    <!-- PLAN -->
+    <div id="panel-plan" class="p-5 hidden">
+      <!-- Header row -->
+      <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:20px;">
+        <div>
+          <div style="font-weight:800;font-size:1.1rem;color:#fff;">Market Attack Plan</div>
+          <div id="planDashMarket" style="font-size:.72rem;color:var(--dim);margin-top:2px;">Enter market name in the top-right corner</div>
+        </div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;">
+          <button onclick="savePlanUrl()" style="background:var(--teal-dim);border:1px solid var(--teal-border);color:var(--teal);border-radius:6px;padding:7px 14px;font-size:.75rem;font-weight:700;cursor:pointer;">🔗 Share URL</button>
+          <button onclick="exportPlan()" style="background:var(--teal-dim);border:1px solid var(--teal-border);color:var(--teal);border-radius:6px;padding:7px 14px;font-size:.75rem;font-weight:700;cursor:pointer;">⬇ Export CSV</button>
+          <button onclick="clearPlan()" style="background:rgba(248,113,113,.1);border:1px solid rgba(248,113,113,.3);color:var(--red);border-radius:6px;padding:7px 14px;font-size:.75rem;cursor:pointer;">Clear All</button>
+        </div>
+      </div>
+      <!-- Share URL bar -->
+      <div id="planUrlBar" style="display:none;padding:10px 16px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;margin-bottom:16px;">
+        <div style="font-size:.65rem;color:var(--dim);margin-bottom:4px;">Share this URL to access your plan from any device:</div>
+        <div style="display:flex;gap:6px;">
+          <input id="planUrlInput" readonly style="flex:1;background:var(--surface);border:1px solid var(--border);border-radius:4px;padding:5px 8px;color:var(--teal);font-size:.7rem;outline:none;">
+          <button onclick="copyPlanUrl()" style="background:var(--teal);color:#000;border:none;border-radius:4px;padding:5px 10px;font-size:.72rem;font-weight:700;cursor:pointer;">Copy</button>
+        </div>
+      </div>
+      <!-- Summary cards -->
+      <div id="planSummaryCards" class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-5"></div>
+      <!-- Plan sections -->
+      <div id="planSections"></div>
+    </div>
+
     <!-- REBUILD -->
     <div id="panel-rebuild" class="p-5 hidden">
       <div class="section-header">Rebuild — Net New Prospects</div>
@@ -192,40 +221,7 @@
   </div>
 </div>
 
-<!-- Floating Plan Button -->
-<div id="planFab" onclick="togglePlan()" style="display:none;position:fixed;bottom:24px;right:24px;z-index:1000;
-  background:var(--teal);color:#000;font-weight:800;border-radius:999px;padding:12px 20px;cursor:pointer;
-  box-shadow:0 4px 20px rgba(0,188,212,.4);font-size:.85rem;">
-  📋 Plan (<span id="planCount">0</span>)
-</div>
 
-<!-- Plan Modal -->
-<div id="planModal" style="display:none;position:fixed;inset:0;z-index:2000;background:rgba(0,0,0,.7);">
-  <div style="position:absolute;right:0;top:0;bottom:0;width:min(480px,100%);background:var(--surface);border-left:1px solid var(--teal-border);display:flex;flex-direction:column;">
-    <div style="padding:16px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-shrink:0;">
-      <div>
-        <div style="font-weight:800;font-size:1rem;color:#fff;">Market Attack Plan</div>
-        <div id="planMarketLabel" style="font-size:.72rem;color:var(--dim);margin-top:2px;"></div>
-      </div>
-      <div style="display:flex;gap:8px;">
-        <button onclick="savePlanUrl()" style="background:var(--teal-dim);border:1px solid var(--teal-border);color:var(--teal);border-radius:6px;padding:6px 12px;font-size:.75rem;font-weight:700;cursor:pointer;">🔗 Save URL</button>
-        <button onclick="togglePlan()" style="background:var(--surface2);border:1px solid var(--border);color:var(--dim);border-radius:6px;padding:6px 10px;cursor:pointer;">✕</button>
-      </div>
-    </div>
-    <div id="planUrlBar" style="display:none;padding:10px 16px;background:var(--surface2);border-bottom:1px solid var(--border);flex-shrink:0;">
-      <div style="font-size:.65rem;color:var(--dim);margin-bottom:4px;">Share this URL to access your plan from any device:</div>
-      <div style="display:flex;gap:6px;">
-        <input id="planUrlInput" readonly style="flex:1;background:var(--surface);border:1px solid var(--border);border-radius:4px;padding:5px 8px;color:var(--teal);font-size:.7rem;outline:none;"/>
-        <button onclick="copyPlanUrl()" style="background:var(--teal);color:#000;border:none;border-radius:4px;padding:5px 10px;font-size:.72rem;font-weight:700;cursor:pointer;">Copy</button>
-      </div>
-    </div>
-    <div id="planContent" style="flex:1;overflow-y:auto;padding:16px 20px;"></div>
-    <div style="padding:12px 20px;border-top:1px solid var(--border);display:flex;gap:8px;flex-shrink:0;">
-      <button onclick="clearPlan()" style="flex:1;background:rgba(248,113,113,.1);border:1px solid rgba(248,113,113,.3);color:var(--red);border-radius:6px;padding:8px;font-size:.78rem;cursor:pointer;">Clear All</button>
-      <button onclick="exportPlan()" style="flex:1;background:var(--teal-dim);border:1px solid var(--teal-border);color:var(--teal);border-radius:6px;padding:8px;font-size:.78rem;font-weight:700;cursor:pointer;">Export CSV</button>
-    </div>
-  </div>
-</div>
 
 <script>
 // ─── STATE ──────────────────────────────────────────────────────────────────
@@ -256,7 +252,7 @@ function cleanNum(s) {
   return isNaN(v) ? 0 : (neg ? -v : v);
 }
 function scoreBadge(s, tip) {
-  const s100 = typeof s === 'number' && s <= 10 ? Math.round(s*10) : Math.round(s);
+  const s100 = Math.round(s);
   const cls = s100>=80?'score-high':s100>=60?'score-mid':'score-low';
   const t = tip ? ' title="'+tip+'" style="cursor:help;"' : '';
   return '<span class="score-badge '+cls+'"'+t+'>'+s100+'</span>';
@@ -270,12 +266,13 @@ function tierBadge(s) {
 
 // ─── TAB SWITCHING ────────────────────────────────────────────────────────────
 function switchTab(t) {
-  ['close','protect','reclaim','rebuild'].forEach(function(id) {
+  ['close','protect','reclaim','rebuild','plan'].forEach(function(id) {
     const p = document.getElementById('panel-'+id);
     const b = document.getElementById('tab-'+id);
     if (p) p.classList.toggle('hidden', id!==t);
     if (b) b.className = (id===t?'tab-active':'tab-inactive')+' px-4 py-2 text-sm transition-all';
   });
+  if (t==='plan') refreshPlanModal();
 }
 
 // ─── PLAN ────────────────────────────────────────────────────────────────────
@@ -304,47 +301,105 @@ function addToPlan(section, account) {
 function removeFromPlan(section, name) {
   if (plan[section]) plan[section]=plan[section].filter(function(a){return a.name!==name;});
   savePlanLocal(); updatePlanFab(); refreshPlanModal();
-  var cb=document.getElementById('cb-'+section+'-'+name.replace(/[^a-z0-9]/gi,''));
-  if (cb) cb.checked=false;
+  document.querySelectorAll('.plan-cb').forEach(function(cb){
+    if (cb.dataset.section===section && cb.dataset.name===name) cb.checked=false;
+  });
 }
 function clearPlan() {
   Object.keys(plan).forEach(function(s){plan[s]=[];});
   savePlanLocal(); updatePlanFab(); refreshPlanModal();
   document.querySelectorAll('.plan-cb').forEach(function(cb){cb.checked=false;});
 }
-function togglePlan() {
-  var m=document.getElementById('planModal');
-  m.style.display = m.style.display==='none'?'block':'none';
-  if (m.style.display==='block') refreshPlanModal();
-}
 function updatePlanFab() {
-  var total=Object.values(plan).reduce(function(s,a){return s+a.length;},0);
-  var fab=document.getElementById('planFab');
-  document.getElementById('planCount').textContent=total;
-  fab.style.display=total>0?'block':'none';
+  var total = Object.values(plan).reduce(function(s,a){return s+a.length;},0);
+  var el = document.getElementById('planCount');
+  if (el) el.textContent = total;
 }
 function refreshPlanModal() {
-  document.getElementById('planMarketLabel').textContent = document.getElementById('marketInput').value||'Market Plan';
-  var labels={close:'🔴 Close Now',protect:'🟢 Protect & Expand',reclaim:'🟡 Reclaim',rebuild:'🔵 Rebuild'};
-  var html='';
-  Object.entries(labels).forEach(function(entry) {
-    var s=entry[0], label=entry[1], items=plan[s]||[];
-    if (!items.length) return;
-    html+='<div style="margin-bottom:20px;"><div style="font-size:.68rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--teal);margin-bottom:8px;">'+label+' ('+items.length+')</div>';
-    items.forEach(function(a) {
-      var sc=Math.round((a.score||0)*10);
-      html+='<div style="display:flex;align-items:center;gap:10px;padding:8px 10px;background:var(--surface2);border:1px solid var(--border);border-radius:6px;margin-bottom:6px;">';
-      html+='<div style="flex:1;"><div style="font-weight:600;color:#fff;font-size:.82rem;">'+a.name+'</div>';
-      html+='<div style="font-size:.68rem;color:var(--dim);">'+(a.cat||a.type||'')+(a.rev?(' • '+fmt(a.rev)):'')+'</div></div>';
-      html+='<span style="font-size:.75rem;font-weight:700;color:'+(sc>=80?'var(--green)':sc>=60?'var(--yellow)':'var(--red)')+';">'+sc+'</span>';
-      html+='<button onclick="removeFromPlan(\''+s+'\',\''+a.name.replace(/\\/g,'\\\\').replace(/'/g,"\\'")+'\');" style="background:none;border:none;color:var(--dim);cursor:pointer;font-size:.9rem;">✕</button>';
-      html+='</div>';
-    });
-    html+='</div>';
-  });
-  if (!html) html='<div style="text-align:center;color:var(--dim);padding:40px 0;">Check accounts in any tab to add them here.</div>';
-  document.getElementById('planContent').innerHTML=html;
+  // Update market label
+  var market = document.getElementById('marketInput').value || 'Your Market';
+  var ml = document.getElementById('planDashMarket');
+  if (ml) ml.textContent = market;
   document.getElementById('planUrlBar').style.display='none';
+
+  var labels = {close:'🔴 Close Now', protect:'🟢 Protect & Expand', reclaim:'🟡 Reclaim', rebuild:'🔵 Rebuild'};
+  var sectionColors = {close:'var(--red)', protect:'var(--green)', reclaim:'var(--yellow)', rebuild:'var(--teal)'};
+
+  // Compute totals
+  var totalAccounts = 0, totalRev = 0;
+  Object.keys(plan).forEach(function(s) {
+    (plan[s]||[]).forEach(function(a) {
+      totalAccounts++;
+      totalRev += (a.rev || a.estRev || 0);
+    });
+  });
+
+  // Summary cards
+  var sc = document.getElementById('planSummaryCards');
+  if (sc) {
+    sc.innerHTML = [
+      {label:'Total Accounts', value: totalAccounts, sub: 'Across all sections'},
+      {label:'Total Opportunity', value: fmt(totalRev), sub: 'Est. revenue in plan'},
+      {label:'Close Now', value: (plan.close||[]).length, sub: fmt((plan.close||[]).reduce(function(s,a){return s+(a.rev||0);},0))},
+      {label:'Rebuild Targets', value: (plan.rebuild||[]).length, sub: fmt((plan.rebuild||[]).reduce(function(s,a){return s+(a.estRev||a.rev||0);},0))}
+    ].map(function(c) {
+      return '<div class="card card-teal p-4"><div style="font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--dim);">'+c.label+'</div>'
+        +'<div style="font-size:1.5rem;font-weight:800;color:#fff;margin:4px 0;">'+c.value+'</div>'
+        +'<div style="font-size:.72rem;color:var(--dim);">'+(c.sub||'')+'</div></div>';
+    }).join('');
+  }
+
+  // Section groups
+  var ps = document.getElementById('planSections');
+  if (!ps) return;
+  var html = '';
+  var hasAny = false;
+  Object.entries(labels).forEach(function(entry) {
+    var s = entry[0], label = entry[1];
+    var items = plan[s] || [];
+    if (!items.length) return;
+    hasAny = true;
+    var sectionRev = items.reduce(function(sum,a){return sum+(a.rev||a.estRev||0);},0);
+    html += '<div style="margin-bottom:24px;">'
+      + '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;padding-bottom:8px;border-bottom:1px solid var(--border);">'
+      + '<div style="font-size:.78rem;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:'+sectionColors[s]+';">'+label+' <span style="color:var(--dim);font-weight:400;">('+items.length+')</span></div>'
+      + '<div style="font-size:.78rem;font-weight:700;color:#fff;">'+fmt(sectionRev)+'</div>'
+      + '</div>'
+      + '<div class="mobile-scroll"><table class="bp-table"><thead><tr>'
+      + '<th class="text-left">Account</th>'
+      + '<th class="text-left hide-mobile">Category</th>'
+      + '<th class="text-right hide-mobile">Est. Revenue</th>'
+      + '<th class="text-right">Score</th>'
+      + '<th class="text-left" style="min-width:200px;">Next Step</th>'
+      + '<th style="width:32px;"></th>'
+      + '</tr></thead><tbody>';
+    items.forEach(function(a) {
+      var sc100 = Math.round(a.score || 0);
+      var safeName = (a.name||'').replace(/\\/g,'\\\\').replace(/'/g,"\\'");
+      var noteVal = (a.nextStep||'').replace(/"/g,'&quot;');
+      html += '<tr>'
+        + '<td><strong style="color:#fff;">'+(a.name||'—')+'</strong></td>'
+        + '<td class="hide-mobile" style="color:var(--dim);font-size:.78rem;">'+(a.cat||a.type||'—')+'</td>'
+        + '<td class="text-right hide-mobile" style="color:#fff;font-weight:600;">'+(a.rev||a.estRev?fmt(a.rev||a.estRev):'—')+'</td>'
+        + '<td class="text-right">'+scoreBadge(sc100)+'</td>'
+        + '<td><input type="text" value="'+noteVal+'" placeholder="Add next step…" '
+        + 'onchange="updateNextStep(\''+s+'\',\''+safeName+'\',this.value)" '
+        + 'style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:4px;padding:5px 8px;color:var(--text);font-size:.75rem;outline:none;"></td>'
+        + '<td><button onclick="removeFromPlan(\''+s+'\',\''+safeName+'\')" '
+        + 'style="background:none;border:none;color:var(--dim);cursor:pointer;font-size:.9rem;padding:4px 6px;">✕</button></td>'
+        + '</tr>';
+    });
+    html += '</tbody></table></div></div>';
+  });
+  if (!hasAny) {
+    html = '<div style="text-align:center;color:var(--dim);padding:60px 0;font-size:.9rem;">No accounts added yet.<br><span style="font-size:.78rem;">Check accounts in any tab to build your plan.</span></div>';
+  }
+  ps.innerHTML = html;
+}
+function updateNextStep(section, name, value) {
+  var items = plan[section] || [];
+  var acct = items.find(function(a){ return a.name === name; });
+  if (acct) { acct.nextStep = value; savePlanLocal(); }
 }
 function savePlanLocal() { try{localStorage.setItem('reignite_plan',JSON.stringify(plan));}catch(e){} }
 function loadPlanLocal() {
@@ -377,11 +432,11 @@ function loadPlanFromUrl() {
 function exportPlan() {
   var market=document.getElementById('marketInput').value||'Market';
   var labels={close:'Close Now',protect:'Protect & Expand',reclaim:'Reclaim',rebuild:'Rebuild'};
-  var csv='Section,Account,Category,Estimated Revenue,Score\n';
+  var csv='Section,Account,Category,Estimated Revenue,Score,Next Step\n';
   Object.entries(labels).forEach(function(entry){
     var s=entry[0],label=entry[1];
     (plan[s]||[]).forEach(function(a){
-      csv+=[label,a.name,a.cat||a.type||'',a.rev||a.estRev||'',Math.round((a.score||0)*10)].map(function(v){return '"'+String(v||'').replace(/"/g,'""')+'"';}).join(',')+'\n';
+      csv+=[label,a.name,a.cat||a.type||'',a.rev||a.estRev||'',Math.round(a.score||0),a.nextStep||''].map(function(v){return '"'+String(v||'').replace(/"/g,'""')+'"';}).join(',')+'\n';
     });
   });
   var blob=new Blob([csv],{type:'text/csv'});
@@ -434,10 +489,10 @@ function parseClose(rows, fname) {
       var notes=String(r[3]||'').trim(), type=String(r[4]||'').trim();
       var conf=String(r[6]||'').trim(), daysIn=cleanNum(r[8]);
       var apr=cleanNum(r[10]), may=cleanNum(r[11]), jun=cleanNum(r[12]);
-      var sizeScore=Math.min(10,rev/10000);
-      var confNum=conf==='95%'?9.5:conf==='75%'?7.5:conf==='50%'?5:3;
-      var staleScore=daysIn>90?1:daysIn>60?4:daysIn>30?6:8;
-      var score=Math.min(10, 0.30*sizeScore+0.25*confNum+0.25*staleScore+0.20*(rev>50000?2:0));
+      var sizeScore=Math.min(100,rev/1000);
+      var confNum=conf==='95%'?95:conf==='75%'?75:conf==='50%'?50:30;
+      var staleScore=daysIn>90?10:daysIn>60?40:daysIn>30?60:80;
+      var score=Math.min(100, 0.30*sizeScore+0.25*confNum+0.25*staleScore+0.20*(rev>50000?20:0));
       deals.push({name:acct, acct:acct, rev:rev, closing:closing, notes:notes, type:type, conf:conf, daysIn:daysIn, apr:apr, may:may, jun:jun, score:score, isIgnite:(type||'').toUpperCase().includes('IGNITE')});
     }
   }
@@ -450,8 +505,9 @@ function parseClose(rows, fname) {
     {label:'Deals',value:deals.length,sub:'Returning accounts'}
   ]);
   document.getElementById('close-content').innerHTML =
-    '<div style="margin-bottom:12px;font-size:.75rem;color:var(--dim);">'+fname+' — '+deals.length+' opportunities</div>'
-    +'<div class="mobile-scroll"><table class="bp-table"><thead><tr>'
+    '<input type="text" class="tab-search" data-table="close-table" placeholder="Search accounts…" oninput="filterTable(this)" style="background:var(--surface2);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:.8rem;width:100%;padding:7px 12px;margin-bottom:10px;outline:none;"/>'
+    +'<div style="margin-bottom:12px;font-size:.75rem;color:var(--dim);">'+fname+' — '+deals.length+' opportunities</div>'
+    +'<div class="mobile-scroll"><table id="close-table" class="bp-table"><thead><tr>'
     +'<th style="width:32px;"></th><th class="text-left">Account</th>'
     +'<th class="text-right accent">Score</th><th class="text-right">Revenue</th>'
     +'<th class="text-right hide-mobile">Confidence</th><th class="text-right hide-mobile">Days</th>'
@@ -491,7 +547,7 @@ function parseProtect(rows, fname) {
   clients.forEach(function(c){
     var traj=c.rev26>c.rev25*1.1?1:c.rev26<c.rev25*0.9?-1:0;
     c.trend=traj; c.rev=c.rev26;
-    c.score=Math.min(10,0.40*Math.min(10,(c.rev25+c.rev26)/15000)+0.25*(traj===1?8:traj===0?5:2)+0.20*5+0.15*(c.rev26>0?7:2));
+    c.score=Math.min(100,0.40*Math.min(100,(c.rev25+c.rev26)/1500)+0.25*(traj===1?80:traj===0?50:20)+0.20*50+0.15*(c.rev26>0?70:20));
   });
   clients.sort(function(a,b){return b.score-a.score;});
   state.protect=clients;
@@ -532,8 +588,9 @@ function renderProtect(clients, extraNote) {
     {label:"2026 Broadcast",value:hasIgnite?fmt(bcast26):"Upload Ignite file",sub:hasIgnite?pct(total26?bcast26/total26*100:null)+" of total":""}
   ]);
   document.getElementById("protect-content").innerHTML =
-    "<div style=\"margin-bottom:12px;font-size:.75rem;color:var(--dim);\">"+clients.length+" active clients"+(hasIgnite?" — Ignite/Broadcast split loaded":"")+"</div>"
-    +"<div class=\"mobile-scroll\"><table class=\"bp-table\"><thead><tr>"
+    "<input type=\"text\" class=\"tab-search\" data-table=\"protect-table\" placeholder=\"Search accounts…\" oninput=\"filterTable(this)\" style=\"background:var(--surface2);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:.8rem;width:100%;padding:7px 12px;margin-bottom:10px;outline:none;\"/>"
+    +"<div style=\"margin-bottom:12px;font-size:.75rem;color:var(--dim);\">"+clients.length+" active clients"+(hasIgnite?" — Ignite/Broadcast split loaded":"")+"</div>"
+    +"<div class=\"mobile-scroll\"><table id=\"protect-table\" class=\"bp-table\"><thead><tr>"
     +"<th style=\"width:32px;\"></th><th class=\"text-left\">Advertiser</th>"
     +"<th class=\"text-left hide-mobile\">AE</th><th class=\"text-right accent\">Score</th>"
     +"<th class=\"text-right\">2025 Total</th><th class=\"text-right\">2026 Total</th>"
@@ -564,8 +621,8 @@ function parseReclaim(rows, type, fname) {
   for (var i=hRow+1; i<rows.length; i++) {
     var r=rows[i]; if (!r||!r[1]||String(r[1]).trim()==='Total'||String(r[1]).trim()==='') continue;
     var adv=String(r[1]).trim(), r24=cleanNum(r[2]), r25=cleanNum(r[3]), r26=cleanNum(r[4]);
-    var histScore=Math.min(10,(r24+r25)/20000), recScore=r25>0?8:r24>0?5:2;
-    var score=Math.min(10, 0.35*histScore+0.35*recScore+0.20*5+0.10*(type==='ignite'?2:0));
+    var histScore=Math.min(100,(r24+r25)/2000), recScore=r25>0?80:r24>0?50:20;
+    var score=Math.min(100, 0.35*histScore+0.35*recScore+0.20*50+0.10*(type==='ignite'?20:0));
     var bucket=score>=6?'Reclaim Now':score>=4?'Reapproach Later':'Low Priority';
     clients.push({name:adv,adv:adv,rev24:r24,rev25:r25,rev26:r26,score:score,bucket:bucket,isIgnite:type==='ignite',rev:r25});
   }
@@ -587,8 +644,9 @@ function renderReclaim() {
   combined.sort(function(a,b){return b.score-a.score;});
   if (!combined.length) return;
   document.getElementById('reclaim-content').innerHTML =
-    '<div style="margin-bottom:12px;font-size:.75rem;color:var(--dim);">'+combined.length+' former clients</div>'
-    +'<div class="mobile-scroll"><table class="bp-table"><thead><tr>'
+    '<input type="text" class="tab-search" data-table="reclaim-table" placeholder="Search accounts…" oninput="filterTable(this)" style="background:var(--surface2);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:.8rem;width:100%;padding:7px 12px;margin-bottom:10px;outline:none;"/>'
+    +'<div style="margin-bottom:12px;font-size:.75rem;color:var(--dim);">'+combined.length+' former clients</div>'
+    +'<div class="mobile-scroll"><table id="reclaim-table" class="bp-table"><thead><tr>'
     +'<th style="width:32px;"></th><th class="text-left">Advertiser</th>'
     +'<th class="text-right accent">Score</th><th class="text-left">Bucket</th>'
     +'<th class="text-right hide-mobile">2024</th><th class="text-right">2025</th>'
@@ -624,8 +682,9 @@ function parseRebuild(rows, fname) {
     prospects.push({name:name,cat:cat,rev:rev,score:score,dist:null,estRev:rev});
   }
   prospects.sort(function(a,b){return b.score-a.score;});
-  state.rebuild=prospects;
-  renderRebuild(prospects, 0);
+  if (!state.rebuild) state.rebuild = { uploaded: [], discovered: [] };
+  state.rebuild.uploaded = prospects;
+  mergeAndRenderRebuild();
 }
 
 // ─── REBUILD (auto-discover) ─────────────────────────────────────────────────
@@ -670,10 +729,34 @@ async function getZipLatLng(zip) {
   return null;
 }
 
+function mergeAndRenderRebuild() {
+  if (!state.rebuild) state.rebuild = { uploaded: [], discovered: [] };
+  var uploaded = state.rebuild.uploaded || [];
+  var discovered = state.rebuild.discovered || [];
+  var merged = [];
+  var uploadedMap = {};
+  uploaded.forEach(function(p) { uploadedMap[p.name.toLowerCase()] = p; });
+  // Add all uploaded entries
+  uploaded.forEach(function(p) {
+    var inDiscovered = discovered.some(function(d){ return d.name.toLowerCase() === p.name.toLowerCase(); });
+    merged.push(Object.assign({}, p, { source: inDiscovered ? 'both' : 'uploaded' }));
+  });
+  // Add discovered entries not already in uploaded
+  discovered.forEach(function(p) {
+    if (!uploadedMap[p.name.toLowerCase()]) {
+      merged.push(Object.assign({}, p, { source: 'discovered' }));
+    }
+  });
+  merged.sort(function(a,b){return b.score-a.score;});
+  state.rebuild._merged = merged;
+  renderRebuild(merged, parseInt(document.getElementById('radiusSlider').value)||0);
+}
+
 async function filterRebuild() {
   if (!state.rebuild) return;
   var radius=parseInt(document.getElementById('radiusSlider').value);
-  var prospects=[...state.rebuild];
+  var prospects=[...(state.rebuild._merged || [])];
+  if (!prospects.length) { mergeAndRenderRebuild(); return; }
   if (state.geoCenter && radius>0) {
     for (var i=0; i<prospects.length; i++) {
       var p=prospects[i];
@@ -741,10 +824,11 @@ async function discoverProspects() {
       prospects.push({name:name,cat:matchedCat,city:city,dist:dist,estRev:cfg.sp*3500,score:score,sp:sp,mr:mr,as_:as_,ml:ml,cf:cf,_lat:lat,_lng:lng});
     });
     prospects.sort(function(a,b){return b.score-a.score;});
-    state.rebuild=prospects;
+    if (!state.rebuild) state.rebuild = { uploaded: [], discovered: [] };
+    state.rebuild.discovered = prospects;
     btn.disabled=false; btn.style.opacity='1';
     status.innerHTML='<span style="color:var(--green);">Found '+prospects.length+' prospects within '+radiusMi+' miles of '+center.city+'</span>';
-    renderRebuild(prospects, radiusMi);
+    mergeAndRenderRebuild();
   } catch(e) {
     btn.disabled=false; btn.style.opacity='1';
     status.textContent='Discovery failed. Try again or upload a list.';
@@ -752,19 +836,20 @@ async function discoverProspects() {
 }
 
 function renderRebuild(prospects, radius) {
-  var t1=prospects.filter(function(p){return p.score>=85;}).length;
-  var t2=prospects.filter(function(p){return p.score>=70&&p.score<85;}).length;
-  var t3=prospects.filter(function(p){return p.score>=55&&p.score<70;}).length;
+  var uploadedCount = (state.rebuild && state.rebuild.uploaded) ? state.rebuild.uploaded.length : 0;
+  var discoveredCount = (state.rebuild && state.rebuild.discovered) ? state.rebuild.discovered.length : 0;
+  var bothCount = prospects.filter(function(p){ return p.source === 'both'; }).length;
   updateSummaryCards([
     {label:'Prospects',value:prospects.length,sub:radius>0&&state.geoCenter?'Within '+radius+' miles':'All prospects'},
-    {label:'T1 Must Pursue',value:t1,sub:'Score 85+'},
-    {label:'T2 Strong Target',value:t2,sub:'Score 70–84'},
-    {label:'T3 Develop',value:t3,sub:'Score 55–69'}
+    {label:'Uploaded',value:uploadedCount,sub:uploadedCount>0?'From your list':'Not yet loaded'},
+    {label:'Discovered',value:discoveredCount,sub:discoveredCount>0?'Via auto-discover':'Not yet loaded'},
+    {label:'In Both',value:bothCount,sub:bothCount>0?'Verified targets':'Not yet loaded'}
   ]);
   var locInfo=radius>0&&state.geoCenter?' within '+radius+' mi of '+state.geoCenter.zip:'';
   document.getElementById('rebuild-content').innerHTML =
-    '<div style="margin-bottom:12px;font-size:.75rem;color:var(--dim);">'+prospects.length+' rebuild targets'+locInfo+'</div>'
-    +'<div class="mobile-scroll"><table class="bp-table"><thead><tr>'
+    '<input type="text" class="tab-search" data-table="rebuild-table" placeholder="Search accounts…" oninput="filterTable(this)" style="background:var(--surface2);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:.8rem;width:100%;padding:7px 12px;margin-bottom:10px;outline:none;"/>'
+    +'<div style="margin-bottom:12px;font-size:.75rem;color:var(--dim);">'+prospects.length+' rebuild targets'+locInfo+'</div>'
+    +'<div class="mobile-scroll"><table id="rebuild-table" class="bp-table"><thead><tr>'
     +'<th style="width:32px;"></th><th class="text-left">Advertiser Name</th>'
     +'<th class="text-left">Category</th>'
     +'<th class="text-right accent" style="width:80px;">Score</th>'
@@ -773,12 +858,25 @@ function renderRebuild(prospects, radius) {
     +prospects.map(function(p){
       var tip='Spend Potential: '+p.sp+'/30 | Marketing Readiness: '+p.mr+'/20 | Anchor Status: '+p.as_+'/20 | Multi-Location: '+p.ml+'/15 | Category Fit: '+p.cf+'/15';
       return '<tr>'+makeCheckbox('rebuild',p)
-        +'<td><strong style="color:#fff;">'+p.name+'</strong></td>'
+        +'<td><strong style="color:#fff;">'+p.name+'</strong>'
+        +(p.source==='uploaded'?'<span style="font-size:.6rem;background:rgba(251,191,36,.12);color:var(--yellow);border:1px solid rgba(251,191,36,.3);border-radius:3px;padding:1px 6px;margin-left:6px;">UPLOADED</span>':p.source==='discovered'?'<span style="font-size:.6rem;background:rgba(0,188,212,.12);color:var(--teal);border:1px solid var(--teal-border);border-radius:3px;padding:1px 6px;margin-left:6px;">DISCOVERED</span>':p.source==='both'?'<span style="font-size:.6rem;background:rgba(52,211,153,.15);color:var(--green);border:1px solid rgba(52,211,153,.3);border-radius:3px;padding:1px 6px;margin-left:6px;">✓ BOTH</span>':'')
+        +'</td>'
         +'<td style="color:var(--dim);font-size:.8rem;">'+(p.cat||'—')+'</td>'
         +'<td class="text-right"><span class="score-badge '+(p.score>=80?'score-high':p.score>=60?'score-mid':'score-low')+'" title="'+tip+'" style="cursor:help;">'+p.score+'</span></td>'
         +'<td class="hide-mobile">'+tierBadge(p.score)+'</td>'
         +'</tr>';
     }).join('')+'</tbody></table></div>';
+}
+
+function filterTable(input) {
+  var q = input.value.toLowerCase();
+  var tbl = document.getElementById(input.dataset.table);
+  if (!tbl) return;
+  tbl.querySelectorAll('tbody tr').forEach(function(row) {
+    var strong = row.querySelector('strong');
+    var name = strong ? strong.textContent.toLowerCase() : '';
+    row.style.display = (!q || name.includes(q)) ? '' : 'none';
+  });
 }
 
 // ─── INIT ─────────────────────────────────────────────────────────────────────
