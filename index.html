@@ -150,6 +150,7 @@
         <div style="display:flex;gap:8px;flex-wrap:wrap;">
           <button onclick="savePlanUrl()" style="background:var(--teal-dim);border:1px solid var(--teal-border);color:var(--teal);border-radius:6px;padding:7px 14px;font-size:.75rem;font-weight:700;cursor:pointer;">🔗 Share URL</button>
           <button onclick="exportPlan()" style="background:var(--teal-dim);border:1px solid var(--teal-border);color:var(--teal);border-radius:6px;padding:7px 14px;font-size:.75rem;font-weight:700;cursor:pointer;">⬇ Export CSV</button>
+          <button onclick="exportPlanPdf()" style="background:var(--teal-dim);border:1px solid var(--teal-border);color:var(--teal);border-radius:6px;padding:7px 14px;font-size:.75rem;font-weight:700;cursor:pointer;">🖨 Export PDF</button>
           <button onclick="clearPlan()" style="background:rgba(248,113,113,.1);border:1px solid rgba(248,113,113,.3);color:var(--red);border-radius:6px;padding:7px 14px;font-size:.75rem;cursor:pointer;">Clear All</button>
         </div>
       </div>
@@ -442,6 +443,68 @@ function exportPlan() {
   var blob=new Blob([csv],{type:'text/csv'});
   var url=URL.createObjectURL(blob);
   var a=document.createElement('a');a.href=url;a.download=market.replace(/\s/g,'_')+'_Plan.csv';a.click();
+}
+
+function exportPlanPdf() {
+  var market = document.getElementById('marketInput').value || 'Market';
+  var labels = {close:'Close Now', protect:'Protect & Expand', reclaim:'Reclaim', rebuild:'Rebuild'};
+  var sectionColors = {close:'#f87171', protect:'#34d399', reclaim:'#fbbf24', rebuild:'#00bcd4'};
+  var totalAccounts = 0, totalRev = 0;
+  Object.keys(plan).forEach(function(s){ (plan[s]||[]).forEach(function(a){ totalAccounts++; totalRev += (a.rev||a.estRev||0); }); });
+  function fmt2(n) { if (!n&&n!==0) return '—'; var abs=Math.abs(n); var s=abs>=1000000?'$'+(abs/1000000).toFixed(1)+'M':abs>=1000?'$'+Math.round(abs).toLocaleString():'$'+Math.round(abs); return n<0?'-'+s:s; }
+  var sectionsHtml = '';
+  Object.entries(labels).forEach(function(entry) {
+    var s=entry[0], label=entry[1], items=plan[s]||[];
+    if (!items.length) return;
+    var secRev = items.reduce(function(sum,a){return sum+(a.rev||a.estRev||0);},0);
+    var rows = items.map(function(a) {
+      return '<tr><td style="padding:7px 10px;border-bottom:1px solid #e2e8f0;font-weight:600;">'+a.name+'</td>'
+        +'<td style="padding:7px 10px;border-bottom:1px solid #e2e8f0;color:#64748b;font-size:.82rem;">'+( a.cat||a.type||'—')+'</td>'
+        +'<td style="padding:7px 10px;border-bottom:1px solid #e2e8f0;text-align:right;font-weight:600;">'+fmt2(a.rev||a.estRev||0)+'</td>'
+        +'<td style="padding:7px 10px;border-bottom:1px solid #e2e8f0;text-align:center;">'+Math.round(a.score||0)+'</td>'
+        +'<td style="padding:7px 10px;border-bottom:1px solid #e2e8f0;color:#64748b;font-size:.82rem;">'+(a.nextStep||'')+'</td>'
+        +'</tr>';
+    }).join('');
+    sectionsHtml += '<div style="margin-bottom:28px;">'
+      +'<div style="display:flex;justify-content:space-between;align-items:center;border-bottom:2px solid '+sectionColors[s]+';padding-bottom:6px;margin-bottom:10px;">'
+      +'<span style="font-size:.75rem;font-weight:800;text-transform:uppercase;letter-spacing:.07em;color:'+sectionColors[s]+';">'+label+' ('+items.length+')</span>'
+      +'<span style="font-size:.8rem;font-weight:700;color:#1e293b;">'+fmt2(secRev)+'</span></div>'
+      +'<table style="width:100%;border-collapse:collapse;font-size:.82rem;">'
+      +'<thead><tr style="background:#f1f5f9;">'
+      +'<th style="padding:7px 10px;text-align:left;font-size:.68rem;text-transform:uppercase;letter-spacing:.06em;color:#64748b;">Account</th>'
+      +'<th style="padding:7px 10px;text-align:left;font-size:.68rem;text-transform:uppercase;letter-spacing:.06em;color:#64748b;">Category</th>'
+      +'<th style="padding:7px 10px;text-align:right;font-size:.68rem;text-transform:uppercase;letter-spacing:.06em;color:#64748b;">Est. Revenue</th>'
+      +'<th style="padding:7px 10px;text-align:center;font-size:.68rem;text-transform:uppercase;letter-spacing:.06em;color:#64748b;">Score</th>'
+      +'<th style="padding:7px 10px;text-align:left;font-size:.68rem;text-transform:uppercase;letter-spacing:.06em;color:#64748b;">Next Step</th>'
+      +'</tr></thead><tbody>'+rows+'</tbody></table></div>';
+  });
+  var html = '<!DOCTYPE html><html><head><meta charset="UTF-8">'
+    +'<title>'+market+' — Market Attack Plan</title>'
+    +'<style>'
+    +'body{font-family:Inter,system-ui,sans-serif;color:#1e293b;margin:0;padding:32px 40px;font-size:.85rem;}'
+    +'@media print{body{padding:20px 28px;} .no-print{display:none;} @page{margin:1.5cm;size:A4;}}'
+    +'h1{font-size:1.4rem;font-weight:800;margin:0 0 2px;}'
+    +'.sub{font-size:.72rem;color:#64748b;margin-bottom:20px;}'
+    +'.cards{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:28px;}'
+    +'.card{border:1px solid #e2e8f0;border-top:3px solid #00bcd4;border-radius:6px;padding:12px 16px;}'
+    +'.card-label{font-size:.62rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:#64748b;margin-bottom:4px;}'
+    +'.card-value{font-size:1.35rem;font-weight:800;color:#1e293b;}'
+    +'.card-sub{font-size:.68rem;color:#94a3b8;margin-top:2px;}'
+    +'</style></head><body>'
+    +'<h1>'+market+' — Market Attack Plan</h1>'
+    +'<div class="sub">Generated '+new Date().toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'})+'</div>'
+    +'<div class="cards">'
+    +'<div class="card"><div class="card-label">Total Accounts</div><div class="card-value">'+totalAccounts+'</div><div class="card-sub">Across all sections</div></div>'
+    +'<div class="card"><div class="card-label">Total Opportunity</div><div class="card-value">'+fmt2(totalRev)+'</div><div class="card-sub">Est. revenue in plan</div></div>'
+    +'<div class="card"><div class="card-label">Close Now</div><div class="card-value">'+(plan.close||[]).length+'</div><div class="card-sub">'+fmt2((plan.close||[]).reduce(function(s,a){return s+(a.rev||0);},0))+'</div></div>'
+    +'<div class="card"><div class="card-label">Rebuild Targets</div><div class="card-value">'+(plan.rebuild||[]).length+'</div><div class="card-sub">'+fmt2((plan.rebuild||[]).reduce(function(s,a){return s+(a.estRev||a.rev||0);},0))+'</div></div>'
+    +'</div>'
+    + sectionsHtml
+    +'<script>window.onload=function(){window.print();}</script>'
+    +'</body></html>';
+  var win = window.open('', '_blank');
+  win.document.write(html);
+  win.document.close();
 }
 
 // ─── SUMMARY CARDS ────────────────────────────────────────────────────────────
