@@ -78,6 +78,7 @@
       <button onclick="switchTab('reclaim')" id="tab-reclaim" class="tab-inactive px-4 py-2 text-sm transition-all">Reclaim</button>
       <button onclick="switchTab('rebuild')" id="tab-rebuild" class="tab-inactive px-4 py-2 text-sm transition-all">Rebuild</button>
       <button onclick="switchTab('plan')"   id="tab-plan"   class="tab-inactive px-4 py-2 text-sm transition-all">📋 Plan (<span id="planCount">0</span>)</button>
+      <button onclick="switchTab('library')" id="tab-library" class="tab-inactive px-4 py-2 text-sm transition-all">📂 Saved Plans</button>
     </div>
 
     <!-- CLOSE NOW -->
@@ -166,6 +167,24 @@
       <div id="planSummaryCards" class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-5"></div>
       <!-- Plan sections -->
       <div id="planSections"></div>
+    </div>
+
+    <!-- LIBRARY -->
+    <div id="panel-library" class="p-5 hidden">
+      <!-- Header -->
+      <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:20px;">
+        <div>
+          <div style="font-weight:800;font-size:1.1rem;color:#fff;">Saved Plans</div>
+          <div style="font-size:.72rem;color:var(--dim);margin-top:2px;">All saved market plans — click any to load and edit</div>
+        </div>
+        <button onclick="saveToLibrary()" style="background:var(--teal);color:#000;font-weight:700;border:none;border-radius:6px;padding:8px 16px;font-size:.8rem;cursor:pointer;">💾 Save Current Plan</button>
+      </div>
+      <!-- Search bar -->
+      <div style="margin-bottom:16px;">
+        <input id="librarySearch" type="text" placeholder="Search by market name…" oninput="renderLibraryTab()" style="width:100%;max-width:360px;background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:8px 12px;color:var(--text);font-size:.85rem;outline:none;">
+      </div>
+      <!-- Plan list -->
+      <div id="libraryList"></div>
     </div>
 
     <!-- REBUILD -->
@@ -267,13 +286,14 @@ function tierBadge(s) {
 
 // ─── TAB SWITCHING ────────────────────────────────────────────────────────────
 function switchTab(t) {
-  ['close','protect','reclaim','rebuild','plan'].forEach(function(id) {
+  ['close','protect','reclaim','rebuild','plan','library'].forEach(function(id) {
     const p = document.getElementById('panel-'+id);
     const b = document.getElementById('tab-'+id);
     if (p) p.classList.toggle('hidden', id!==t);
     if (b) b.className = (id===t?'tab-active':'tab-inactive')+' px-4 py-2 text-sm transition-all';
   });
   if (t==='plan') refreshPlanModal();
+  if (t==='library') renderLibraryTab();
 }
 
 // ─── PLAN ────────────────────────────────────────────────────────────────────
@@ -403,6 +423,102 @@ function updateNextStep(section, name, value) {
   if (acct) { acct.nextStep = value; savePlanLocal(); }
 }
 function savePlanLocal() { try{localStorage.setItem('reignite_plan',JSON.stringify(plan));}catch(e){} }
+function getSavedPlans() {
+  try { return JSON.parse(localStorage.getItem('reignite_library') || '[]'); } catch(e) { return []; }
+}
+function saveToLibrary() {
+  var market = document.getElementById('marketInput').value.trim();
+  if (!market) { alert('Please enter a market name in the top-right corner before saving.'); return; }
+  var total = Object.values(plan).reduce(function(s,a){return s+a.length;},0);
+  if (!total) { alert('Add at least one account to the plan before saving.'); return; }
+  var library = getSavedPlans();
+  var existing = library.findIndex(function(p){ return p.market.toLowerCase()===market.toLowerCase(); });
+  var now = Date.now();
+  var entry = {
+    id: existing>=0 ? library[existing].id : now.toString(),
+    market: market,
+    createdAt: existing>=0 ? library[existing].createdAt : now,
+    updatedAt: now,
+    plan: JSON.parse(JSON.stringify(plan))
+  };
+  if (existing>=0) {
+    if (!confirm('A plan for "'+market+'" already exists. Overwrite it?')) return;
+    library[existing] = entry;
+  } else {
+    library.unshift(entry);
+  }
+  try { localStorage.setItem('reignite_library', JSON.stringify(library)); } catch(e) { alert('Save failed — storage may be full.'); return; }
+  renderLibraryTab();
+  alert('Plan saved for ' + market + '!');
+}
+function loadFromLibrary(id) {
+  var library = getSavedPlans();
+  var entry = library.find(function(p){ return p.id===id; });
+  if (!entry) return;
+  document.getElementById('marketInput').value = entry.market;
+  document.getElementById('marketLabel').textContent = entry.market;
+  Object.keys(plan).forEach(function(s){ plan[s] = entry.plan[s] || []; });
+  savePlanLocal();
+  updatePlanFab();
+  switchTab('plan');
+  refreshPlanModal();
+}
+function deleteFromLibrary(id, market) {
+  if (!confirm('Delete the saved plan for "'+market+'"? This cannot be undone.')) return;
+  var library = getSavedPlans().filter(function(p){ return p.id!==id; });
+  localStorage.setItem('reignite_library', JSON.stringify(library));
+  renderLibraryTab();
+}
+function renderLibraryTab() {
+  var list = document.getElementById('libraryList');
+  if (!list) return;
+  var query = (document.getElementById('librarySearch')||{}).value || '';
+  var library = getSavedPlans();
+  if (query.trim()) {
+    library = library.filter(function(p){ return p.market.toLowerCase().includes(query.toLowerCase()); });
+  }
+  library.sort(function(a,b){ return b.createdAt - a.createdAt; });
+  if (!library.length) {
+    list.innerHTML = '<div style="text-align:center;color:var(--dim);padding:60px 0;font-size:.88rem;">'
+      +(query ? 'No plans match "'+query+'".' : 'No saved plans yet.<br><span style="font-size:.78rem;">Build a plan in the Plan tab, then hit Save Current Plan.</span>')
+      +'</div>';
+    return;
+  }
+  list.innerHTML = '<div style="display:flex;flex-direction:column;gap:10px;">'
+    + library.map(function(entry) {
+      var total = Object.values(entry.plan).reduce(function(s,a){return s+a.length;},0);
+      var rev = Object.values(entry.plan).reduce(function(s,arr){
+        return s + arr.reduce(function(s2,a){return s2+(a.rev||a.estRev||0);},0);
+      },0);
+      var sectionCounts = {close:0,protect:0,reclaim:0,rebuild:0};
+      Object.keys(sectionCounts).forEach(function(s){ sectionCounts[s]=(entry.plan[s]||[]).length; });
+      var created = new Date(entry.createdAt).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
+      var updated = new Date(entry.updatedAt).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
+      var sameDate = created === updated;
+      var safeMarket = entry.market.replace(/'/g,"\\'");
+      return '<div class="card p-4" style="border:1px solid var(--border);transition:border-color .2s;" onmouseover="this.style.borderColor=\'var(--teal-border)\'" onmouseout="this.style.borderColor=\'var(--border)\'" >'
+        +'<div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;">'
+        +'<div style="flex:1;cursor:pointer;" onclick="loadFromLibrary(\''+entry.id+'\')" >'
+        +'<div style="font-weight:800;font-size:1rem;color:#fff;margin-bottom:4px;">'+entry.market+'</div>'
+        +'<div style="font-size:.72rem;color:var(--dim);">Created '+created+(sameDate?'':' &nbsp;&middot;&nbsp; Updated '+updated)+'</div>'
+        +'<div style="display:flex;gap:16px;margin-top:10px;flex-wrap:wrap;">'
+        +'<span style="font-size:.72rem;color:var(--text);"><span style="color:var(--teal);font-weight:700;">'+total+'</span> accounts</span>'
+        +'<span style="font-size:.72rem;color:var(--text);"><span style="color:var(--green);font-weight:700;">'+fmt(rev)+'</span> opportunity</span>'
+        +(sectionCounts.close?'<span style="font-size:.68rem;color:var(--dim);">&#128308; '+sectionCounts.close+' Close</span>':'')
+        +(sectionCounts.protect?'<span style="font-size:.68rem;color:var(--dim);">&#128994; '+sectionCounts.protect+' Protect</span>':'')
+        +(sectionCounts.reclaim?'<span style="font-size:.68rem;color:var(--dim);">&#128993; '+sectionCounts.reclaim+' Reclaim</span>':'')
+        +(sectionCounts.rebuild?'<span style="font-size:.68rem;color:var(--dim);">&#128309; '+sectionCounts.rebuild+' Rebuild</span>':'')
+        +'</div>'
+        +'</div>'
+        +'<div style="display:flex;gap:8px;flex-shrink:0;">'
+        +'<button onclick="loadFromLibrary(\''+entry.id+'\')" style="background:var(--teal-dim);border:1px solid var(--teal-border);color:var(--teal);border-radius:6px;padding:6px 12px;font-size:.75rem;font-weight:700;cursor:pointer;">Load</button>'
+        +'<button onclick="event.stopPropagation();deleteFromLibrary(\''+entry.id+'\',\''+safeMarket+'\')" style="background:rgba(248,113,113,.1);border:1px solid rgba(248,113,113,.3);color:var(--red);border-radius:6px;padding:6px 10px;font-size:.75rem;cursor:pointer;" title="Delete">&#128465;</button>'
+        +'</div>'
+        +'</div>'
+        +'</div>';
+    }).join('')
+    +'</div>';
+}
 function loadPlanLocal() {
   try { var d=JSON.parse(localStorage.getItem('reignite_plan')||'{}'); Object.keys(plan).forEach(function(s){if(d[s])plan[s]=d[s];}); updatePlanFab(); } catch(e){}
 }
@@ -945,6 +1061,7 @@ function filterTable(input) {
 // ─── INIT ─────────────────────────────────────────────────────────────────────
 loadPlanLocal();
 loadPlanFromUrl();
+renderLibraryTab();
 updateSummaryCards([
   {label:'Upload Files',value:'↑',sub:'Start by uploading a file in any tab'},
   {label:'Score',value:'Auto',sub:'Scoring applied on upload'},
