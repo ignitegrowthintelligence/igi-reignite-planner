@@ -500,7 +500,7 @@ function exportPlanPdf() {
     +'<div class="card"><div class="card-label">Rebuild Targets</div><div class="card-value">'+(plan.rebuild||[]).length+'</div><div class="card-sub">'+fmt2((plan.rebuild||[]).reduce(function(s,a){return s+(a.estRev||a.rev||0);},0))+'</div></div>'
     +'</div>'
     + sectionsHtml
-    +'<script>window.onload=function(){window.print();}</script>'
+    +'<scr'+'ipt>window.onload=function(){window.print();}<\/scr'+'ipt>'
     +'</body></html>';
   var win = window.open('', '_blank');
   win.document.write(html);
