@@ -401,7 +401,11 @@ function refreshPlanModal() {
       html += '<tr>'
         + '<td><strong style="color:#fff;">'+(a.name||'—')+'</strong></td>'
         + '<td class="hide-mobile" style="color:var(--dim);font-size:.78rem;">'+(a.cat||a.type||'—')+'</td>'
-        + '<td class="text-right hide-mobile" style="color:#fff;font-weight:600;">'+(a.rev||a.estRev?fmt(a.rev||a.estRev):'—')+'</td>'
+        + '<td class="text-right hide-mobile">'
+        + '<input type="text" value="'+(a.rev||a.estRev||0)+'" '
+        + 'onchange="updateRevenue(\''+s+'\',\''+safeName+'\',this.value)" '
+        + 'style="width:90px;background:var(--surface2);border:1px solid var(--border);border-radius:4px;padding:4px 8px;color:#fff;font-size:.78rem;font-weight:600;text-align:right;outline:none;">'
+        + '</td>'
         + '<td class="text-right">'+scoreBadge(sc100)+'</td>'
         + '<td><input type="text" value="'+noteVal+'" placeholder="Add next step…" '
         + 'onchange="updateNextStep(\''+s+'\',\''+safeName+'\',this.value)" '
@@ -421,6 +425,18 @@ function updateNextStep(section, name, value) {
   var items = plan[section] || [];
   var acct = items.find(function(a){ return a.name === name; });
   if (acct) { acct.nextStep = value; savePlanLocal(); }
+}
+function updateRevenue(section, name, value) {
+  var items = plan[section] || [];
+  var acct = items.find(function(a){ return a.name === name; });
+  if (!acct) return;
+  var cleaned = parseFloat(String(value).replace(/[$,\s]/g,''));
+  if (!isNaN(cleaned)) {
+    acct.rev = cleaned;
+    acct.estRev = cleaned;
+    savePlanLocal();
+    refreshPlanModal();
+  }
 }
 function savePlanLocal() { try{localStorage.setItem('reignite_plan',JSON.stringify(plan));}catch(e){} }
 function getSavedPlans() {
