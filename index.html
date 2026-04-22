@@ -1063,23 +1063,23 @@ function parseRebuild(rows, fname) {
 // ─── REBUILD (auto-discover) ─────────────────────────────────────────────────
 const GOOGLE_PLACES_KEY = 'AIzaSyD8bC6HVmYrb6MudvcXW92Q5OYpvnoxytY';
 const CATEGORY_CONFIG = {
- 'Legal/Attorneys': {types:['lawyer'], avgRev:84152},
- 'HVAC': {types:['hvac_contractor'], avgRev:52000},
- 'Plumbing': {types:['plumber'], avgRev:40000},
- 'Roofing': {types:['roofing_contractor'], avgRev:48000},
- 'Med Spa / Aesthetics':{types:['spa'], avgRev:55000},
- 'Senior Living': {types:['nursing_home'], avgRev:35000},
- 'Hospital': {types:['hospital'], avgRev:26235},
- 'Medical Clinic': {types:['doctor'], avgRev:26235},
- 'Dentist': {types:['dentist'], avgRev:28000},
- 'Banks/Financial': {types:['bank'], avgRev:56927},
- 'Insurance': {types:['insurance_agency'], avgRev:38000},
- 'Real Estate': {types:['real_estate_agency'],avgRev:42000},
- 'Auto Dealer': {types:['car_dealer'], avgRev:26685},
- 'Auto Repair': {types:['car_repair'], avgRev:22000},
- 'Furniture': {types:['furniture_store'], avgRev:32000},
- 'University/College': {types:['university'], avgRev:21700},
- 'Casino': {types:['casino'], avgRev:59151}
+ 'Legal/Attorneys': {types:['lawyer'], searchQuery:'lawyer', avgRev:84152},
+ 'HVAC': {types:['hvac_contractor'], searchQuery:'HVAC contractor', avgRev:52000},
+ 'Plumbing': {types:['plumber'], searchQuery:'plumber', avgRev:40000},
+ 'Roofing': {types:['roofing_contractor'], searchQuery:'roofing contractor', avgRev:48000},
+ 'Med Spa / Aesthetics':{types:['spa'], searchQuery:'medical spa', avgRev:55000},
+ 'Senior Living': {types:['nursing_home'], searchQuery:'senior living nursing home',avgRev:35000},
+ 'Hospital': {types:['hospital'], searchQuery:'hospital', avgRev:26235},
+ 'Medical Clinic': {types:['doctor'], searchQuery:'medical clinic doctor', avgRev:26235},
+ 'Dentist': {types:['dentist'], searchQuery:'dentist', avgRev:28000},
+ 'Banks/Financial': {types:['bank'], searchQuery:'bank credit union', avgRev:56927},
+ 'Insurance': {types:['insurance_agency'], searchQuery:'insurance agency', avgRev:38000},
+ 'Real Estate': {types:['real_estate_agency'],searchQuery:'real estate agency', avgRev:42000},
+ 'Auto Dealer': {types:['car_dealer'], searchQuery:'auto dealer car dealer', avgRev:26685},
+ 'Auto Repair': {types:['car_repair'], searchQuery:'auto repair shop', avgRev:22000},
+ 'Furniture': {types:['furniture_store'], searchQuery:'furniture store', avgRev:32000},
+ 'University/College': {types:['university'], searchQuery:'university college', avgRev:21700},
+ 'Casino': {types:['casino'], searchQuery:'casino', avgRev:59151}
 };
 const CATEGORY_SCORES = {
  'Legal/Attorneys': 30,
@@ -1454,8 +1454,7 @@ async function discoverProspects() {
  do {
  try {
  var body = {
- textQuery: cat,
- includedType: cfg.types[0],
+ textQuery: cfg.searchQuery || cat,
  maxResultCount: 20,
  locationBias: {
  circle: {
@@ -1464,6 +1463,7 @@ async function discoverProspects() {
  }
  }
  };
+ if (cfg.types && cfg.types[0]) body.includedType = cfg.types[0];
  if (pageToken) body.pageToken = pageToken;
 
  var resp = await fetch('https://places.googleapis.com/v1/places:searchText', {
@@ -1478,7 +1478,25 @@ async function discoverProspects() {
 
  if (!resp.ok) {
  var errData = await resp.json().catch(function(){ return {}; });
- throw new Error((errData.error && errData.error.message) ? errData.error.message : 'HTTP ' + resp.status);
+ var errMsg = (errData.error && errData.error.message) ? errData.error.message : 'HTTP ' + resp.status;
+ console.error('Places API error for category "' + cat + '":', errMsg, body);
+ // If includedType caused the 400, retry without it
+ if (resp.status === 400 && body.includedType) {
+ console.warn('Retrying ' + cat + ' without includedType filter...');
+ delete body.includedType;
+ resp = await fetch('https://places.googleapis.com/v1/places:searchText', {
+ method: 'POST',
+ headers: {
+ 'Content-Type': 'application/json',
+ 'X-Goog-Api-Key': GOOGLE_PLACES_KEY,
+ 'X-Goog-FieldMask':'places.displayName,places.location,places.rating,places.userRatingCount,places.priceLevel,places.photos,places.websiteUri,places.regularOpeningHours,places.businessStatus,places.formattedAddress,places.nationalPhoneNumber,nextPageToken'
+ },
+ body: JSON.stringify(body)
+ });
+ if (!resp.ok) throw new Error('HTTP ' + resp.status + ' — ' + cat + ' search failed');
+ } else {
+ throw new Error(errMsg);
+ }
  }
 
  var data = await resp.json();
