@@ -215,7 +215,7 @@
               <label style="font-size:.72rem;color:var(--dim);">Target ZIP Code</label>
               <input id="zipInput" type="text" maxlength="5" placeholder="e.g. 13501"
                 style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:8px 12px;color:var(--text);font-size:.85rem;margin-top:4px;outline:none;"
-                oninput="updateGeoFilter()"/>
+                oninput="handleZipInput(this.value)"/>
             </div>
             <div id="geoDescDisplay" style="display:flex;align-items:center;gap:8px;padding:8px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:6px;margin-top:20px;min-height:40px;">
               <span style="font-size:.72rem;color:var(--dim);">Location:</span>
@@ -1267,6 +1267,21 @@ function reScoreRebuild(){
   mergeAndRenderRebuild();
   buildCategoryFilters();
 }
+async function handleZipInput(val) {
+  var zip = val.replace(/\D/g,'');
+  if (zip.length !== 5) return;
+  try {
+    var r = await fetch('https://nominatim.openstreetmap.org/search?postalcode='+zip+'&country=US&format=json&limit=1');
+    var d = await r.json();
+    if (!d||!d[0]) return;
+    var city = d[0].display_name.split(',')[0].trim();
+    state.geoCenter = {lat:parseFloat(d[0].lat),lng:parseFloat(d[0].lon),zip:zip,city:city};
+    var lbl = document.getElementById('geoDescLabel');
+    if (lbl) lbl.textContent = city+', '+zip;
+    filterRebuild();
+  } catch(e) {}
+}
+
 function mergeAndRenderRebuild() {
   if (!state.rebuild) state.rebuild = { uploaded: [], discovered: [] };
   var uploaded = state.rebuild.uploaded || [];
