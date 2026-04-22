@@ -1267,6 +1267,21 @@ function reScoreRebuild(){
   mergeAndRenderRebuild();
   buildCategoryFilters();
 }
+function haversine(lat1,lng1,lat2,lng2) {
+  var R=3958.8, dLat=(lat2-lat1)*Math.PI/180, dLng=(lng2-lng1)*Math.PI/180;
+  var a=Math.sin(dLat/2)*Math.sin(dLat/2)+Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)*Math.sin(dLng/2)*Math.sin(dLng/2);
+  return R*2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a));
+}
+
+async function getZipLatLng(zip) {
+  if (zipCache[zip]) return zipCache[zip];
+  try {
+    var r=await fetch('https://nominatim.openstreetmap.org/search?postalcode='+zip+'&country=US&format=json&limit=1');
+    if (r.ok) { var d=await r.json(); if(d&&d[0]) { var v={lat:parseFloat(d[0].lat),lng:parseFloat(d[0].lon)}; zipCache[zip]=v; return v; } }
+  } catch(e) {}
+  return null;
+}
+
 async function handleZipInput(val) {
   var zip = val.replace(/\D/g,'');
   if (zip.length !== 5) return;
