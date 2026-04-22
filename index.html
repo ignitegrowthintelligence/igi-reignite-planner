@@ -945,7 +945,7 @@ function parseReclaim(rows, type, fname) {
         {label:'Spend Consistency',score:stabScore,max:10,detail:stabDetail}
       ]};
     var bucket=score>=60?'Reclaim Now':score>=40?'Reapproach Later':'Low Priority';
-    clients.push({name:adv,adv:adv,rev24:r24,rev25:r25,rev26:r26,score:score,bucket:bucket,isIgnite:type==='ignite',rev:peakSpend,_scoreData:_sd});
+    clients.push({name:adv,adv:adv,rev24:r24,rev25:r25,rev26:r26,score:score,bucket:bucket,isIgnite:type==='ignite',rev:peakSpend,source:type,_scoreData:_sd});
   }
   clients.sort(function(a,b){return b.score-a.score;});
   if (type==='ignite') state.reclaimIgnite=clients; else state.reclaimAll=clients;
@@ -958,32 +958,106 @@ function parseReclaim(rows, type, fname) {
   ]);
 }
 function renderReclaim() {
-  var ign=state.reclaimIgnite||[], all=state.reclaimAll||[];
-  var ignNames=new Set(ign.map(function(c){return c.adv.toLowerCase();}));
-  var combined=[...ign];
-  all.forEach(function(c){ if (!ignNames.has(c.adv.toLowerCase())) combined.push(c); });
-  combined.sort(function(a,b){return b.score-a.score;});
+  var ign = state.reclaimIgnite || [];
+  var all = state.reclaimAll || [];
+
+  var allMap = {};
+  all.forEach(function(c){ allMap[c.adv.toLowerCase()] = c; });
+
+  var combined = [];
+  var matched = new Set();
+
+  ign.forEach(function(c) {
+    var key = c.adv.toLowerCase();
+    var allClient = allMap[key];
+    if (allClient) {
+      matched.add(key);
+      combined.push({
+        name:c.adv, adv:c.adv, score:c.score, bucket:c.bucket, _scoreData:c._scoreData,
+        source:'both',
+        allRev24:allClient.rev24||0, allRev25:allClient.rev25||0, allRev26:allClient.rev26||0,
+        ignRev24:c.rev24||0,         ignRev25:c.rev25||0,          ignRev26:c.rev26||0,
+        rev:Math.max(allClient.rev24||0, allClient.rev25||0, allClient.rev26||0)
+      });
+    } else {
+      combined.push({
+        name:c.adv, adv:c.adv, score:c.score, bucket:c.bucket, _scoreData:c._scoreData,
+        source:'ignite',
+        allRev24:0, allRev25:0, allRev26:0,
+        ignRev24:c.rev24||0, ignRev25:c.rev25||0, ignRev26:c.rev26||0,
+        rev:c.rev
+      });
+    }
+  });
+
+  all.forEach(function(c) {
+    if (!matched.has(c.adv.toLowerCase())) {
+      combined.push({
+        name:c.adv, adv:c.adv, score:c.score, bucket:c.bucket, _scoreData:c._scoreData,
+        source:'all',
+        allRev24:c.rev24||0, allRev25:c.rev25||0, allRev26:c.rev26||0,
+        ignRev24:0, ignRev25:0, ignRev26:0,
+        rev:c.rev
+      });
+    }
+  });
+
+  combined.sort(function(a,b){ return b.score-a.score; });
   if (!combined.length) return;
+
+  var hasIgnite = ign.length > 0;
+  var hasAll    = all.length > 0;
+
   document.getElementById('reclaim-content').innerHTML =
-    '<input type="text" class="tab-search" data-table="reclaim-table" placeholder="Search accounts…" oninput="filterTable(this)" style="background:var(--surface2);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:.8rem;width:100%;padding:7px 12px;margin-bottom:10px;outline:none;"/>'
-    +'<div style="margin-bottom:12px;font-size:.75rem;color:var(--dim);">'+combined.length+' former clients</div>'
+    '<input type="text" class="tab-search" data-table="reclaim-table" placeholder="Search accounts\u2026" oninput="filterTable(this)" style="background:var(--surface2);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:.8rem;width:100%;padding:7px 12px;margin-bottom:10px;outline:none;"/>'
+    +'<div style="margin-bottom:12px;font-size:.75rem;color:var(--dim);">'+combined.length+' former clients'
+    +(matched.size?' \u2014 <span style="color:var(--teal);">'+matched.size+' matched across both files</span>':'')
+    +'</div>'
     +'<div class="mobile-scroll"><table id="reclaim-table" class="bp-table"><thead><tr>'
-    +'<th style="width:32px;"></th><th class="text-left">Advertiser</th>'
-    +'<th class="text-right accent">IGI Score</th><th class="text-left">Bucket</th>'
-    +'<th class="text-right hide-mobile">2024</th><th class="text-right">2025</th>'
-    +'<th class="text-left hide-mobile">Type</th>'
+    +'<th style="width:32px;"></th>'
+    +'<th class="text-left">Advertiser</th>'
+    +'<th class="text-right accent">IGI Score</th>'
+    +'<th class="text-left">Bucket</th>'
+    +(hasAll?'<th class="text-right hide-mobile" style="color:var(--dim);">All Rev 2024</th>':'')
+    +(hasAll?'<th class="text-right hide-mobile" style="color:var(--dim);">All Rev 2025</th>':'')
+    +(hasAll?'<th class="text-right" style="color:var(--dim);">All Rev 2026</th>':'')
+    +(hasIgnite?'<th class="text-right hide-mobile" style="color:var(--teal);font-size:.65rem;">IGN 2024</th>':'')
+    +(hasIgnite?'<th class="text-right hide-mobile" style="color:var(--teal);font-size:.65rem;">IGN 2025</th>':'')
+    +(hasIgnite?'<th class="text-right" style="color:var(--teal);font-size:.65rem;">IGN 2026</th>':'')
+    +'<th class="text-left hide-mobile">Source</th>'
     +'</tr></thead><tbody>'
-    +combined.map(function(c){
-      var b=c.bucket==='Reclaim Now'?'<span class="badge-now">RECLAIM NOW</span>':c.bucket==='Reapproach Later'?'<span class="badge-reclaim">REAPPROACH</span>':'<span style="font-size:.68rem;color:var(--dim);">Low Priority</span>';
-      return '<tr>'+makeCheckbox('reclaim',c)
+    +combined.map(function(c) {
+      var bucket = c.bucket==='Reclaim Now'
+        ? '<span class="badge-now">RECLAIM NOW</span>'
+        : c.bucket==='Reapproach Later'
+        ? '<span class="badge-reclaim">REAPPROACH</span>'
+        : '<span style="font-size:.68rem;color:var(--dim);">Low Priority</span>';
+      var sourceBadge = c.source==='both'
+        ? '<span style="font-size:.65rem;background:rgba(52,211,153,.15);color:var(--green);border:1px solid rgba(52,211,153,.3);border-radius:3px;padding:1px 6px;">\u2713 BOTH</span>'
+        : c.source==='ignite'
+        ? '<span class="badge-ignite">IGNITE</span>'
+        : '<span style="font-size:.68rem;color:var(--dim);">All Revenue</span>';
+      function revCell(v, color) {
+        return '<td class="text-right hide-mobile" style="color:'+(v?(color||'#fff'):'var(--dim)')+';">'+(v?fmt(v):'\u2014')+'</td>';
+      }
+      function revCellVisible(v, color) {
+        return '<td class="text-right" style="color:'+(v?(color||'#fff'):'var(--dim)')+';">'+(v?fmt(v):'\u2014')+'</td>';
+      }
+      return '<tr>'
+        +makeCheckbox('reclaim', c)
         +'<td><strong style="color:#fff;">'+c.adv+'</strong></td>'
-        +'<td class="text-right">'+scoreBadge(c.score,c._scoreData)+'</td>'
-        +'<td>'+b+'</td>'
-        +'<td class="text-right hide-mobile" style="color:var(--dim);">'+(c.rev24?fmt(c.rev24):'—')+'</td>'
-        +'<td class="text-right" style="color:#fff;font-weight:600;">'+(c.rev25?fmt(c.rev25):'—')+'</td>'
-        +'<td class="hide-mobile">'+(c.isIgnite?'<span class="badge-ignite">IGNITE</span>':'<span style="font-size:.68rem;color:var(--dim);">All revenue</span>')+'</td>'
+        +'<td class="text-right">'+scoreBadge(c.score, c._scoreData)+'</td>'
+        +'<td>'+bucket+'</td>'
+        +(hasAll?revCell(c.allRev24):'')
+        +(hasAll?revCell(c.allRev25):'')
+        +(hasAll?revCellVisible(c.allRev26):'')
+        +(hasIgnite?revCell(c.ignRev24,'var(--teal)'):'')
+        +(hasIgnite?revCell(c.ignRev25,'var(--teal)'):'')
+        +(hasIgnite?revCellVisible(c.ignRev26,'var(--teal)'):'')
+        +'<td class="hide-mobile">'+sourceBadge+'</td>'
         +'</tr>';
-    }).join('')+'</tbody></table></div>';
+    }).join('')
+    +'</tbody></table></div>';
 }
 
 // ─── REBUILD (upload) ─────────────────────────────────────────────────────────
