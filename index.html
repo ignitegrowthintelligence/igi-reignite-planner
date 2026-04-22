@@ -1192,7 +1192,7 @@ async function updateGeoFilter() {
   if (zip.length===5) {
     try {
       var r=await fetch('https://nominatim.openstreetmap.org/search?postalcode='+zip+'&country=US&format=json&limit=1',{headers:{'User-Agent':'IGI-ReIgnite/1.0'}});
-      if (r.ok) { var d=await r.json(); if(d&&d[0]) { state.geoCenter={lat:parseFloat(d[0].lat),lng:parseFloat(d[0].lon),zip:zip}; filterRebuild(); } }
+      if (r.ok) { var d=await r.json(); if(d&&d[0]) { state.geoCenter={lat:parseFloat(d[0].lat),lng:parseFloat(d[0].lon),zip:zip,city:d[0].display_name.split(',')[0]}; filterRebuild(); } }
     } catch(e) {}
   }
 }
