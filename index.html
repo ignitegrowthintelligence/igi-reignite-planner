@@ -1359,15 +1359,14 @@ async function discoverProspects() {
   }
   btn.disabled=true; btn.style.opacity='.6';
   status.innerHTML='<span style="color:var(--teal);">Searching '+radiusMi+' mi around '+center.city+'...</span>';
+  var geo='(around:'+radiusM+','+center.lat+','+center.lng+')';
   var lines=[];
   Object.values(CATEGORY_CONFIG).forEach(function(cfg) {
     cfg.tags.forEach(function(pair) {
-      var geo='(around:'+radiusM+','+center.lat+','+center.lng+')';
       lines.push('node["'+pair[0]+'"="'+pair[1]+'"]'+geo+';');
-      lines.push('way["'+pair[0]+'"="'+pair[1]+'"]'+geo+';');
     });
   });
-  var query='[out:json][timeout:30];(\n'+lines.join('\n')+'\n);out center tags;';
+  var query='[out:json][timeout:60];(\n'+lines.join('\n')+'\n);out center tags;';
   try {
     var resp=await fetch('https://overpass-api.de/api/interpreter',{method:'POST',body:'data='+encodeURIComponent(query)});
     if (!resp.ok) throw new Error('Overpass API error');
