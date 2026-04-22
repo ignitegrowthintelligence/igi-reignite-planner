@@ -235,43 +235,55 @@
           </div>
         </div>
       </div>
-      <div class="card p-4 mb-4" style="margin-bottom:16px;">
-        <div style="font-size:.7rem;font-weight:700;color:var(--teal);letter-spacing:.07em;text-transform:uppercase;margin-bottom:12px;">Market Context <span style="font-size:.65rem;color:var(--dim);font-weight:400;text-transform:none;letter-spacing:0;">&mdash; refines IGI Score</span></div>
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div>
-            <label style="font-size:.72rem;color:var(--dim);">Existing clients in this category</label>
-            <select id="saturationInput" onchange="reScoreRebuild()" style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:8px 10px;color:var(--text);font-size:.8rem;margin-top:4px;outline:none;">
-              <option value="0">None yet &mdash; untapped</option>
-              <option value="1">1&ndash;2 clients</option>
-              <option value="3">3&ndash;5 clients</option>
-              <option value="6">6&ndash;10 clients</option>
-              <option value="11">10+ (saturated)</option>
-            </select>
-            <div style="font-size:.63rem;color:var(--dim);margin-top:3px;">Low penetration = IGI Score boost</div>
-          </div>
-          <div>
-            <label style="font-size:.72rem;color:var(--dim);">Revenue target tier</label>
-            <select id="tierInput" onchange="reScoreRebuild()" style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:8px 10px;color:var(--text);font-size:.8rem;margin-top:4px;outline:none;">
-              <option value="sweetspot" selected>$100K&ndash;$250K sweet spot</option>
-              <option value="midmarket">$50K&ndash;$100K mid-market</option>
-              <option value="enterprise">$250K+ enterprise</option>
-              <option value="any">Any tier</option>
-            </select>
-            <div style="font-size:.63rem;color:var(--dim);margin-top:3px;">Prospects in target tier score higher</div>
-          </div>
-          <div>
-            <label style="font-size:.72rem;color:var(--dim);">Market concentration</label>
-            <div style="display:flex;align-items:center;gap:8px;margin-top:8px;">
-              <input type="checkbox" id="concentrationFlag" onchange="reScoreRebuild()" style="width:15px;height:15px;accent-color:var(--teal);cursor:pointer;">
-              <label for="concentrationFlag" style="font-size:.78rem;color:var(--text);cursor:pointer;line-height:1.3;">Top client &gt;45% of my market revenue</label>
+      <div style="margin-bottom:16px;">
+        <button onclick="toggleAdvancedOptions()" id="advancedOptionsBtn"
+          style="display:flex;align-items:center;gap:8px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:9px 16px;cursor:pointer;color:var(--dim);font-size:.78rem;font-weight:600;width:100%;text-align:left;transition:all .2s;"
+          onmouseover="this.style.borderColor='var(--teal-border)';this.style.color='var(--text)'"
+          onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--dim)'">
+          <span id="advancedOptionsArrow" style="font-size:.7rem;transition:transform .2s;display:inline-block;">&#9658;</span>
+          Advanced Options
+          <span style="font-size:.68rem;color:var(--dim);font-weight:400;margin-left:4px;">&mdash; Market Context &amp; Category Filters</span>
+        </button>
+        <div id="advancedOptionsPanel" style="display:none;margin-top:8px;">
+          <div class="card p-4 mb-4" style="margin-bottom:16px;">
+            <div style="font-size:.7rem;font-weight:700;color:var(--teal);letter-spacing:.07em;text-transform:uppercase;margin-bottom:12px;">Market Context <span style="font-size:.65rem;color:var(--dim);font-weight:400;text-transform:none;letter-spacing:0;">&mdash; refines IGI Score</span></div>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div>
+                <label style="font-size:.72rem;color:var(--dim);">Existing clients in this category</label>
+                <select id="saturationInput" onchange="reScoreRebuild()" style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:8px 10px;color:var(--text);font-size:.8rem;margin-top:4px;outline:none;">
+                  <option value="0">None yet &mdash; untapped</option>
+                  <option value="1">1&ndash;2 clients</option>
+                  <option value="3">3&ndash;5 clients</option>
+                  <option value="6">6&ndash;10 clients</option>
+                  <option value="11">10+ (saturated)</option>
+                </select>
+                <div style="font-size:.63rem;color:var(--dim);margin-top:3px;">Low penetration = IGI Score boost</div>
+              </div>
+              <div>
+                <label style="font-size:.72rem;color:var(--dim);">Revenue target tier</label>
+                <select id="tierInput" onchange="reScoreRebuild()" style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:8px 10px;color:var(--text);font-size:.8rem;margin-top:4px;outline:none;">
+                  <option value="sweetspot" selected>$100K&ndash;$250K sweet spot</option>
+                  <option value="midmarket">$50K&ndash;$100K mid-market</option>
+                  <option value="enterprise">$250K+ enterprise</option>
+                  <option value="any">Any tier</option>
+                </select>
+                <div style="font-size:.63rem;color:var(--dim);margin-top:3px;">Prospects in target tier score higher</div>
+              </div>
+              <div>
+                <label style="font-size:.72rem;color:var(--dim);">Market concentration</label>
+                <div style="display:flex;align-items:center;gap:8px;margin-top:8px;">
+                  <input type="checkbox" id="concentrationFlag" onchange="reScoreRebuild()" style="width:15px;height:15px;accent-color:var(--teal);cursor:pointer;">
+                  <label for="concentrationFlag" style="font-size:.78rem;color:var(--text);cursor:pointer;line-height:1.3;">Top client &gt;45% of my market revenue</label>
+                </div>
+                <div style="font-size:.63rem;color:var(--dim);margin-top:4px;">Boosts $50K&ndash;$150K prospects for stability</div>
+              </div>
             </div>
-            <div style="font-size:.63rem;color:var(--dim);margin-top:4px;">Boosts $50K&ndash;$150K prospects for stability</div>
+          </div>
+          <div id="categoryFilterPanel" style="margin-bottom:16px;display:none;">
+            <div style="font-size:.68rem;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:var(--teal);margin-bottom:10px;">Filter by Category</div>
+            <div style="display:flex;flex-wrap:wrap;gap:8px;" id="categoryCheckboxes"></div>
           </div>
         </div>
-      </div>
-      <div id="categoryFilterPanel" style="margin-bottom:16px;display:none;">
-        <div style="font-size:.68rem;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:var(--teal);margin-bottom:10px;">Filter by Category</div>
-        <div style="display:flex;flex-wrap:wrap;gap:8px;" id="categoryCheckboxes"></div>
       </div>
       <div id="rebuild-content"></div>
     </div>
@@ -1320,6 +1332,14 @@ var FILTER_CATEGORIES = [
   'Fitness & Wellness','Education','Entertainment','Senior Living'
 ];
 var activeCategories = new Set(['All']);
+
+function toggleAdvancedOptions() {
+  var panel = document.getElementById('advancedOptionsPanel');
+  var arrow = document.getElementById('advancedOptionsArrow');
+  var isOpen = panel.style.display !== 'none';
+  panel.style.display = isOpen ? 'none' : 'block';
+  arrow.style.transform = isOpen ? 'rotate(0deg)' : 'rotate(90deg)';
+}
 
 function buildCategoryFilters() {
   var container = document.getElementById('categoryCheckboxes');
