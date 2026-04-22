@@ -1330,6 +1330,7 @@ async function discoverProspects() {
   btn.disabled=true; btn.style.opacity='.6';
   status.innerHTML='<span style="color:var(--teal);">Searching '+radiusMi+' mi — '+center.city+'</span>';
   var geo='(around:'+radiusM+','+center.lat+','+center.lng+')';
+  var lines=[];
   // Only query categories the user has selected
   var catsToQuery = activeCategories.has('All')
     ? Object.keys(CATEGORY_CONFIG)
@@ -1343,7 +1344,7 @@ async function discoverProspects() {
   });
   var query='[out:json][timeout:60][maxsize:50000000];(\n'+lines.join('\n')+'\n);out center tags;';
   try {
-    var resp=await fetch('https://overpass-api.de/api/interpreter',{method:'POST',body:'data='+encodeURIComponent(query)});
+    var resp=await fetch('https://overpass-api.de/api/interpreter',{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:'data='+encodeURIComponent(query)});
     if (!resp.ok) {
       var errText = resp.status === 429 ? 'Overpass API rate limited — wait 60 seconds and try again.' : resp.status >= 500 ? 'Overpass server error. Try reducing the radius or selecting fewer categories.' : 'Overpass API error ('+resp.status+')';
       status.textContent = errText;
@@ -1384,26 +1385,7 @@ async function discoverProspects() {
   }
 }
 
-var FILTER_CATEGORIES = [
-  'All',
-  'Legal/Attorneys',
-  'Home Services',
-  'Med Spa / Aesthetics',
-  'Banks/Financial',
-  'Casino',
-  'Roofing',
-  'Insurance',
-  'Contractors/Home Improvement',
-  'Real Estate',
-  'Healthcare',
-  'Auto Dealer',
-  'Private School',
-  'Furniture',
-  'Golf/Country Club',
-  'Fitness & Wellness',
-  'Education',
-  'Senior Living'
-];
+var FILTER_CATEGORIES = ['All'].concat(Object.keys(CATEGORY_CONFIG));
 ];
 var activeCategories = new Set(['All']);
 
