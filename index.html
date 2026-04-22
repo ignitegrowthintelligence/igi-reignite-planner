@@ -1098,125 +1098,205 @@ function parseRebuild(rows, fname) {
 
 // ─── REBUILD (auto-discover) ─────────────────────────────────────────────────
 const CATEGORY_CONFIG = {
-  'Legal/Attorneys':          {tags:[['office','lawyer'],['office','attorney']], fit:40, avgRev:84152},
-  'Plumbing/Heating/HVAC':    {tags:[['trade','plumber'],['trade','hvac']], fit:38, avgRev:70644},
-  'Banks/Financial':          {tags:[['amenity','bank'],['amenity','credit_union']], fit:36, avgRev:56927},
-  'Casino':                   {tags:[['amenity','casino'],['leisure','casino']], fit:35, avgRev:59151},
-  'Multi-Location Franchise': {tags:[['brand','*']], fit:35, avgRev:45000},
-  'Contractors/Home Improvement':{tags:[['shop','hardware'],['shop','building_materials'],['craft','roofer']], fit:32, avgRev:40639},
-  'In-Home Services':         {tags:[['trade','electrician'],['trade','painter'],['craft','builder']], fit:30, avgRev:35000},
-  'Healthcare':               {tags:[['amenity','hospital'],['amenity','clinic'],['amenity','doctors'],['amenity','dentist']], fit:26, avgRev:26235},
-  'Auto Dealer':              {tags:[['shop','car'],['shop','car_dealer']], fit:24, avgRev:26685},
-  'Private School':           {tags:[['amenity','school']], fit:24, avgRev:28000},
-  'Furniture':                {tags:[['shop','furniture'],['shop','interior_decoration']], fit:22, avgRev:32000},
-  'Golf Simulator':           {tags:[['leisure','golf_course'],['sport','golf']], fit:22, avgRev:30000},
-  'Fitness & Wellness':       {tags:[['leisure','fitness_centre'],['amenity','gym']], fit:20, avgRev:22000},
-  'Education':                {tags:[['amenity','university'],['amenity','college']], fit:20, avgRev:21700},
-  'Entertainment':            {tags:[['amenity','theatre'],['amenity','cinema'],['leisure','bowling_alley']], fit:18, avgRev:20000},
-  'Senior Living':            {tags:[['amenity','nursing_home']], fit:16, avgRev:10700}
+  'Legal/Attorneys': {
+    tags:[['office','lawyer'],['office','attorney'],['office','legal']], fit:40, avgRev:84152
+  },
+  'Home Services': {
+    tags:[
+      ['trade','plumber'],['trade','hvac'],['trade','electrician'],
+      ['trade','painter'],['trade','heating'],['trade','air_conditioning'],
+      ['craft','roofer'],['craft','builder'],['craft','restoration'],
+      ['shop','hvac'],['shop','plumber'],['shop','fire_protection'],
+      ['amenity','plumber'],['office','contractor']
+    ], fit:38, avgRev:52000
+  },
+  'Banks/Financial': {
+    tags:[['amenity','bank'],['amenity','credit_union'],['office','financial'],['office','accountant']], fit:36, avgRev:56927
+  },
+  'Casino': {
+    tags:[['amenity','casino'],['leisure','casino']], fit:35, avgRev:59151
+  },
+  'Contractors/Home Improvement': {
+    tags:[['shop','hardware'],['shop','building_materials'],['shop','doityourself'],['craft','carpenter']], fit:32, avgRev:40639
+  },
+  'Healthcare': {
+    tags:[['amenity','hospital'],['amenity','clinic'],['amenity','doctors'],['amenity','dentist'],['amenity','pharmacy'],['healthcare','centre']], fit:26, avgRev:26235
+  },
+  'Auto Dealer': {
+    tags:[['shop','car'],['shop','car_dealer'],['shop','car_repair']], fit:24, avgRev:26685
+  },
+  'Private School': {
+    tags:[['amenity','school'],['amenity','prep_school'],['amenity','tutoring']], fit:24, avgRev:28000
+  },
+  'Furniture': {
+    tags:[['shop','furniture'],['shop','interior_decoration'],['shop','flooring']], fit:22, avgRev:32000
+  },
+  'Golf/Country Club': {
+    tags:[['leisure','golf_course'],['sport','golf'],['leisure','country_club']], fit:22, avgRev:30000
+  },
+  'Fitness & Wellness': {
+    tags:[['leisure','fitness_centre'],['amenity','gym'],['leisure','sports_centre']], fit:20, avgRev:22000
+  },
+  'Education': {
+    tags:[['amenity','university'],['amenity','college'],['amenity','driving_school']], fit:20, avgRev:21700
+  },
+  'Entertainment': {
+    tags:[['amenity','theatre'],['amenity','cinema'],['leisure','bowling_alley'],['leisure','amusement_arcade']], fit:18, avgRev:20000
+  },
+  'Senior Living': {
+    tags:[['amenity','nursing_home'],['amenity','retirement_home'],['social_facility','assisted_living']], fit:16, avgRev:10700
+  }
 };
 
-// ─── IGI SCORE ENGINE — REBUILD ──────────────────────────────────────────
-function scoreRevenuePotential(rev,cat){
-  if (!rev||rev<=0) return {score:12,detail:'No revenue data — default applied'};
-  var benchmark=(CATEGORY_CONFIG[cat]||{}).avgRev||31991;
-  var ratio=rev/benchmark;
-  var score=ratio>=1.2?30:ratio>=0.9?25:ratio>=0.6?20:ratio>=0.35?15:10;
-  var detail=fmt(rev)+' estimated vs. '+fmt(benchmark)+' category avg — '+(ratio>=1.2?'exceeds benchmark':ratio>=0.9?'near benchmark':ratio>=0.6?'below benchmark':'well below benchmark');
-  return {score:score,detail:detail};
+// ─── IGI SCORE ENGINE — REBUILD ───────────────────────────────────────────────
+var NATIONAL_CHAINS = [
+  'mcdonald','burger king','wendy','subway','taco bell','chick-fil','dunkin',
+  'starbucks','pizza hut','domino','papa john','panera','chipotle','sonic',
+  'walmart','target','costco','home depot','lowe','best buy','dollar general',
+  'dollar tree','family dollar','cvs','walgreens','rite aid','kroger',
+  'planet fitness','anytime fitness','la fitness','24 hour fitness',
+  'holiday inn','marriott','hilton','hampton inn','comfort inn','best western',
+  'h&r block','liberty tax','jackson hewitt',
+  'jiffy lube','midas','firestone','pep boys','mavis',
+  'great clips','supercuts','sport clips',
+  'sherwin-williams','ace hardware'
+];
+
+function scoreLocalControl(prospect) {
+  var name = (prospect.name||'').toLowerCase();
+  var tags = prospect._tags||{};
+  var hasWikidata = !!(tags['brand:wikidata']||tags['brand:wikipedia']);
+  var hasBrandTag = !!(tags.brand);
+  var matchesKnownChain = NATIONAL_CHAINS.some(function(c){ return name.includes(c); });
+  if (hasWikidata || matchesKnownChain) {
+    prospect._isNationalChain = true;
+    return {score:0, detail:'National chain — marketing budget is corporate-controlled, not locally influenced. Low priority for local reps.'};
+  }
+  if (hasBrandTag) {
+    prospect._isNationalChain = true;
+    return {score:2, detail:'Branded chain detected — likely limited local marketing autonomy. Verify before pursuing.'};
+  }
+  var regionalSignals = ['group','partners','& sons','& associates','regional','tri-state','valley','county'];
+  var isRegional = regionalSignals.some(function(s){ return name.includes(s); });
+  if (isRegional || tags.operator) {
+    prospect._isNationalChain = false;
+    return {score:18, detail:'Regional business or operator — likely has local marketing autonomy. Strong prospect.'};
+  }
+  prospect._isNationalChain = false;
+  return {score:25, detail:'Independent local business — full control over marketing budget. Highest priority prospect type.'};
 }
-function scoreMultiLocation(prospect){
-  var name=(prospect.name||'').toLowerCase(), tags=prospect._tags||{};
-  if (tags.brand||tags.operator||tags.network||tags.franchise) return {score:15,detail:'Chain/franchise signals detected — confirmed multi-location'};
-  var chains=['group','national','regional','partners','associates','franchise','locations','& sons','inc.','corp.'];
-  if (chains.some(function(p){return name.includes(p);})) return {score:8,detail:'Name pattern suggests chain or multi-location business'};
-  return {score:0,detail:'Single independent location — no expansion signals detected'};
+
+function scoreMarketingReadiness(prospect) {
+  var tags = prospect._tags || {};
+  var hasWebsite = !!(tags.website || tags['contact:website'] || tags['url']);
+  var hasPhone   = !!(tags.phone   || tags['contact:phone']   || tags['contact:mobile']);
+  var hasSocial  = !!(tags.facebook|| tags['contact:facebook']|| tags['contact:instagram']||
+                      tags['contact:twitter']|| tags['contact:linkedin']);
+  if (hasWebsite && hasSocial && hasPhone)
+    return {score:20, detail:'Website + social media + phone listed — strong digital presence, high marketing readiness.'};
+  if (hasWebsite && hasSocial)
+    return {score:17, detail:'Website and social media found — actively investing in digital presence.'};
+  if (hasWebsite && hasPhone)
+    return {score:14, detail:'Website and phone listed — basic digital presence established.'};
+  if (hasWebsite)
+    return {score:10, detail:'Website found — some digital investment, may be ready to grow.'};
+  if (hasPhone)
+    return {score:6,  detail:'Phone only — limited digital footprint. May need digital education.'};
+  return {score:2, detail:'No website, phone, or social media found in public data — low marketing readiness signal.'};
 }
+
+function scoreRevenuePotential(rev, cat, prospect) {
+  if (prospect && prospect._isNationalChain)
+    return {score:0, detail:'National chain — local revenue influence is $0. Budget controlled at corporate level.'};
+  if (!rev||rev<=0) return {score:8, detail:'No revenue estimate available — default applied'};
+  var benchmark = (CATEGORY_CONFIG[cat]||{}).avgRev||31991;
+  var realisticBenchmark = benchmark * 0.65;
+  var ratio = rev / realisticBenchmark;
+  var score = ratio>=1.2?25:ratio>=0.9?20:ratio>=0.6?15:ratio>=0.35?10:6;
+  var detail = fmt(rev)+' est. vs. '+fmt(Math.round(realisticBenchmark))+' realistic benchmark — '
+    +(ratio>=1.2?'strong revenue potential':ratio>=0.9?'solid potential':ratio>=0.6?'moderate potential':'lower potential, may need smaller package entry point');
+  return {score:score, detail:detail};
+}
+
 function scoreGeography(dist){
   if (dist===null||dist===undefined) return {score:8,detail:'No distance data — neutral score applied'};
   var score=dist<=10?15:dist<=25?10:dist<=50?6:2;
   var detail=Math.round(dist)+' miles from target ZIP — '+(dist<=10?'local, high priority':dist<=25?'within core market':dist<=50?'outer market area':'outside primary market');
   return {score:score,detail:detail};
 }
+
 function getSaturationBonus(){
   var val=parseInt((document.getElementById('saturationInput')||{value:'0'}).value||'0');
   var score=val===0?15:val===1?10:val===3?5:val===6?2:0;
-  var detail=val===0?'No existing clients in this category — untapped opportunity':val===1?'1–2 existing clients — early penetration, strong upside':val===3?'3–5 existing clients — growing presence':val===6?'6–10 existing clients — category getting competitive':'10+ clients — saturated category';
+  var detail=val===0?'No existing clients in this category — untapped opportunity':val===1?'1–2 existing clients — early penetration, strong upside':val===3?'3–5 existing clients — growing presence':val===6?'6–10 existing clients — getting competitive':'10+ clients — saturated category';
   return {score:score,detail:detail};
 }
+
 function getRevenueTierBonus(rev){
   if (!rev||rev<=0) return {score:0,detail:'No revenue estimate available'};
   var score=rev>=100000&&rev<=250000?15:rev>=50000&&rev<100000?8:rev>=250000&&rev<=500000?8:rev>=25000&&rev<50000?4:rev>500000?6:0;
   var detail=rev>=100000&&rev<=250000?'In the $100K–$250K sweet spot — highest-value target tier':rev>=250000?'Enterprise range ($250K+) — high value, longer sales cycle':rev>=50000?'Mid-market range ($50K–$100K) — solid prospect':rev>=25000?'Below sweet spot ($25K–$50K) — lower priority':'Under $25K — minimal return';
   return {score:score,detail:detail};
 }
+
 function getConcentrationBonus(rev){
   var flagged=(document.getElementById('concentrationFlag')||{}).checked;
   if (!flagged||!rev) return {score:0,detail:flagged?'Revenue unknown — no bonus applied':'Market concentration flag not set'};
   var score=rev>=50000&&rev<=150000?10:rev>=25000&&rev<50000?5:0;
-  var detail=score>0?'Top client >45% of market — this $'+Math.round(rev/1000)+'K prospect helps build portfolio stability':'Outside the $50K–$150K stability range for concentrated markets';
+  var detail=score>0?'Top client >45% of market — this '+fmt(rev)+' prospect builds portfolio stability':'Outside the $50K–$150K stability range for concentrated markets';
   return {score:score,detail:detail};
 }
+
 function computeScore(prospect){
   var rev=prospect.rev||prospect.estRev||0, cat=prospect.cat||'';
   var cfg=CATEGORY_CONFIG[cat]||{};
+
+  // Run local control first — sets prospect._isNationalChain flag
+  var localCtrl = scoreLocalControl(prospect);
+
   var catFit=cfg.fit||12;
-  var catDetail='Category: '+(cat||'Unknown')+' — '+catFit+'/40 pts based on average client value of '+fmt(cfg.avgRev||0);
-  var revPot=scoreRevenuePotential(rev,cat);
-  var multiLoc=scoreMultiLocation(prospect);
-  var geo=scoreGeography(prospect.dist);
-  var sat=getSaturationBonus();
-  var tier=getRevenueTierBonus(rev);
-  var conc=getConcentrationBonus(rev);
-  var base=catFit+revPot.score+multiLoc.score+geo.score;
-  var total=Math.min(100,base+sat.score+tier.score+conc.score);
-  prospect._scoreData={name:prospect.name,sub:'Rebuild · '+(cat||'Unknown Category'),description:'Scored on category fit, revenue potential, multi-location signals, and geographic proximity. Bonus points applied based on your market context settings.',total:total,
-    components:[
-      {label:'Category Fit',score:catFit,max:40,detail:catDetail},
-      {label:'Revenue Potential',score:revPot.score,max:30,detail:revPot.detail},
-      {label:'Multi-Location Signal',score:multiLoc.score,max:15,detail:multiLoc.detail},
-      {label:'Geographic Proximity',score:geo.score,max:15,detail:geo.detail},
-      {label:'Market Saturation',score:sat.score,max:15,detail:sat.detail,bonus:true},
-      {label:'Revenue Tier Alignment',score:tier.score,max:15,detail:tier.detail,bonus:true},
-      {label:'Concentration Risk',score:conc.score,max:10,detail:conc.detail,bonus:true}
-    ]};
-  prospect.baseScore=base;
+  var catDetail='Category: '+(cat||'Unknown')+' — '+catFit+'/40 pts (avg client: '+fmt(cfg.avgRev||0)+')';
+  var revPot  = scoreRevenuePotential(rev, cat, prospect);
+  var mktReady= scoreMarketingReadiness(prospect);
+  var geo     = scoreGeography(prospect.dist!=null?prospect.dist:undefined);
+  var sat     = getSaturationBonus();
+  var tier    = getRevenueTierBonus(rev);
+  var conc    = getConcentrationBonus(rev);
+
+  var base  = catFit + localCtrl.score + revPot.score + mktReady.score + geo.score;
+  var total = Math.min(100, base + sat.score + tier.score + conc.score);
+
+  // Hard cap national chains — never T1 or T2
+  if (prospect._isNationalChain) total = Math.min(40, total);
+
+  prospect._scoreData = {
+    name: prospect.name,
+    sub: 'Rebuild \u00b7 '+(cat||'Unknown Category'),
+    description: 'Scored on category fit, local marketing control, marketing readiness, and geographic proximity. National chains are capped at 40 regardless of other signals.',
+    total: total,
+    components: [
+      {label:'Category Fit',           score:catFit,          max:40, detail:catDetail},
+      {label:'Local Marketing Control',score:localCtrl.score, max:25, detail:localCtrl.detail},
+      {label:'Revenue Potential',      score:revPot.score,    max:25, detail:revPot.detail},
+      {label:'Marketing Readiness',    score:mktReady.score,  max:20, detail:mktReady.detail},
+      {label:'Geographic Proximity',   score:geo.score,       max:15, detail:geo.detail},
+      {label:'Market Saturation',      score:sat.score,       max:15, detail:sat.detail,  bonus:true},
+      {label:'Revenue Tier Alignment', score:tier.score,      max:15, detail:tier.detail, bonus:true},
+      {label:'Concentration Risk',     score:conc.score,      max:10, detail:conc.detail, bonus:true}
+    ]
+  };
+  prospect.baseScore = base;
   return total;
 }
+
 function reScoreRebuild(){
   var all=[...(state.rebuild&&state.rebuild.uploaded||[]),...(state.rebuild&&state.rebuild.discovered||[])];
   if (!all.length) return;
-  all.forEach(function(p){p.score=computeScore(p);});
+  all.forEach(function(p){ p.score=computeScore(p); });
   all.sort(function(a,b){return b.score-a.score;});
   mergeAndRenderRebuild();
   buildCategoryFilters();
 }
-
-function haversine(lat1,lng1,lat2,lng2) {
-  var R=3958.8, dLat=(lat2-lat1)*Math.PI/180, dLng=(lng2-lng1)*Math.PI/180;
-  var a=Math.sin(dLat/2)*Math.sin(dLat/2)+Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)*Math.sin(dLng/2)*Math.sin(dLng/2);
-  return R*2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a));
-}
-
-async function updateGeoFilter() {
-  var zip=document.getElementById('zipInput').value.replace(/\D/g,'');
-  if (zip.length===5) {
-    try {
-      var r=await fetch('https://nominatim.openstreetmap.org/search?postalcode='+zip+'&country=US&format=json&limit=1',{headers:{'User-Agent':'IGI-ReIgnite/1.0'}});
-      if (r.ok) { var d=await r.json(); if(d&&d[0]) { var city=d[0].display_name.split(',')[0]; state.geoCenter={lat:parseFloat(d[0].lat),lng:parseFloat(d[0].lon),zip:zip,city:city}; var lbl=document.getElementById('geoDescLabel'); if(lbl) lbl.textContent=city+', '+zip; filterRebuild(); } }
-    } catch(e) {}
-  }
-}
-
-async function getZipLatLng(zip) {
-  if (zipCache[zip]) return zipCache[zip];
-  try {
-    var r=await fetch('https://nominatim.openstreetmap.org/search?postalcode='+zip+'&country=US&format=json&limit=1',{headers:{'User-Agent':'IGI-ReIgnite/1.0'}});
-    if (r.ok) { var d=await r.json(); if(d&&d[0]) { var v={lat:parseFloat(d[0].lat),lng:parseFloat(d[0].lon)}; zipCache[zip]=v; return v; } }
-  } catch(e) {}
-  return null;
-}
-
 function mergeAndRenderRebuild() {
   if (!state.rebuild) state.rebuild = { uploaded: [], discovered: [] };
   var uploaded = state.rebuild.uploaded || [];
@@ -1326,10 +1406,21 @@ async function discoverProspects() {
 }
 
 var FILTER_CATEGORIES = [
-  'All','Legal/Attorneys','Plumbing/Heating/HVAC','Banks/Financial','Casino',
-  'Multi-Location Franchise','Contractors/Home Improvement','In-Home Services',
-  'Healthcare','Auto Dealer','Private School','Furniture','Golf Simulator',
-  'Fitness & Wellness','Education','Entertainment','Senior Living'
+  'All',
+  'Legal/Attorneys',
+  'Home Services',
+  'Banks/Financial',
+  'Casino',
+  'Contractors/Home Improvement',
+  'Healthcare',
+  'Auto Dealer',
+  'Private School',
+  'Furniture',
+  'Golf/Country Club',
+  'Fitness & Wellness',
+  'Education',
+  'Entertainment',
+  'Senior Living'
 ];
 var activeCategories = new Set(['All']);
 
