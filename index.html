@@ -236,6 +236,10 @@
           </div>
         </div>
       </div>
+      <div id="categoryFilterPanel" style="margin-bottom:16px;display:none;">
+        <div style="font-size:.68rem;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:var(--teal);margin-bottom:10px;">Filter by Category</div>
+        <div style="display:flex;flex-wrap:wrap;gap:8px;" id="categoryCheckboxes"></div>
+      </div>
       <div id="rebuild-content"></div>
     </div>
   </div>
@@ -879,6 +883,8 @@ function parseRebuild(rows, fname) {
   prospects.sort(function(a,b){return b.score-a.score;});
   if (!state.rebuild) state.rebuild = { uploaded: [], discovered: [] };
   state.rebuild.uploaded = prospects;
+  activeCategories = new Set(['All']);
+  buildCategoryFilters();
   mergeAndRenderRebuild();
 }
 
@@ -893,10 +899,12 @@ var CATEGORY_CONFIG = {
   'In-Home Services':        {tags:[['trade','plumber'],['trade','electrician'],['craft','roofer']], sp:20, mr:12, as_:8, ml:10, cf:13},
   'Fitness & Wellness':      {tags:[['leisure','fitness_centre'],['amenity','gym']], sp:12, mr:13, as_:8,  ml:13, cf:12},
   'Private School':          {tags:[['amenity','school']], sp:14, mr:11, as_:12, ml:5,  cf:11},
-  'Home Improvement':        {tags:[['shop','hardware'],['shop','furniture'],['shop','building_materials']], sp:16, mr:12, as_:8, ml:15, cf:13},
+  'Home Improvement':        {tags:[['shop','hardware'],['shop','building_materials']], sp:16, mr:12, as_:8, ml:15, cf:13},
+  'Furniture':               {tags:[['shop','furniture'],['shop','interior_decoration']], sp:14, mr:12, as_:8, ml:12, cf:12},
   'Golf Simulator':          {tags:[['leisure','golf_course'],['sport','golf']], sp:14, mr:13, as_:8, ml:13, cf:13},
   'Senior Living':           {tags:[['amenity','nursing_home']], sp:18, mr:10, as_:12, ml:8, cf:11},
-  'Entertainment':           {tags:[['amenity','theatre'],['amenity','cinema'],['amenity','casino'],['leisure','bowling_alley']], sp:16, mr:14, as_:14, ml:10, cf:12}
+  'Entertainment':           {tags:[['amenity','theatre'],['amenity','cinema'],['amenity','casino'],['leisure','bowling_alley']], sp:16, mr:14, as_:14, ml:10, cf:12},
+  'Multi-Location Franchise':{tags:[['brand','*'],['shop','franchise']], sp:22, mr:16, as_:16, ml:15, cf:14}
 };
 
 function haversine(lat1,lng1,lat2,lng2) {
@@ -1023,6 +1031,8 @@ async function discoverProspects() {
     state.rebuild.discovered = prospects;
     btn.disabled=false; btn.style.opacity='1';
     status.innerHTML='<span style="color:var(--green);">Found '+prospects.length+' prospects within '+radiusMi+' miles of '+center.city+'</span>';
+    activeCategories = new Set(['All']);
+    buildCategoryFilters();
     mergeAndRenderRebuild();
   } catch(e) {
     btn.disabled=false; btn.style.opacity='1';
@@ -1030,7 +1040,47 @@ async function discoverProspects() {
   }
 }
 
+var FILTER_CATEGORIES = [
+  'All','Healthcare','Education','Casino','Auto Dealer','Financial','Legal',
+  'In-Home Services','Fitness & Wellness','Private School','Furniture','Home Improvement',
+  'Golf Simulator','Senior Living','Entertainment','Multi-Location Franchise'
+];
+var activeCategories = new Set(['All']);
+
+function buildCategoryFilters() {
+  var container = document.getElementById('categoryCheckboxes');
+  if (!container) return;
+  container.innerHTML = FILTER_CATEGORIES.map(function(cat) {
+    var isActive = activeCategories.has(cat);
+    return '<label style="display:flex;align-items:center;gap:6px;padding:5px 10px;background:'
+      +(isActive?'rgba(0,188,212,.18)':'var(--surface2)')
+      +';border:1px solid '+(isActive?'var(--teal-border)':'var(--border)')
+      +';border-radius:20px;cursor:pointer;font-size:.75rem;color:'+(isActive?'var(--teal)':'var(--dim)')
+      +';transition:all .15s;">'
+      +'<input type="checkbox" '+(isActive?'checked':'')
+      +' onchange="toggleCategoryFilter(\''+cat+'\',this.checked)"'
+      +' style="accent-color:var(--teal);width:13px;height:13px;cursor:pointer;">'
+      +cat+'</label>';
+  }).join('');
+  document.getElementById('categoryFilterPanel').style.display = 'block';
+}
+
+function toggleCategoryFilter(cat, checked) {
+  if (cat === 'All') {
+    activeCategories = checked ? new Set(['All']) : new Set();
+  } else {
+    activeCategories.delete('All');
+    if (checked) { activeCategories.add(cat); } else { activeCategories.delete(cat); }
+    if (activeCategories.size === 0) activeCategories.add('All');
+  }
+  buildCategoryFilters();
+  filterRebuild();
+}
+
 function renderRebuild(prospects, radius) {
+  if (!activeCategories.has('All') && activeCategories.size > 0) {
+    prospects = prospects.filter(function(p){ return activeCategories.has(p.cat); });
+  }
   var uploadedCount = (state.rebuild && state.rebuild.uploaded) ? state.rebuild.uploaded.length : 0;
   var discoveredCount = (state.rebuild && state.rebuild.discovered) ? state.rebuild.discovered.length : 0;
   var bothCount = prospects.filter(function(p){ return p.source === 'both'; }).length;
