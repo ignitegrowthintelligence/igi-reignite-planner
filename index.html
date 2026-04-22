@@ -236,6 +236,40 @@
           </div>
         </div>
       </div>
+      <div class="card p-4 mb-4" style="margin-bottom:16px;">
+        <div style="font-size:.7rem;font-weight:700;color:var(--teal);letter-spacing:.07em;text-transform:uppercase;margin-bottom:12px;">Market Context <span style="font-size:.65rem;color:var(--dim);font-weight:400;text-transform:none;letter-spacing:0;">&mdash; refines IGI Score</span></div>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div>
+            <label style="font-size:.72rem;color:var(--dim);">Existing clients in this category</label>
+            <select id="saturationInput" onchange="reScoreRebuild()" style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:8px 10px;color:var(--text);font-size:.8rem;margin-top:4px;outline:none;">
+              <option value="0">None yet &mdash; untapped</option>
+              <option value="1">1&ndash;2 clients</option>
+              <option value="3">3&ndash;5 clients</option>
+              <option value="6">6&ndash;10 clients</option>
+              <option value="11">10+ (saturated)</option>
+            </select>
+            <div style="font-size:.63rem;color:var(--dim);margin-top:3px;">Low penetration = IGI Score boost</div>
+          </div>
+          <div>
+            <label style="font-size:.72rem;color:var(--dim);">Revenue target tier</label>
+            <select id="tierInput" onchange="reScoreRebuild()" style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:8px 10px;color:var(--text);font-size:.8rem;margin-top:4px;outline:none;">
+              <option value="sweetspot" selected>$100K&ndash;$250K sweet spot</option>
+              <option value="midmarket">$50K&ndash;$100K mid-market</option>
+              <option value="enterprise">$250K+ enterprise</option>
+              <option value="any">Any tier</option>
+            </select>
+            <div style="font-size:.63rem;color:var(--dim);margin-top:3px;">Prospects in target tier score higher</div>
+          </div>
+          <div>
+            <label style="font-size:.72rem;color:var(--dim);">Market concentration</label>
+            <div style="display:flex;align-items:center;gap:8px;margin-top:8px;">
+              <input type="checkbox" id="concentrationFlag" onchange="reScoreRebuild()" style="width:15px;height:15px;accent-color:var(--teal);cursor:pointer;">
+              <label for="concentrationFlag" style="font-size:.78rem;color:var(--text);cursor:pointer;line-height:1.3;">Top client &gt;45% of my market revenue</label>
+            </div>
+            <div style="font-size:.63rem;color:var(--dim);margin-top:4px;">Boosts $50K&ndash;$150K prospects for stability</div>
+          </div>
+        </div>
+      </div>
       <div id="categoryFilterPanel" style="margin-bottom:16px;display:none;">
         <div style="font-size:.68rem;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:var(--teal);margin-bottom:10px;">Filter by Category</div>
         <div style="display:flex;flex-wrap:wrap;gap:8px;" id="categoryCheckboxes"></div>
@@ -253,6 +287,41 @@ const state = { close:null, protect:null, reclaimAll:null, reclaimIgnite:null, p
 const plan  = { close:[], protect:[], reclaim:[], rebuild:[] };
 const _acctReg = {}; let _regIdx = 0;
 const zipCache = {};
+
+// ─── IGI SCORE PANEL ────────────────────────────────────────────────────────────
+const _scoreReg = {}; let _scoreRegIdx = 0;
+function registerScore(data) { var id='igs'+(++_scoreRegIdx); _scoreReg[id]=data; return id; }
+function openScorePanel(sid) {
+  var data=_scoreReg[sid]; if (!data) return;
+  var total=data.total||0;
+  document.getElementById('igiPanelName').textContent=data.name||'—';
+  document.getElementById('igiPanelSub').textContent=data.sub||'';
+  document.getElementById('igiPanelDesc').textContent=data.description||'';
+  var scoreEl=document.getElementById('igiPanelScore');
+  scoreEl.textContent=total;
+  scoreEl.style.color=total>=80?'var(--green)':total>=60?'var(--yellow)':'var(--red)';
+  var comps=data.components||[];
+  document.getElementById('igiPanelComponents').innerHTML=comps.map(function(c){
+    var pct=c.max>0?Math.round((c.score/c.max)*100):0;
+    var barColor=c.bonus?'var(--teal)':pct>=70?'var(--green)':pct>=40?'var(--yellow)':'var(--red)';
+    return '<div style="margin-bottom:18px;">'
+      +'<div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:5px;">'
+      +'<div style="font-size:.8rem;font-weight:700;color:var(--text);">'+(c.bonus?'<span style="color:var(--teal);font-size:.65rem;vertical-align:middle;margin-right:4px;">BONUS</span>':'')+c.label+'</div>'
+      +'<div style="font-size:.8rem;font-weight:800;color:'+barColor+';">'+c.score+'<span style="color:var(--dim);font-weight:400;font-size:.7rem;">/'+c.max+'</span></div>'
+      +'</div>'
+      +'<div style="background:var(--surface2);border-radius:4px;height:7px;overflow:hidden;margin-bottom:5px;">'
+      +'<div style="height:100%;width:'+pct+'%;background:'+barColor+';border-radius:4px;transition:width .5s;"></div>'
+      +'</div>'
+      +'<div style="font-size:.68rem;color:var(--dim);line-height:1.4;">'+c.detail+'</div>'
+      +'</div>';
+  }).join('');
+  document.getElementById('igiBackdrop').style.display='block';
+  document.getElementById('igiScorePanel').style.transform='translateX(0)';
+}
+function closeScorePanel() {
+  document.getElementById('igiScorePanel').style.transform='translateX(100%)';
+  document.getElementById('igiBackdrop').style.display='none';
+}
 
 // ─── UTILITIES ───────────────────────────────────────────────────────────────
 function fmt(n) {
@@ -275,16 +344,20 @@ function cleanNum(s) {
   const v = parseFloat(str);
   return isNaN(v) ? 0 : (neg ? -v : v);
 }
-function scoreBadge(s, tip) {
-  const s100 = Math.round(s);
-  const cls = s100>=80?'score-high':s100>=60?'score-mid':'score-low';
-  const t = tip ? ' title="'+tip+'" style="cursor:help;"' : '';
-  return '<span class="score-badge '+cls+'"'+t+'>'+s100+'</span>';
+function scoreBadge(s, scoreData) {
+  var s100=Math.round(s||0);
+  var cls=s100>=80?'score-high':s100>=60?'score-mid':'score-low';
+  if (scoreData) {
+    scoreData.total=s100;
+    var sid=registerScore(scoreData);
+    return '<span class="score-badge '+cls+'" onclick="openScorePanel(\''+sid+'\')" style="cursor:pointer;" title="Click for IGI Score breakdown">'+s100+'</span>';
+  }
+  return '<span class="score-badge '+cls+'">'+s100+'</span>';
 }
 function tierBadge(s) {
-  if (s>=85) return '<span class="badge-now">T1 MUST PURSUE</span>';
-  if (s>=70) return '<span class="badge-ignite">T2 STRONG</span>';
-  if (s>=55) return '<span class="badge-reclaim">T3 DEVELOP</span>';
+  if (s>=85) return '<span class="badge-now">IGI T1</span>';
+  if (s>=70) return '<span class="badge-ignite">IGI T2</span>';
+  if (s>=55) return '<span class="badge-reclaim">IGI T3</span>';
   return '<span style="color:var(--dim);font-size:.65rem;">Low Priority</span>';
 }
 
@@ -394,7 +467,7 @@ function refreshPlanModal() {
       + '<th class="text-left">Account</th>'
       + '<th class="text-left hide-mobile">Category</th>'
       + '<th class="text-right hide-mobile">Est. Revenue</th>'
-      + '<th class="text-right">Score</th>'
+      + '<th class="text-right">IGI Score</th>'
       + '<th class="text-left" style="min-width:200px;">Next Step</th>'
       + '<th style="width:32px;"></th>'
       + '</tr></thead><tbody>';
@@ -688,11 +761,23 @@ function parseClose(rows, fname) {
       var notes=String(r[3]||'').trim(), type=String(r[4]||'').trim();
       var conf=String(r[6]||'').trim(), daysIn=cleanNum(r[8]);
       var apr=cleanNum(r[10]), may=cleanNum(r[11]), jun=cleanNum(r[12]);
-      var sizeScore=Math.min(100,rev/1000);
-      var confNum=conf==='95%'?95:conf==='75%'?75:conf==='50%'?50:30;
-      var staleScore=daysIn>90?10:daysIn>60?40:daysIn>30?60:80;
-      var score=Math.min(100, 0.30*sizeScore+0.25*confNum+0.25*staleScore+0.20*(rev>50000?20:0));
-      deals.push({name:acct, acct:acct, rev:rev, closing:closing, notes:notes, type:type, conf:conf, daysIn:daysIn, apr:apr, may:may, jun:jun, score:score, isIgnite:(type||'').toUpperCase().includes('IGNITE')});
+      var confScore=conf==='95%'?40:conf==='75%'?30:conf==='50%'?18:8;
+      var confDetail='Confidence at '+conf+' — '+(conf==='95%'?'near-certain close':conf==='75%'?'strong likelihood':conf==='50%'?'coin flip — needs attention':'low confidence');
+      var revScore=rev>=100000?30:rev>=50000?24:rev>=25000?18:rev>=10000?12:6;
+      var revDetail=fmt(rev)+' deal size — '+(rev>=100000?'major account':rev>=50000?'strong deal':rev>=25000?'mid-size deal':rev>=10000?'small deal':'micro deal');
+      var freshScore=daysIn<=30?20:daysIn<=60?14:daysIn<=90?8:2;
+      var freshDetail=daysIn+' days in pipeline — '+(daysIn<=30?'fresh and active':daysIn<=60?'normal pace':daysIn<=90?'getting stale — follow up':'stale deal, needs urgent action');
+      var ignScore=(type||'').toUpperCase().includes('IGNITE')?10:0;
+      var ignDetail=ignScore>0?'Ignite product involved — higher conversion likelihood':'Broadcast-only deal';
+      var score=Math.min(100,confScore+revScore+freshScore+ignScore);
+      var _sd={name:acct,sub:'Close Now · '+fmt(rev),description:'Scored on confidence level, deal size, time in pipeline, and product involvement.',total:score,
+        components:[
+          {label:'Confidence Level',score:confScore,max:40,detail:confDetail},
+          {label:'Deal Size',score:revScore,max:30,detail:revDetail},
+          {label:'Pipeline Freshness',score:freshScore,max:20,detail:freshDetail},
+          {label:'Ignite Involvement',score:ignScore,max:10,detail:ignDetail}
+        ]};
+      deals.push({name:acct,acct:acct,rev:rev,closing:closing,notes:notes,type:type,conf:conf,daysIn:daysIn,apr:apr,may:may,jun:jun,score:score,isIgnite:ignScore>0,_scoreData:_sd});
     }
   }
   deals.sort(function(a,b){return b.score-a.score;});
@@ -708,14 +793,14 @@ function parseClose(rows, fname) {
     +'<div style="margin-bottom:12px;font-size:.75rem;color:var(--dim);">'+fname+' — '+deals.length+' opportunities</div>'
     +'<div class="mobile-scroll"><table id="close-table" class="bp-table"><thead><tr>'
     +'<th style="width:32px;"></th><th class="text-left">Account</th>'
-    +'<th class="text-right accent">Score</th><th class="text-right">Revenue</th>'
+    +'<th class="text-right accent">IGI Score</th><th class="text-right">Revenue</th>'
     +'<th class="text-right hide-mobile">Confidence</th><th class="text-right hide-mobile">Days</th>'
     +'<th class="text-left hide-mobile">Type</th><th class="text-left">Notes</th>'
     +'</tr></thead><tbody>'
     +deals.map(function(d){
       return '<tr>'+makeCheckbox('close',d)
         +'<td><strong style="color:#fff;">'+d.acct+'</strong>'+(d.isIgnite?'<span class="badge-ignite" style="margin-left:6px;">IGNITE</span>':'')+'</td>'
-        +'<td class="text-right">'+scoreBadge(d.score,'Size: '+Math.round(d.rev/1000)+'K | Conf: '+d.conf+' | Age: '+d.daysIn+' days')+'</td>'
+        +'<td class="text-right">'+scoreBadge(d.score,d._scoreData)+'</td>'
         +'<td class="text-right" style="color:#fff;font-weight:600;">'+fmt(d.rev)+'</td>'
         +'<td class="text-right hide-mobile" style="color:'+(d.conf==='95%'?'var(--green)':d.conf==='75%'?'var(--yellow)':'var(--dim)')+';">'+d.conf+'</td>'
         +'<td class="text-right hide-mobile" style="color:'+(d.daysIn>60?'var(--red)':d.daysIn>30?'var(--yellow)':'var(--dim)')+';">'+d.daysIn+'</td>'
@@ -744,9 +829,17 @@ function parseProtect(rows, fname) {
   }
   var clients=Object.values(adMap).filter(function(c){return (c.rev25+c.rev26)>0;});
   clients.forEach(function(c){
-    var traj=c.rev26>c.rev25*1.1?1:c.rev26<c.rev25*0.9?-1:0;
+    var traj=c.rev26>c.rev25*1.10?1:c.rev26<c.rev25*0.90?-1:0;
     c.trend=traj; c.rev=c.rev26;
-    c.score=Math.min(100,0.40*Math.min(100,(c.rev25+c.rev26)/1500)+0.25*(traj===1?80:traj===0?50:20)+0.20*50+0.15*(c.rev26>0?70:20));
+    var valScore=c.rev26>=250000?35:c.rev26>=100000?28:c.rev26>=50000?20:c.rev26>=25000?12:6;
+    var valDetail=fmt(c.rev26)+' current revenue — '+(c.rev26>=250000?'premium account':c.rev26>=100000?'high-value client':c.rev26>=50000?'mid-tier client':'smaller account');
+    var growScore=traj===1?35:traj===0?20:5;
+    var growDetail=traj===1?'Growing ▲ — up more than 10% YoY, expand opportunity':traj===0?'Flat → — revenue stable within 10%':'Declining ▼ — down more than 10% YoY, protect urgently';
+    var ignScore=10; var ignDetail='Upload Ignite Revenue file to score Ignite mix';
+    var stabScore=(c.rev25>0&&c.rev26>0)?10:(c.rev25>0||c.rev26>0)?5:2;
+    var stabDetail=stabScore===10?'Active in both 2025 and 2026 — stable relationship':stabScore===5?'Active in one year only — monitor closely':'Minimal activity — at-risk account';
+    c.score=Math.min(100,valScore+growScore+ignScore+stabScore);
+    c._scoreComponents={valScore:valScore,valDetail:valDetail,growScore:growScore,growDetail:growDetail,ignScore:ignScore,ignDetail:ignDetail,stabScore:stabScore,stabDetail:stabDetail};
   });
   clients.sort(function(a,b){return b.score-a.score;});
   state.protect=clients;
@@ -791,7 +884,7 @@ function renderProtect(clients, extraNote) {
     +"<div style=\"margin-bottom:12px;font-size:.75rem;color:var(--dim);\">"+clients.length+" active clients"+(hasIgnite?" — Ignite/Broadcast split loaded":"")+"</div>"
     +"<div class=\"mobile-scroll\"><table id=\"protect-table\" class=\"bp-table\"><thead><tr>"
     +"<th style=\"width:32px;\"></th><th class=\"text-left\">Advertiser</th>"
-    +"<th class=\"text-left hide-mobile\">AE</th><th class=\"text-right accent\">Score</th>"
+    +"<th class=\"text-left hide-mobile\">AE</th><th class=\"text-right accent\">IGI Score</th>"
     +"<th class=\"text-right\">2025 Total</th><th class=\"text-right\">2026 Total</th>"
     +(hasIgnite?"<th class=\"text-right hide-mobile\" style=\"color:var(--teal);\">Ignite</th><th class=\"text-right hide-mobile\" style=\"color:var(--orange);\">Broadcast</th>":"")
     +"<th class=\"text-right hide-mobile\">Trend</th><th class=\"text-left hide-mobile\">Action</th>"
@@ -801,10 +894,24 @@ function renderProtect(clients, extraNote) {
       var ign26=ign?ign.ign26:null, bcast26=ign?Math.max(0,c.rev26-ign.ign26):null;
       var ti=c.trend===1?"<span style=\"color:var(--green);\">▲</span>":c.trend===-1?"<span style=\"color:var(--red);\">▼</span>":"<span style=\"color:var(--dim);\">→</span>";
       var act=c.score>=7?"<span class=\"badge-now\">PROTECT</span>":c.trend===1?"<span class=\"badge-ignite\">EXPAND</span>":"<span style=\"font-size:.68rem;color:var(--dim);\">Monitor</span>";
+      var sc=c._scoreComponents||{};
+      var ign2=hasIgnite&&state.protectIgnite[c.adv]?state.protectIgnite[c.adv]:null;
+      var ignPct=ign2&&c.rev26>0?Math.round(ign2.ign26/c.rev26*100):null;
+      var ignScoreLive=ignPct!=null?(ignPct>=50?20:ignPct>=25?12:6):(sc.ignScore||10);
+      var ignDetailLive=ignPct!=null?(ignPct+'% Ignite mix — '+(ignPct>=50?'strong digital investment':ignPct>=25?'mixed portfolio':'heavy broadcast dependency')):(sc.ignDetail||'Upload Ignite file');
+      var liveScore=Math.min(100,(sc.valScore||0)+(sc.growScore||0)+ignScoreLive+(sc.stabScore||0));
+      var _sd={name:c.adv,sub:'Protect & Expand · '+fmt(c.rev26),description:'Scored on current revenue size, year-over-year growth, Ignite product investment, and relationship stability.',total:liveScore,
+        components:[
+          {label:'Client Value',score:sc.valScore||0,max:35,detail:sc.valDetail||''},
+          {label:'Growth Trajectory',score:sc.growScore||0,max:35,detail:sc.growDetail||''},
+          {label:'Ignite Investment',score:ignScoreLive,max:20,detail:ignDetailLive},
+          {label:'Relationship Stability',score:sc.stabScore||0,max:10,detail:sc.stabDetail||''}
+        ]};
+      c.score=liveScore;
       return "<tr>"+makeCheckbox("protect",c)
         +"<td><strong style=\"color:#fff;\">"+c.adv+"</strong></td>"
         +"<td class=\"hide-mobile\" style=\"color:var(--dim);font-size:.78rem;\">"+c.ae+"</td>"
-        +"<td class=\"text-right\">"+scoreBadge(c.score)+"</td>"
+        +"<td class=\"text-right\">"+scoreBadge(liveScore,_sd)+"</td>"
         +"<td class=\"text-right\" style=\"color:var(--dim);\">"+fmt(c.rev25)+"</td>"
         +"<td class=\"text-right\" style=\"color:#fff;font-weight:600;\">"+fmt(c.rev26)+"</td>"
         +(hasIgnite?"<td class=\"text-right hide-mobile\" style=\"color:var(--teal);\">"+( ign26!=null?fmt(ign26):"—")+"</td><td class=\"text-right hide-mobile\" style=\"color:var(--orange);\">"+( bcast26!=null?fmt(bcast26):"—")+"</td>":"")
@@ -820,10 +927,25 @@ function parseReclaim(rows, type, fname) {
   for (var i=hRow+1; i<rows.length; i++) {
     var r=rows[i]; if (!r||!r[1]||String(r[1]).trim()==='Total'||String(r[1]).trim()==='') continue;
     var adv=String(r[1]).trim(), r24=cleanNum(r[2]), r25=cleanNum(r[3]), r26=cleanNum(r[4]);
-    var histScore=Math.min(100,(r24+r25)/2000), recScore=r25>0?80:r24>0?50:20;
-    var score=Math.min(100, 0.35*histScore+0.35*recScore+0.20*50+0.10*(type==='ignite'?20:0));
-    var bucket=score>=6?'Reclaim Now':score>=4?'Reapproach Later':'Low Priority';
-    clients.push({name:adv,adv:adv,rev24:r24,rev25:r25,rev26:r26,score:score,bucket:bucket,isIgnite:type==='ignite',rev:r25});
+    var peakSpend=Math.max(r24,r25);
+    var histScore=peakSpend>=100000?35:peakSpend>=50000?26:peakSpend>=25000?18:peakSpend>=10000?10:5;
+    var histDetail='Peak spend of '+fmt(peakSpend)+' — '+(peakSpend>=100000?'major former account':peakSpend>=50000?'high-value lapsed client':peakSpend>=25000?'mid-tier former client':'smaller former account');
+    var recScore=r25>0?35:r24>0?22:10;
+    var recDetail=r25>0?'Spent in 2025 — very recent departure, highly reclaimable':r24>0?'Last active in 2024 — still warm, priority outreach':'No spend in 2024–2025 — longer lapse, needs strong offer';
+    var ignScore2=type==='ignite'?20:0;
+    var ignDetail2=type==='ignite'?'Former Ignite buyer — already understands digital value, warm lead':'Broadcast-only history — digital education needed';
+    var stabScore=r24>0&&r25>0?10:(r24>0||r25>0)?5:0;
+    var stabDetail=stabScore===10?'Spent in both 2024 and 2025 — consistent advertiser before leaving':stabScore===5?'Spent in one year only — sporadic buyer':'No recorded spend in tracked years';
+    var score=Math.min(100,histScore+recScore+ignScore2+stabScore);
+    var _sd={name:adv,sub:'Reclaim · Peak '+fmt(peakSpend),description:'Scored on peak historical spend, how recently they left, whether they were an Ignite buyer, and spending consistency.',total:score,
+      components:[
+        {label:'Historical Spend',score:histScore,max:35,detail:histDetail},
+        {label:'Recency of Departure',score:recScore,max:35,detail:recDetail},
+        {label:'Ignite History',score:ignScore2,max:20,detail:ignDetail2},
+        {label:'Spend Consistency',score:stabScore,max:10,detail:stabDetail}
+      ]};
+    var bucket=score>=60?'Reclaim Now':score>=40?'Reapproach Later':'Low Priority';
+    clients.push({name:adv,adv:adv,rev24:r24,rev25:r25,rev26:r26,score:score,bucket:bucket,isIgnite:type==='ignite',rev:peakSpend,_scoreData:_sd});
   }
   clients.sort(function(a,b){return b.score-a.score;});
   if (type==='ignite') state.reclaimIgnite=clients; else state.reclaimAll=clients;
@@ -847,7 +969,7 @@ function renderReclaim() {
     +'<div style="margin-bottom:12px;font-size:.75rem;color:var(--dim);">'+combined.length+' former clients</div>'
     +'<div class="mobile-scroll"><table id="reclaim-table" class="bp-table"><thead><tr>'
     +'<th style="width:32px;"></th><th class="text-left">Advertiser</th>'
-    +'<th class="text-right accent">Score</th><th class="text-left">Bucket</th>'
+    +'<th class="text-right accent">IGI Score</th><th class="text-left">Bucket</th>'
     +'<th class="text-right hide-mobile">2024</th><th class="text-right">2025</th>'
     +'<th class="text-left hide-mobile">Type</th>'
     +'</tr></thead><tbody>'
@@ -855,7 +977,7 @@ function renderReclaim() {
       var b=c.bucket==='Reclaim Now'?'<span class="badge-now">RECLAIM NOW</span>':c.bucket==='Reapproach Later'?'<span class="badge-reclaim">REAPPROACH</span>':'<span style="font-size:.68rem;color:var(--dim);">Low Priority</span>';
       return '<tr>'+makeCheckbox('reclaim',c)
         +'<td><strong style="color:#fff;">'+c.adv+'</strong></td>'
-        +'<td class="text-right">'+scoreBadge(c.score)+'</td>'
+        +'<td class="text-right">'+scoreBadge(c.score,c._scoreData)+'</td>'
         +'<td>'+b+'</td>'
         +'<td class="text-right hide-mobile" style="color:var(--dim);">'+(c.rev24?fmt(c.rev24):'—')+'</td>'
         +'<td class="text-right" style="color:#fff;font-weight:600;">'+(c.rev25?fmt(c.rev25):'—')+'</td>'
@@ -877,8 +999,9 @@ function parseRebuild(rows, fname) {
     var r=rows[i]; if (!r||!r[cName]||String(r[cName]).trim()==='') continue;
     var name=String(r[cName]).trim(), cat=String(r[cCat]||'').trim();
     var rev=cleanNum(r[cRev]);
-    var score=Math.round(Math.min(100, 0.35*Math.min(30,rev/3500)+0.30*12+0.20*10+0.15*10));
-    prospects.push({name:name,cat:cat,rev:rev,score:score,dist:null,estRev:rev});
+    var prospect={name:name,cat:cat,rev:rev,dist:null,estRev:rev,_tags:{}};
+    prospect.score=computeScore(prospect);
+    prospects.push(prospect);
   }
   prospects.sort(function(a,b){return b.score-a.score;});
   if (!state.rebuild) state.rebuild = { uploaded: [], discovered: [] };
@@ -889,23 +1012,100 @@ function parseRebuild(rows, fname) {
 }
 
 // ─── REBUILD (auto-discover) ─────────────────────────────────────────────────
-var CATEGORY_CONFIG = {
-  'Healthcare':              {tags:[['amenity','hospital'],['amenity','clinic'],['amenity','doctors']], sp:28, mr:16, as_:18, ml:8,  cf:15},
-  'Education':               {tags:[['amenity','university'],['amenity','college']], sp:26, mr:15, as_:18, ml:8,  cf:13},
-  'Casino':                  {tags:[['amenity','casino']], sp:30, mr:18, as_:20, ml:12, cf:15},
-  'Auto Dealer':             {tags:[['shop','car'],['shop','car_dealer']], sp:22, mr:14, as_:14, ml:12, cf:13},
-  'Financial':               {tags:[['amenity','bank'],['amenity','credit_union']], sp:24, mr:14, as_:16, ml:13, cf:13},
-  'Legal':                   {tags:[['office','lawyer'],['office','attorney']], sp:18, mr:12, as_:10, ml:6,  cf:13},
-  'In-Home Services':        {tags:[['trade','plumber'],['trade','electrician'],['craft','roofer']], sp:20, mr:12, as_:8, ml:10, cf:13},
-  'Fitness & Wellness':      {tags:[['leisure','fitness_centre'],['amenity','gym']], sp:12, mr:13, as_:8,  ml:13, cf:12},
-  'Private School':          {tags:[['amenity','school']], sp:14, mr:11, as_:12, ml:5,  cf:11},
-  'Home Improvement':        {tags:[['shop','hardware'],['shop','building_materials']], sp:16, mr:12, as_:8, ml:15, cf:13},
-  'Furniture':               {tags:[['shop','furniture'],['shop','interior_decoration']], sp:14, mr:12, as_:8, ml:12, cf:12},
-  'Golf Simulator':          {tags:[['leisure','golf_course'],['sport','golf']], sp:14, mr:13, as_:8, ml:13, cf:13},
-  'Senior Living':           {tags:[['amenity','nursing_home']], sp:18, mr:10, as_:12, ml:8, cf:11},
-  'Entertainment':           {tags:[['amenity','theatre'],['amenity','cinema'],['amenity','casino'],['leisure','bowling_alley']], sp:16, mr:14, as_:14, ml:10, cf:12},
-  'Multi-Location Franchise':{tags:[['brand','*'],['shop','franchise']], sp:22, mr:16, as_:16, ml:15, cf:14}
+const CATEGORY_CONFIG = {
+  'Legal/Attorneys':          {tags:[['office','lawyer'],['office','attorney']], fit:40, avgRev:84152},
+  'Plumbing/Heating/HVAC':    {tags:[['trade','plumber'],['trade','hvac']], fit:38, avgRev:70644},
+  'Banks/Financial':          {tags:[['amenity','bank'],['amenity','credit_union']], fit:36, avgRev:56927},
+  'Casino':                   {tags:[['amenity','casino'],['leisure','casino']], fit:35, avgRev:59151},
+  'Multi-Location Franchise': {tags:[['brand','*']], fit:35, avgRev:45000},
+  'Contractors/Home Improvement':{tags:[['shop','hardware'],['shop','building_materials'],['craft','roofer']], fit:32, avgRev:40639},
+  'In-Home Services':         {tags:[['trade','electrician'],['trade','painter'],['craft','builder']], fit:30, avgRev:35000},
+  'Healthcare':               {tags:[['amenity','hospital'],['amenity','clinic'],['amenity','doctors'],['amenity','dentist']], fit:26, avgRev:26235},
+  'Auto Dealer':              {tags:[['shop','car'],['shop','car_dealer']], fit:24, avgRev:26685},
+  'Private School':           {tags:[['amenity','school']], fit:24, avgRev:28000},
+  'Furniture':                {tags:[['shop','furniture'],['shop','interior_decoration']], fit:22, avgRev:32000},
+  'Golf Simulator':           {tags:[['leisure','golf_course'],['sport','golf']], fit:22, avgRev:30000},
+  'Fitness & Wellness':       {tags:[['leisure','fitness_centre'],['amenity','gym']], fit:20, avgRev:22000},
+  'Education':                {tags:[['amenity','university'],['amenity','college']], fit:20, avgRev:21700},
+  'Entertainment':            {tags:[['amenity','theatre'],['amenity','cinema'],['leisure','bowling_alley']], fit:18, avgRev:20000},
+  'Senior Living':            {tags:[['amenity','nursing_home']], fit:16, avgRev:10700}
 };
+
+// ─── IGI SCORE ENGINE — REBUILD ──────────────────────────────────────────
+function scoreRevenuePotential(rev,cat){
+  if (!rev||rev<=0) return {score:12,detail:'No revenue data — default applied'};
+  var benchmark=(CATEGORY_CONFIG[cat]||{}).avgRev||31991;
+  var ratio=rev/benchmark;
+  var score=ratio>=1.2?30:ratio>=0.9?25:ratio>=0.6?20:ratio>=0.35?15:10;
+  var detail=fmt(rev)+' estimated vs. '+fmt(benchmark)+' category avg — '+(ratio>=1.2?'exceeds benchmark':ratio>=0.9?'near benchmark':ratio>=0.6?'below benchmark':'well below benchmark');
+  return {score:score,detail:detail};
+}
+function scoreMultiLocation(prospect){
+  var name=(prospect.name||'').toLowerCase(), tags=prospect._tags||{};
+  if (tags.brand||tags.operator||tags.network||tags.franchise) return {score:15,detail:'Chain/franchise signals detected — confirmed multi-location'};
+  var chains=['group','national','regional','partners','associates','franchise','locations','& sons','inc.','corp.'];
+  if (chains.some(function(p){return name.includes(p);})) return {score:8,detail:'Name pattern suggests chain or multi-location business'};
+  return {score:0,detail:'Single independent location — no expansion signals detected'};
+}
+function scoreGeography(dist){
+  if (dist===null||dist===undefined) return {score:8,detail:'No distance data — neutral score applied'};
+  var score=dist<=10?15:dist<=25?10:dist<=50?6:2;
+  var detail=Math.round(dist)+' miles from target ZIP — '+(dist<=10?'local, high priority':dist<=25?'within core market':dist<=50?'outer market area':'outside primary market');
+  return {score:score,detail:detail};
+}
+function getSaturationBonus(){
+  var val=parseInt((document.getElementById('saturationInput')||{value:'0'}).value||'0');
+  var score=val===0?15:val===1?10:val===3?5:val===6?2:0;
+  var detail=val===0?'No existing clients in this category — untapped opportunity':val===1?'1–2 existing clients — early penetration, strong upside':val===3?'3–5 existing clients — growing presence':val===6?'6–10 existing clients — category getting competitive':'10+ clients — saturated category';
+  return {score:score,detail:detail};
+}
+function getRevenueTierBonus(rev){
+  if (!rev||rev<=0) return {score:0,detail:'No revenue estimate available'};
+  var score=rev>=100000&&rev<=250000?15:rev>=50000&&rev<100000?8:rev>=250000&&rev<=500000?8:rev>=25000&&rev<50000?4:rev>500000?6:0;
+  var detail=rev>=100000&&rev<=250000?'In the $100K–$250K sweet spot — highest-value target tier':rev>=250000?'Enterprise range ($250K+) — high value, longer sales cycle':rev>=50000?'Mid-market range ($50K–$100K) — solid prospect':rev>=25000?'Below sweet spot ($25K–$50K) — lower priority':'Under $25K — minimal return';
+  return {score:score,detail:detail};
+}
+function getConcentrationBonus(rev){
+  var flagged=(document.getElementById('concentrationFlag')||{}).checked;
+  if (!flagged||!rev) return {score:0,detail:flagged?'Revenue unknown — no bonus applied':'Market concentration flag not set'};
+  var score=rev>=50000&&rev<=150000?10:rev>=25000&&rev<50000?5:0;
+  var detail=score>0?'Top client >45% of market — this $'+Math.round(rev/1000)+'K prospect helps build portfolio stability':'Outside the $50K–$150K stability range for concentrated markets';
+  return {score:score,detail:detail};
+}
+function computeScore(prospect){
+  var rev=prospect.rev||prospect.estRev||0, cat=prospect.cat||'';
+  var cfg=CATEGORY_CONFIG[cat]||{};
+  var catFit=cfg.fit||12;
+  var catDetail='Category: '+(cat||'Unknown')+' — '+catFit+'/40 pts based on average client value of '+fmt(cfg.avgRev||0);
+  var revPot=scoreRevenuePotential(rev,cat);
+  var multiLoc=scoreMultiLocation(prospect);
+  var geo=scoreGeography(prospect.dist);
+  var sat=getSaturationBonus();
+  var tier=getRevenueTierBonus(rev);
+  var conc=getConcentrationBonus(rev);
+  var base=catFit+revPot.score+multiLoc.score+geo.score;
+  var total=Math.min(100,base+sat.score+tier.score+conc.score);
+  prospect._scoreData={name:prospect.name,sub:'Rebuild · '+(cat||'Unknown Category'),description:'Scored on category fit, revenue potential, multi-location signals, and geographic proximity. Bonus points applied based on your market context settings.',total:total,
+    components:[
+      {label:'Category Fit',score:catFit,max:40,detail:catDetail},
+      {label:'Revenue Potential',score:revPot.score,max:30,detail:revPot.detail},
+      {label:'Multi-Location Signal',score:multiLoc.score,max:15,detail:multiLoc.detail},
+      {label:'Geographic Proximity',score:geo.score,max:15,detail:geo.detail},
+      {label:'Market Saturation',score:sat.score,max:15,detail:sat.detail,bonus:true},
+      {label:'Revenue Tier Alignment',score:tier.score,max:15,detail:tier.detail,bonus:true},
+      {label:'Concentration Risk',score:conc.score,max:10,detail:conc.detail,bonus:true}
+    ]};
+  prospect.baseScore=base;
+  return total;
+}
+function reScoreRebuild(){
+  var all=[...(state.rebuild&&state.rebuild.uploaded||[]),...(state.rebuild&&state.rebuild.discovered||[])];
+  if (!all.length) return;
+  all.forEach(function(p){p.score=computeScore(p);});
+  all.sort(function(a,b){return b.score-a.score;});
+  mergeAndRenderRebuild();
+  buildCategoryFilters();
+}
 
 function haversine(lat1,lng1,lat2,lng2) {
   var R=3958.8, dLat=(lat2-lat1)*Math.PI/180, dLng=(lng2-lng1)*Math.PI/180;
@@ -1019,12 +1219,10 @@ async function discoverProspects() {
       var lat=el.center?el.center.lat:el.lat, lng=el.center?el.center.lon:el.lon;
       var dist=(lat&&lng)?haversine(center.lat,center.lng,lat,lng):null;
       var city=tags['addr:city']||tags['addr:town']||center.city;
-      var mrBonus=(tags.website||tags['contact:website'])?5:(tags.phone||tags['contact:phone'])?2:0;
-      var mlBonus=(tags.brand||tags.operator||tags.network)?8:0;
-      var distPenalty=dist!=null?Math.max(0,Math.round((dist/radiusMi)*5)):0;
-      var score=Math.min(100,cfg.sp+Math.min(cfg.mr,cfg.mr+mrBonus)+cfg.as_+Math.min(15,cfg.ml+mlBonus)+cfg.cf-distPenalty);
-      var sp=cfg.sp, mr=Math.min(20,cfg.mr+mrBonus), as_=cfg.as_, ml=Math.min(15,cfg.ml+mlBonus), cf=cfg.cf;
-      prospects.push({name:name,cat:matchedCat,city:city,dist:dist,estRev:cfg.sp*3500,score:score,sp:sp,mr:mr,as_:as_,ml:ml,cf:cf,_lat:lat,_lng:lng});
+      var estRev=cfg.avgRev||30000;
+      var prospect={name:name,cat:matchedCat,city:city,dist:dist,estRev:estRev,rev:estRev,source:'discovered',_tags:tags,_lat:lat,_lng:lng};
+      prospect.score=computeScore(prospect);
+      prospects.push(prospect);
     });
     prospects.sort(function(a,b){return b.score-a.score;});
     if (!state.rebuild) state.rebuild = { uploaded: [], discovered: [] };
@@ -1041,9 +1239,10 @@ async function discoverProspects() {
 }
 
 var FILTER_CATEGORIES = [
-  'All','Healthcare','Education','Casino','Auto Dealer','Financial','Legal',
-  'In-Home Services','Fitness & Wellness','Private School','Furniture','Home Improvement',
-  'Golf Simulator','Senior Living','Entertainment','Multi-Location Franchise'
+  'All','Legal/Attorneys','Plumbing/Heating/HVAC','Banks/Financial','Casino',
+  'Multi-Location Franchise','Contractors/Home Improvement','In-Home Services',
+  'Healthcare','Auto Dealer','Private School','Furniture','Golf Simulator',
+  'Fitness & Wellness','Education','Entertainment','Senior Living'
 ];
 var activeCategories = new Set(['All']);
 
@@ -1097,17 +1296,16 @@ function renderRebuild(prospects, radius) {
     +'<div class="mobile-scroll"><table id="rebuild-table" class="bp-table"><thead><tr>'
     +'<th style="width:32px;"></th><th class="text-left">Advertiser Name</th>'
     +'<th class="text-left">Category</th>'
-    +'<th class="text-right accent" style="width:80px;">Score</th>'
+    +'<th class="text-right accent" style="width:80px;">IGI Score</th>'
     +'<th class="text-left hide-mobile">Tier</th>'
     +'</tr></thead><tbody>'
     +prospects.map(function(p){
-      var tip='Spend Potential: '+p.sp+'/30 | Marketing Readiness: '+p.mr+'/20 | Anchor Status: '+p.as_+'/20 | Multi-Location: '+p.ml+'/15 | Category Fit: '+p.cf+'/15';
       return '<tr>'+makeCheckbox('rebuild',p)
         +'<td><strong style="color:#fff;">'+p.name+'</strong>'
         +(p.source==='uploaded'?'<span style="font-size:.6rem;background:rgba(251,191,36,.12);color:var(--yellow);border:1px solid rgba(251,191,36,.3);border-radius:3px;padding:1px 6px;margin-left:6px;">UPLOADED</span>':p.source==='discovered'?'<span style="font-size:.6rem;background:rgba(0,188,212,.12);color:var(--teal);border:1px solid var(--teal-border);border-radius:3px;padding:1px 6px;margin-left:6px;">DISCOVERED</span>':p.source==='both'?'<span style="font-size:.6rem;background:rgba(52,211,153,.15);color:var(--green);border:1px solid rgba(52,211,153,.3);border-radius:3px;padding:1px 6px;margin-left:6px;">✓ BOTH</span>':'')
         +'</td>'
         +'<td style="color:var(--dim);font-size:.8rem;">'+(p.cat||'—')+'</td>'
-        +'<td class="text-right"><span class="score-badge '+(p.score>=80?'score-high':p.score>=60?'score-mid':'score-low')+'" title="'+tip+'" style="cursor:help;">'+p.score+'</span></td>'
+        +'<td class="text-right">'+scoreBadge(p.score,p._scoreData)+'</td>'
         +'<td class="hide-mobile">'+tierBadge(p.score)+'</td>'
         +'</tr>';
     }).join('')+'</tbody></table></div>';
@@ -1130,10 +1328,36 @@ loadPlanFromUrl();
 renderLibraryTab();
 updateSummaryCards([
   {label:'Upload Files',value:'↑',sub:'Start by uploading a file in any tab'},
-  {label:'Score',value:'Auto',sub:'Scoring applied on upload'},
+  {label:'IGI Score',value:'Auto',sub:'Powered by Ignite Growth Intelligence'},
   {label:'Geography',value:'ZIP+Radius',sub:'Rebuild tab — filter by distance'},
   {label:'Market',value:'Enter name',sub:'Top-right corner'}
 ]);
 </script>
+
+<!-- IGI Score Backdrop -->
+<div id="igiBackdrop" onclick="closeScorePanel()" style="display:none;position:fixed;inset:0;z-index:1500;background:rgba(0,0,0,.55);"></div>
+
+<!-- IGI Score Panel -->
+<div id="igiScorePanel" style="position:fixed;top:0;right:0;bottom:0;width:min(400px,100%);background:var(--surface);border-left:1px solid var(--teal-border);z-index:1600;transform:translateX(100%);transition:transform .35s cubic-bezier(.4,0,.2,1);display:flex;flex-direction:column;overflow:hidden;">
+  <div style="padding:20px;border-bottom:1px solid var(--border);flex-shrink:0;position:relative;">
+    <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;">
+      <div style="flex:1;">
+        <div style="font-size:.6rem;font-weight:700;text-transform:uppercase;letter-spacing:.12em;color:var(--teal);margin-bottom:6px;">IGI Score Breakdown</div>
+        <div id="igiPanelName" style="font-weight:800;font-size:1.05rem;color:#fff;line-height:1.3;"></div>
+        <div id="igiPanelSub" style="font-size:.72rem;color:var(--dim);margin-top:3px;"></div>
+      </div>
+      <div style="text-align:center;flex-shrink:0;background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:10px 14px;">
+        <div id="igiPanelScore" style="font-size:2.6rem;font-weight:900;line-height:1;"></div>
+        <div style="font-size:.58rem;color:var(--dim);letter-spacing:.1em;text-transform:uppercase;margin-top:3px;">IGI Score</div>
+      </div>
+    </div>
+    <button onclick="closeScorePanel()" style="position:absolute;top:14px;right:14px;background:var(--surface2);border:1px solid var(--border);color:var(--dim);border-radius:6px;padding:5px 9px;cursor:pointer;font-size:.8rem;">✕</button>
+  </div>
+  <div id="igiPanelDesc" style="padding:12px 20px;background:var(--surface2);border-bottom:1px solid var(--border);font-size:.72rem;color:var(--dim);flex-shrink:0;line-height:1.5;"></div>
+  <div id="igiPanelComponents" style="flex:1;overflow-y:auto;padding:18px 20px;"></div>
+  <div style="padding:12px 20px;border-top:1px solid var(--border);flex-shrink:0;text-align:center;">
+    <div style="font-size:.62rem;color:var(--dim);letter-spacing:.04em;">Powered by <span style="color:var(--teal);font-weight:700;">Ignite Growth Intelligence</span> &middot; IGI Score</div>
+  </div>
+</div>
 </body>
 </html>
