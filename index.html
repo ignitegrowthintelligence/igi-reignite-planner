@@ -242,6 +242,10 @@
             Target Categories
             <span style="font-size:.65rem;color:var(--dim);font-weight:400;text-transform:none;letter-spacing:0;"> &mdash; select before discovering</span>
           </div>
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
+            <span id="catSelectionCount" style="font-size:.68rem;color:var(--dim);">Select up to 3</span>
+          </div>
+          <div id="catLimitWarn" style="display:none;font-size:.68rem;color:var(--yellow);margin-bottom:6px;">&#9888; Max 3 categories &mdash; uncheck one to select another</div>
           <div style="display:flex;flex-wrap:wrap;gap:8px;" id="categoryCheckboxes"></div>
         </div>
       </div>
@@ -1617,34 +1621,58 @@ var activeCategories = new Set(['All']);
 
 
 function buildCategoryFilters() {
-  var container = document.getElementById('categoryCheckboxes');
-  if (!container) return;
-  container.innerHTML = FILTER_CATEGORIES.map(function(cat) {
-    var isActive = activeCategories.has(cat);
-    return '<label style="display:flex;align-items:center;gap:6px;padding:5px 10px;background:'
-      +(isActive?'rgba(0,188,212,.18)':'var(--surface2)')
-      +';border:1px solid '+(isActive?'var(--teal-border)':'var(--border)')
-      +';border-radius:20px;cursor:pointer;font-size:.75rem;color:'+(isActive?'var(--teal)':'var(--dim)')
-      +';transition:all .15s;">'
-      +'<input type="checkbox" '+(isActive?'checked':'')
-      +' onchange="toggleCategoryFilter(\''+cat+'\',this.checked)"'
-      +' style="accent-color:var(--teal);width:13px;height:13px;cursor:pointer;">'
-      +cat+'</label>';
-  }).join('');
-  // Panel is always visible
+ var container = document.getElementById('categoryCheckboxes');
+ if (!container) return;
+ var MAX_CATS = 3;
+ var atLimit = !activeCategories.has('All') && activeCategories.size >= MAX_CATS;
+ var countEl = document.getElementById('catSelectionCount');
+ if (countEl) {
+ var n = activeCategories.has('All') ? 0 : activeCategories.size;
+ countEl.textContent = n > 0 ? n + ' of ' + MAX_CATS + ' selected' : 'Select up to ' + MAX_CATS;
+ countEl.style.color = atLimit ? 'var(--yellow)' : 'var(--dim)';
+ }
+ container.innerHTML = FILTER_CATEGORIES.map(function(cat) {
+ var isActive = activeCategories.has(cat);
+ var isDisabled = !isActive && atLimit;
+ if (cat === 'All') isDisabled = !activeCategories.has('All') && activeCategories.size > 0;
+ return '<label style="display:flex;align-items:center;gap:6px;padding:5px 10px;background:'
+ + (isActive ? 'rgba(0,188,212,.18)' : 'var(--surface2)')
+ + ';border:1px solid ' + (isActive ? 'var(--teal-border)' : 'var(--border)')
+ + ';border-radius:20px;cursor:' + (isDisabled ? 'not-allowed' : 'pointer')
+ + ';font-size:.75rem;color:' + (isActive ? 'var(--teal)' : isDisabled ? 'rgba(255,255,255,.2)' : 'var(--dim)')
+ + ';opacity:' + (isDisabled ? '.4' : '1')
+ + ';transition:all .15s;">'
+ + '<input type="checkbox" ' + (isActive ? 'checked' : '') + ' ' + (isDisabled ? 'disabled' : '')
+ + ' onchange="toggleCategoryFilter(\'' + cat + '\',this.checked)"'
+ + ' style="accent-color:var(--teal);width:13px;height:13px;cursor:' + (isDisabled ? 'not-allowed' : 'pointer') + ';">' 
+ + cat + '</label>';
+ }).join('');
 }
 
 function toggleCategoryFilter(cat, checked) {
-  if (cat === 'All') {
-    activeCategories = checked ? new Set(['All']) : new Set();
-  } else {
-    activeCategories.delete('All');
-    if (checked) { activeCategories.add(cat); } else { activeCategories.delete(cat); }
-    if (activeCategories.size === 0) activeCategories.add('All');
-  }
-  buildCategoryFilters();
-  var hasMerged = state.rebuild && state.rebuild._merged && state.rebuild._merged.length > 0;
-  if (hasMerged) filterRebuild();
+ var MAX_CATS = 3;
+ if (cat === 'All') {
+ activeCategories = checked ? new Set(['All']) : new Set();
+ } else {
+ activeCategories.delete('All');
+ if (checked) {
+ if (activeCategories.size >= MAX_CATS) {
+ buildCategoryFilters(); // re-render to uncheck the box visually
+ var warn = document.getElementById('catLimitWarn');
+ if (warn) { warn.style.display = 'block'; setTimeout(function(){ warn.style.display = 'none'; }, 3000); }
+ return;
+ }
+ activeCategories.add(cat);
+ } else {
+ activeCategories.delete(cat);
+ }
+ if (activeCategories.size === 0) activeCategories = new Set(['All']);
+ }
+ var warn = document.getElementById('catLimitWarn');
+ if (warn) warn.style.display = 'none';
+ buildCategoryFilters();
+ var hasMerged = state.rebuild && state.rebuild._merged && state.rebuild._merged.length > 0;
+ if (hasMerged) filterRebuild();
 }
 
 function renderRebuild(prospects, radius) {
