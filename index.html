@@ -1447,6 +1447,7 @@ async function discoverProspects() {
 
  status.innerHTML = '<span style="color:var(--teal);">Searching Google Places for '
  + cat + ' (' + (ci+1) + ' of ' + catsToQuery.length + ')...</span>';
+ console.log('[IGI Discovery] Category:', cat, '| searchQuery:', cfg.searchQuery, '| includedType:', cfg.types && cfg.types[0]);
 
  var pageToken = null;
  var pageCount = 0;
@@ -1500,6 +1501,7 @@ async function discoverProspects() {
  }
 
  var data = await resp.json();
+ console.log('[IGI Discovery] ' + cat + ' page ' + (pageCount+1) + ' returned', (data.places||[]).length, 'places');
  pageToken = data.nextPageToken || null;
 
  (data.places || []).forEach(function(place) {
@@ -1555,6 +1557,12 @@ async function discoverProspects() {
  }
 
  allProspects.sort(function(a,b){ return b.score - a.score; });
+
+ if (!allProspects.length) {
+ status.innerHTML = '<span style="color:var(--red);">No prospects found. All category searches failed or returned 0 results. Open the browser console (F12) for details on which categories errored and why.</span>';
+ btn.disabled = false; btn.style.opacity = '1';
+ return;
+ }
 
  if (!state.rebuild) state.rebuild = { uploaded:[], discovered:[] };
  state.rebuild._allDiscovered = allProspects;
