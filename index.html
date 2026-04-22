@@ -1063,46 +1063,42 @@ function parseRebuild(rows, fname) {
 // ─── REBUILD (auto-discover) ─────────────────────────────────────────────────
 const GOOGLE_PLACES_KEY = 'AIzaSyD8bC6HVmYrb6MudvcXW92Q5OYpvnoxytY';
 const CATEGORY_CONFIG = {
- 'Legal/Attorneys': {tags:[['office','lawyer']], fit:30, avgRev:84152},
- 'Home Services': {tags:[['craft','plumber'],['craft','electrician'],['craft','hvac']], fit:30, avgRev:52000},
- 'Med Spa / Aesthetics': {tags:[['leisure','spa']], fit:20, avgRev:55000},
- 'Banks/Financial': {tags:[['amenity','bank'],['amenity','credit_union']], fit:25, avgRev:56927},
- 'Casino': {tags:[['amenity','casino']], fit:25, avgRev:59151},
- 'Roofing': {tags:[['craft','roofer']], fit:20, avgRev:48000},
- 'Insurance': {tags:[['office','insurance']], fit:20, avgRev:38000},
- 'Contractors/Home Improvement':{tags:[['shop','building_materials'],['craft','carpenter']], fit:18, avgRev:40639},
- 'Real Estate': {tags:[['office','estate_agent']], fit:15, avgRev:42000},
- 'Healthcare': {tags:[['amenity','hospital']], fit:30, avgRev:26235},
- 'Cosmetic/Specialty Dental': {tags:[['healthcare:speciality','periodontics'],['healthcare:speciality','orthodontics']], fit:24, avgRev:68000},
- 'Auto Dealer': {tags:[['shop','car'],['shop','car_repair']], fit:25, avgRev:26685},
- 'Private School': {tags:[['amenity','school']], fit:15, avgRev:28000},
- 'Furniture': {tags:[['shop','furniture']], fit:12, avgRev:32000},
- 'Golf/Country Club': {tags:[['leisure','golf_course']], fit:18, avgRev:30000},
- 'Fitness & Wellness': {tags:[['leisure','fitness_centre']], fit:12, avgRev:22000},
- 'Education': {tags:[['amenity','university'],['amenity','college']], fit:10, avgRev:21700},
- 'Senior Living': {tags:[['amenity','nursing_home'],['social_facility','assisted_living']], fit:23, avgRev:35000},
- 'Solar': {tags:[['craft','solar_energy'],['shop','solar']], fit:20, avgRev:45000}
+ 'Legal/Attorneys': {types:['lawyer'], avgRev:84152},
+ 'HVAC': {types:['hvac_contractor'], avgRev:52000},
+ 'Plumbing': {types:['plumber'], avgRev:40000},
+ 'Roofing': {types:['roofing_contractor'], avgRev:48000},
+ 'Med Spa / Aesthetics':{types:['spa'], avgRev:55000},
+ 'Senior Living': {types:['nursing_home'], avgRev:35000},
+ 'Hospital': {types:['hospital'], avgRev:26235},
+ 'Medical Clinic': {types:['doctor'], avgRev:26235},
+ 'Dentist': {types:['dentist'], avgRev:28000},
+ 'Banks/Financial': {types:['bank'], avgRev:56927},
+ 'Insurance': {types:['insurance_agency'], avgRev:38000},
+ 'Real Estate': {types:['real_estate_agency'],avgRev:42000},
+ 'Auto Dealer': {types:['car_dealer'], avgRev:26685},
+ 'Auto Repair': {types:['car_repair'], avgRev:22000},
+ 'Furniture': {types:['furniture_store'], avgRev:32000},
+ 'University/College': {types:['university'], avgRev:21700},
+ 'Casino': {types:['casino'], avgRev:59151}
 };
 const CATEGORY_SCORES = {
  'Legal/Attorneys': 30,
- 'Home Services': 30,
- 'Healthcare': 30,
- 'Auto Dealer': 25,
+ 'HVAC': 30,
+ 'Hospital': 30,
  'Banks/Financial': 25,
  'Casino': 25,
- 'Cosmetic/Specialty Dental': 24,
+ 'Auto Dealer': 25,
+ 'Medical Clinic': 25,
  'Senior Living': 23,
- 'Insurance': 20,
+ 'Dentist': 22,
+ 'Plumbing': 20,
  'Roofing': 20,
- 'Solar': 20,
- 'Med Spa / Aesthetics': 20,
- 'Contractors/Home Improvement':18,
- 'Golf/Country Club': 18,
+ 'Med Spa / Aesthetics':20,
+ 'Insurance': 20,
+ 'Auto Repair': 18,
  'Real Estate': 15,
- 'Private School': 15,
- 'Fitness & Wellness': 12,
  'Furniture': 12,
- 'Education': 10
+ 'University/College': 10
 };
 
 // ─── IGI SCORE ENGINE — REBUILD ───────────────────────────────────────────────
@@ -1411,143 +1407,146 @@ async function filterRebuild() {
   renderRebuild(prospects, radius);
 }
 
-async function enrichWithGooglePlaces(prospects, cityName) {
- if (!GOOGLE_PLACES_KEY || !prospects.length) return prospects;
- var statusEl = document.getElementById('discoverStatus');
- // Prioritize top 60 by initial score to manage API usage
- var sorted = prospects.slice().sort(function(a,b){ return b.score - a.score; });
- var toEnrich = sorted.slice(0, 60);
+async function discoverProspects() {
+ var zip = document.getElementById('zipInput').value.replace(/\D/g,'');
+ if (zip.length !== 5) { alert('Enter a valid 5-digit ZIP code first.'); return; }
 
- for (var i = 0; i < toEnrich.length; i++) {
- var p = toEnrich[i];
- if (statusEl) statusEl.innerHTML = '<span style="color:var(--teal);">Enriching with Google Places... ' + (i+1) + '/' + toEnrich.length + '</span>';
+ var radiusMi = parseInt(document.getElementById('radiusSlider').value) || 25;
+ var radiusM = Math.round(radiusMi * 1609.34);
+ var status = document.getElementById('discoverStatus');
+ var btn = document.getElementById('discoverBtn');
+
+ var center = (state.geoCenter && state.geoCenter.zip === zip) ? state.geoCenter : null;
+ if (!center) {
+ status.textContent = 'Looking up ZIP code...';
  try {
- var q = p.name + (cityName ? ', ' + cityName : '');
+ var r = await fetch('https://nominatim.openstreetmap.org/search?postalcode='+zip+'&country=US&format=json&limit=1');
+ var d = await r.json();
+ if (!d || !d[0]) { status.textContent = 'ZIP code not found.'; return; }
+ center = { lat:parseFloat(d[0].lat), lng:parseFloat(d[0].lon), zip:zip, city:d[0].display_name.split(',')[0].trim() };
+ state.geoCenter = center;
+ var lbl = document.getElementById('geoDescLabel');
+ if (lbl) lbl.textContent = center.city + ', ' + zip;
+ } catch(e) { status.textContent = 'ZIP lookup failed: ' + e.message; return; }
+ }
+
+ btn.disabled = true; btn.style.opacity = '.6';
+
+ var catsToQuery = activeCategories.has('All')
+ ? Object.keys(CATEGORY_CONFIG)
+ : Array.from(activeCategories).filter(function(c){ return CATEGORY_CONFIG[c]; });
+ if (!catsToQuery.length) catsToQuery = Object.keys(CATEGORY_CONFIG);
+
+ var allProspects = [];
+ var seen = new Set();
+
+ for (var ci = 0; ci < catsToQuery.length; ci++) {
+ var cat = catsToQuery[ci];
+ var cfg = CATEGORY_CONFIG[cat];
+ if (!cfg || !cfg.types || !cfg.types.length) continue;
+
+ status.innerHTML = '<span style="color:var(--teal);">Searching Google Places for '
+ + cat + ' (' + (ci+1) + ' of ' + catsToQuery.length + ')...</span>';
+
+ var pageToken = null;
+ var pageCount = 0;
+
+ do {
+ try {
+ var body = {
+ textQuery: cat,
+ includedType: cfg.types[0],
+ maxResultCount: 20,
+ locationBias: {
+ circle: {
+ center: { latitude: center.lat, longitude: center.lng },
+ radius: radiusM
+ }
+ }
+ };
+ if (pageToken) body.pageToken = pageToken;
+
  var resp = await fetch('https://places.googleapis.com/v1/places:searchText', {
  method: 'POST',
  headers: {
  'Content-Type': 'application/json',
  'X-Goog-Api-Key': GOOGLE_PLACES_KEY,
- 'X-Goog-FieldMask':'places.displayName,places.rating,places.userRatingCount,places.priceLevel,places.photos,places.websiteUri,places.regularOpeningHours,places.businessStatus'
+ 'X-Goog-FieldMask':'places.displayName,places.location,places.rating,places.userRatingCount,places.priceLevel,places.photos,places.websiteUri,places.regularOpeningHours,places.businessStatus,places.formattedAddress,places.nationalPhoneNumber,nextPageToken'
  },
- body: JSON.stringify({ textQuery: q, maxResultCount: 1 })
+ body: JSON.stringify(body)
  });
- if (resp.ok) {
+
+ if (!resp.ok) {
+ var errData = await resp.json().catch(function(){ return {}; });
+ throw new Error((errData.error && errData.error.message) ? errData.error.message : 'HTTP ' + resp.status);
+ }
+
  var data = await resp.json();
- if (data.places && data.places[0]) {
- var pl = data.places[0];
- p._places = {
- rating: pl.rating,
- userRatingCount: pl.userRatingCount || 0,
- priceLevel: pl.priceLevel || '',
- photoCount: (pl.photos || []).length,
- websiteUri: pl.websiteUri || '',
- regularOpeningHours: pl.regularOpeningHours || null,
- businessStatus: pl.businessStatus || 'OPERATIONAL'
+ pageToken = data.nextPageToken || null;
+
+ (data.places || []).forEach(function(place) {
+ var name = place.displayName ? place.displayName.text : '';
+ if (!name || name.length < 2) return;
+ if (seen.has(name.toLowerCase())) return;
+ if (place.businessStatus === 'CLOSED_PERMANENTLY') return;
+
+ var lat = place.location ? place.location.latitude : null;
+ var lng = place.location ? place.location.longitude : null;
+ var dist = (lat && lng) ? haversine(center.lat, center.lng, lat, lng) : null;
+ if (dist !== null && dist > radiusMi) return;
+
+ seen.add(name.toLowerCase());
+
+ var prospect = {
+ name: name,
+ cat: cat,
+ city: center.city,
+ dist: dist,
+ estRev: cfg.avgRev || 30000,
+ rev: cfg.avgRev || 30000,
+ source: 'discovered',
+ _tags: {},
+ _lat: lat,
+ _lng: lng,
+ _website: place.websiteUri || null,
+ _places: {
+ rating: place.rating || null,
+ userRatingCount: place.userRatingCount || 0,
+ priceLevel: place.priceLevel || '',
+ photoCount: (place.photos || []).length,
+ websiteUri: place.websiteUri || '',
+ regularOpeningHours: place.regularOpeningHours || null,
+ businessStatus: place.businessStatus || 'OPERATIONAL'
+ }
  };
- if (pl.websiteUri) p._website = pl.websiteUri;
- if (pl.businessStatus === 'CLOSED_PERMANENTLY') p._closedPermanently = true;
+
+ prospect.score = computeScore(prospect);
+ allProspects.push(prospect);
+ });
+
+ pageCount++;
+ if (pageToken && pageCount < 3) {
+ await new Promise(function(r){ setTimeout(r, 200); });
  }
+ } catch(e) {
+ status.innerHTML = '<span style="color:var(--yellow);">Warning: '
+ + cat + ' search failed \u2014 ' + e.message + '. Continuing...</span>';
+ pageToken = null;
  }
- } catch(e) { /* silently continue on Places API failure */ }
- if (i < toEnrich.length - 1) await new Promise(function(r){ setTimeout(r, 60); });
+ } while (pageToken && pageCount < 3);
  }
 
- // Re-score all prospects with enriched Places data
- prospects.forEach(function(p){ p.score = computeScore(p); });
- // Remove permanently closed businesses
- return prospects.filter(function(p){ return !p._closedPermanently; });
-}
+ allProspects.sort(function(a,b){ return b.score - a.score; });
 
-async function discoverProspects() {
-  var zip = document.getElementById('zipInput').value.replace(/\D/g,'');
-  if (zip.length !== 5) { alert('Enter a valid 5-digit ZIP code first.'); return; }
+ if (!state.rebuild) state.rebuild = { uploaded:[], discovered:[] };
+ state.rebuild._allDiscovered = allProspects;
+ state.rebuild._discoverOffset = 0;
+ state.rebuild._discoverCenter = center;
+ state.rebuild._discoverRadiusMi = radiusMi;
 
-  var radiusMi = parseInt(document.getElementById('radiusSlider').value) || 25;
-  var radiusM  = Math.round(radiusMi * 1609.34);
-  var status   = document.getElementById('discoverStatus');
-  var btn      = document.getElementById('discoverBtn');
+ await _applyDiscoverBatch(status);
 
-  var center = (state.geoCenter && state.geoCenter.zip === zip) ? state.geoCenter : null;
-  if (!center) {
-    status.textContent = 'Looking up ZIP code...';
-    try {
-      var r = await fetch('https://nominatim.openstreetmap.org/search?postalcode='+zip+'&country=US&format=json&limit=1');
-      var d = await r.json();
-      if (!d || !d[0]) { status.textContent = 'ZIP code not found.'; return; }
-      center = { lat:parseFloat(d[0].lat), lng:parseFloat(d[0].lon), zip:zip, city:d[0].display_name.split(',')[0].trim() };
-      state.geoCenter = center;
-      var lbl = document.getElementById('geoDescLabel');
-      if (lbl) lbl.textContent = center.city + ', ' + zip;
-    } catch(e) { status.textContent = 'ZIP lookup failed: ' + e.message; return; }
-  }
-
-  btn.disabled = true; btn.style.opacity = '.6';
-
-  var catsToQuery = activeCategories.has('All')
-    ? Object.keys(CATEGORY_CONFIG)
-    : Array.from(activeCategories).filter(function(c){ return CATEGORY_CONFIG[c]; });
-  if (!catsToQuery.length) catsToQuery = Object.keys(CATEGORY_CONFIG);
-
-  var geo   = '(around:'+radiusM+','+center.lat+','+center.lng+')';
-  var lines = [];
-  catsToQuery.forEach(function(cat) {
-    CATEGORY_CONFIG[cat].tags.forEach(function(pair) {
-      lines.push('nwr["'+pair[0]+'"="'+pair[1]+'"]'+geo+';');
-    });
-  });
-
-  var query = '[out:json][timeout:60];(\n' + lines.join('\n') + '\n);out center tags;';
-  status.innerHTML = '<span style="color:var(--teal);">Searching '+radiusMi+' mi around '+center.city+'...</span>';
-
-  try {
-    var resp = await fetch('https://overpass-api.de/api/interpreter', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-      body: 'data=' + encodeURIComponent(query)
-    });
-    if (!resp.ok) throw new Error('Overpass returned HTTP ' + resp.status);
-    var data = await resp.json();
-
-    var seen = new Set(), prospects = [];
-    (data.elements || []).forEach(function(el) {
-      var tags = el.tags || {};
-      var name = tags.name || tags.brand || tags.operator || '';
-      if (name.length < 2 || seen.has(name.toLowerCase())) return;
-      seen.add(name.toLowerCase());
-
-      var matchedCat = '', cfg = null;
-      for (var cat in CATEGORY_CONFIG) {
-        if (catsToQuery.indexOf(cat) < 0) continue;
-        var c = CATEGORY_CONFIG[cat];
-        if (c.tags.some(function(p){ return tags[p[0]] === p[1]; })) { matchedCat = cat; cfg = c; break; }
-      }
-      if (!matchedCat) return;
-
-      var lat = el.center ? el.center.lat : el.lat;
-      var lng = el.center ? el.center.lon : el.lon;
-      var dist = (lat && lng) ? haversine(center.lat, center.lng, lat, lng) : null;
-      var prospect = { name:name, cat:matchedCat, city:center.city, dist:dist, estRev:cfg.avgRev||30000, rev:cfg.avgRev||30000, source:'discovered', _tags:tags, _lat:lat, _lng:lng };
-      prospect.score = computeScore(prospect);
-      prospects.push(prospect);
-    });
-
-    prospects.sort(function(a,b){ return b.score - a.score; });
-
-    // Store full result set for pagination; reset to page 1
-    if (!state.rebuild) state.rebuild = { uploaded:[], discovered:[] };
-    state.rebuild._allDiscovered = prospects;
-    state.rebuild._discoverOffset = 0;
-    state.rebuild._discoverCenter = center;
-    state.rebuild._discoverRadiusMi = radiusMi;
-
-    await _applyDiscoverBatch(status);
-
-  } catch(e) {
-    status.innerHTML = '<span style="color:var(--red);">Discovery failed: '+e.message+'</span>';
-  }
-
-  btn.disabled = false; btn.style.opacity = '1';
+ btn.disabled = false; btn.style.opacity = '1';
 }
 
 async function _applyDiscoverBatch(statusEl) {
@@ -1568,42 +1567,34 @@ async function _applyDiscoverBatch(statusEl) {
  return;
  }
 
- // Deep-clone the batch so Places enrichment doesn't mutate the master list
- var batchClone = batch.map(function(p){ return Object.assign({}, p, {_places:null, _website:null, _closedPermanently:false}); });
+ batch.sort(function(a,b){ return b.score - a.score; });
 
- if (statusEl) statusEl.innerHTML = '<span style="color:var(--teal);">Enriching batch ' + (offset/50+1) + ' with Google Places...</span>';
-
- if (typeof enrichWithGooglePlaces === 'function') {
- batchClone = await enrichWithGooglePlaces(batchClone, center.city || '');
- }
- batchClone.sort(function(a,b){ return b.score - a.score; });
-
- state.rebuild.discovered = batchClone;
+ state.rebuild.discovered = batch;
 
  activeCategories = new Set(['All']);
  buildCategoryFilters();
  mergeAndRenderRebuild();
 
- var chainCount = batchClone.filter(function(p){ return p._isNationalChain; }).length;
- var pageNum = Math.floor(offset/50) + 1;
- var totalPages = Math.ceil(all.length/50);
+ var chainCount = batch.filter(function(p){ return p._isNationalChain; }).length;
+ var pageNum = Math.floor(offset / 50) + 1;
+ var totalPages = Math.ceil(all.length / 50);
 
  var nextBtn = remaining > 0
  ? ' <button onclick="loadNextDiscoveredBatch()" style="margin-left:10px;background:rgba(0,188,212,.15);border:1px solid var(--teal-border);border-radius:6px;padding:4px 12px;color:var(--teal);font-size:.75rem;font-weight:700;cursor:pointer;">Next 50 →</button>'
  : '';
 
  if (statusEl) statusEl.innerHTML =
- '<span style="color:var(--green);">Showing ' + batchClone.length + ' of ' + all.length + ' prospects'
- + ' — Page ' + pageNum + ' of ' + totalPages
+ '<span style="color:var(--green);">Showing ' + batch.length + ' of ' + all.length
+ + ' prospects — Page ' + pageNum + ' of ' + totalPages
  + (chainCount ? ' (' + chainCount + ' chains scored low)' : '')
- + ' · ' + remaining + ' remaining</span>'
+ + ' · ' + remaining + ' remaining · Powered by Google Places</span>'
  + nextBtn;
 
  updateSummaryCards([
- { label:'This Batch', value:batchClone.length, sub:'Page ' + pageNum + ' of ' + totalPages },
+ { label:'This Batch', value:batch.length, sub:'Page ' + pageNum + ' of ' + totalPages },
  { label:'Total Found', value:all.length, sub:'In ' + radiusMi + ' mi radius' },
- { label:'Avg IGI Score', value:batchClone.length ? Math.round(batchClone.reduce(function(s,p){return s+p.score;},0)/batchClone.length) : 0, sub:'This batch' },
- { label:'Remaining', value:remaining, sub:remaining > 0 ? 'Click Next 50 →' : 'All batches loaded' }
+ { label:'Avg IGI Score', value:batch.length ? Math.round(batch.reduce(function(s,p){return s+p.score;},0)/batch.length) : 0, sub:'This batch' },
+ { label:'Remaining', value:remaining, sub:remaining > 0 ? 'Click Next 50 →' : 'All loaded' }
  ]);
 
  if (btn) { btn.disabled = false; btn.style.opacity = '1'; }
