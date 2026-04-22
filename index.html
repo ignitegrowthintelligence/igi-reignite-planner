@@ -1308,81 +1308,102 @@ async function filterRebuild() {
 }
 
 async function discoverProspects() {
-  var zip=document.getElementById('zipInput').value.replace(/\D/g,'');
-  if (zip.length!==5) { alert('Enter a valid 5-digit ZIP code first.'); return; }
-  var radiusMi=parseInt(document.getElementById('radiusSlider').value)||25;
-  var radiusM=Math.round(radiusMi*1609.34);
-  var status=document.getElementById('discoverStatus'), btn=document.getElementById('discoverBtn');
-  var center=state.geoCenter&&state.geoCenter.zip===zip?state.geoCenter:null;
+  var zip = document.getElementById('zipInput').value.replace(/\D/g,'');
+  if (zip.length !== 5) { alert('Enter a valid 5-digit ZIP code first.'); return; }
+
+  var radiusMi = parseInt(document.getElementById('radiusSlider').value) || 25;
+  var radiusM  = Math.round(radiusMi * 1609.34);
+  var status   = document.getElementById('discoverStatus');
+  var btn      = document.getElementById('discoverBtn');
+
+  var center = (state.geoCenter && state.geoCenter.zip === zip) ? state.geoCenter : null;
   if (!center) {
-    status.textContent='Looking up ZIP code...';
+    status.textContent = 'Looking up ZIP code...';
     try {
-      var r=await fetch('https://nominatim.openstreetmap.org/search?postalcode='+zip+'&country=US&format=json&limit=1',{headers:{'User-Agent':'IGI-ReIgnite/1.0'}});
-      if (!r.ok) { status.textContent='ZIP lookup failed.'; return; }
-      var d=await r.json();
-      if (!d||!d[0]) { alert('ZIP code not found.'); return; }
-      var city=d[0].display_name.split(',')[0];
-      center={lat:parseFloat(d[0].lat),lng:parseFloat(d[0].lon),zip:zip,city:city,state:''};
-      state.geoCenter=center;
-      var lbl=document.getElementById('geoDescLabel'); if(lbl) lbl.textContent=city+', '+zip;
-    } catch(e) { status.textContent='ZIP lookup failed. Check connection.'; return; }
+      var r = await fetch('https://nominatim.openstreetmap.org/search?postalcode='+zip+'&country=US&format=json&limit=1');
+      var d = await r.json();
+      if (!d || !d[0]) { status.textContent = 'ZIP code not found.'; return; }
+      center = { lat:parseFloat(d[0].lat), lng:parseFloat(d[0].lon), zip:zip, city:d[0].display_name.split(',')[0].trim() };
+      state.geoCenter = center;
+      var lbl = document.getElementById('geoDescLabel');
+      if (lbl) lbl.textContent = center.city + ', ' + zip;
+    } catch(e) { status.textContent = 'ZIP lookup failed: ' + e.message; return; }
   }
-  btn.disabled=true; btn.style.opacity='.6';
-  status.innerHTML='<span style="color:var(--teal);">Searching '+radiusMi+' mi — '+center.city+'</span>';
-  var geo='(around:'+radiusM+','+center.lat+','+center.lng+')';
-  var lines=[];
-  // Only query categories the user has selected
+
+  btn.disabled = true; btn.style.opacity = '.6';
+
   var catsToQuery = activeCategories.has('All')
     ? Object.keys(CATEGORY_CONFIG)
     : Array.from(activeCategories).filter(function(c){ return CATEGORY_CONFIG[c]; });
   if (!catsToQuery.length) catsToQuery = Object.keys(CATEGORY_CONFIG);
-  var catLabel = catsToQuery.length === Object.keys(CATEGORY_CONFIG).length ? 'all categories' : catsToQuery.join(', ');
+
+  var geo   = '(around:'+radiusM+','+center.lat+','+center.lng+')';
+  var lines = [];
   catsToQuery.forEach(function(cat) {
     CATEGORY_CONFIG[cat].tags.forEach(function(pair) {
       lines.push('nwr["'+pair[0]+'"="'+pair[1]+'"]'+geo+';');
     });
   });
-  var query='[out:json][timeout:60][maxsize:50000000];(\n'+lines.join('\n')+'\n);out center tags;';
+
+  var query = '[out:json][timeout:60];(\n' + lines.join('\n') + '\n);out center tags;';
+  status.innerHTML = '<span style="color:var(--teal);">Searching '+radiusMi+' mi around '+center.city+'...</span>';
+
   try {
-    var resp=await fetch('https://overpass-api.de/api/interpreter',{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:'data='+encodeURIComponent(query)});
-    if (!resp.ok) {
-      var errText = resp.status === 429 ? 'Overpass API rate limited — wait 60 seconds and try again.' : resp.status >= 500 ? 'Overpass server error. Try reducing the radius or selecting fewer categories.' : 'Overpass API error ('+resp.status+')';
-      status.textContent = errText;
-      btn.disabled=false; btn.style.opacity='1';
-      return;
-    }
-    var data=await resp.json();
-    var seen=new Set(), prospects=[];
-    (data.elements||[]).forEach(function(el) {
-      var tags=el.tags||{}, name=tags.name||tags.brand||tags.operator||'';
-      if (name.length<2||seen.has(name.toLowerCase())) return;
+    var resp = await fetch('https://overpass-api.de/api/interpreter', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: 'data=' + encodeURIComponent(query)
+    });
+    if (!resp.ok) throw new Error('Overpass returned HTTP ' + resp.status);
+    var data = await resp.json();
+
+    var seen = new Set(), prospects = [];
+    (data.elements || []).forEach(function(el) {
+      var tags = el.tags || {};
+      var name = tags.name || tags.brand || tags.operator || '';
+      if (name.length < 2 || seen.has(name.toLowerCase())) return;
       seen.add(name.toLowerCase());
-      var matchedCat='', cfg=null;
+
+      var matchedCat = '', cfg = null;
       for (var cat in CATEGORY_CONFIG) {
-        var c=CATEGORY_CONFIG[cat];
-        if (c.tags.some(function(p){return tags[p[0]]===p[1];})) { matchedCat=cat; cfg=c; break; }
+        if (catsToQuery.indexOf(cat) < 0) continue;
+        var c = CATEGORY_CONFIG[cat];
+        if (c.tags.some(function(p){ return tags[p[0]] === p[1]; })) { matchedCat = cat; cfg = c; break; }
       }
       if (!matchedCat) return;
-      var lat=el.center?el.center.lat:el.lat, lng=el.center?el.center.lon:el.lon;
-      var dist=(lat&&lng)?haversine(center.lat,center.lng,lat,lng):null;
-      var city=tags['addr:city']||tags['addr:town']||center.city;
-      var estRev=cfg.avgRev||30000;
-      var prospect={name:name,cat:matchedCat,city:city,dist:dist,estRev:estRev,rev:estRev,source:'discovered',_tags:tags,_lat:lat,_lng:lng};
-      prospect.score=computeScore(prospect);
+
+      var lat = el.center ? el.center.lat : el.lat;
+      var lng = el.center ? el.center.lon : el.lon;
+      var dist = (lat && lng) ? haversine(center.lat, center.lng, lat, lng) : null;
+      var prospect = { name:name, cat:matchedCat, city:center.city, dist:dist, estRev:cfg.avgRev||30000, rev:cfg.avgRev||30000, source:'discovered', _tags:tags, _lat:lat, _lng:lng };
+      prospect.score = computeScore(prospect);
       prospects.push(prospect);
     });
-    prospects.sort(function(a,b){return b.score-a.score;});
-    if (!state.rebuild) state.rebuild = { uploaded: [], discovered: [] };
+
+    prospects.sort(function(a,b){ return b.score - a.score; });
+    if (!state.rebuild) state.rebuild = { uploaded:[], discovered:[] };
     state.rebuild.discovered = prospects;
-    btn.disabled=false; btn.style.opacity='1';
-    status.innerHTML='<span style="color:var(--green);">Found '+prospects.length+' prospects within '+radiusMi+' mi of '+center.city+' ('+catLabel+')</span>';
+
     activeCategories = new Set(['All']);
     buildCategoryFilters();
     mergeAndRenderRebuild();
+
+    var chainCount = prospects.filter(function(p){ return p._isNationalChain; }).length;
+    status.innerHTML = '<span style="color:var(--green);">Found '+prospects.length+' prospects within '+radiusMi+' mi of '+center.city+(chainCount?' ('+chainCount+' chains scored low)':'')+' </span>';
+
+    updateSummaryCards([
+      { label:'Prospects Found', value:prospects.length, sub:'From OpenStreetMap' },
+      { label:'Avg IGI Score',   value:prospects.length ? Math.round(prospects.reduce(function(s,p){return s+p.score;},0)/prospects.length) : 0, sub:'Category weighted' },
+      { label:'Categories',      value:new Set(prospects.map(function(p){return p.cat;})).size, sub:'Business types found' },
+      { label:'Search Radius',   value:radiusMi+' mi', sub:'From '+center.city }
+    ]);
+
   } catch(e) {
-    btn.disabled=false; btn.style.opacity='1';
-    status.textContent='Discovery failed. Try again or upload a list.';
+    status.innerHTML = '<span style="color:var(--red);">Discovery failed: '+e.message+'</span>';
   }
+
+  btn.disabled = false; btn.style.opacity = '1';
+}
 }
 
 var FILTER_CATEGORIES = ['All'].concat(Object.keys(CATEGORY_CONFIG));
