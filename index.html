@@ -1519,7 +1519,7 @@ async function discoverProspects() {
  if (zip.length !== 5) { alert('Enter a valid 5-digit ZIP code first.'); return; }
 
  var radiusMi = parseInt(document.getElementById('radiusSlider').value) || 25;
- var radiusM = Math.round(radiusMi * 1609.34);
+ var radiusM = Math.min(Math.round(radiusMi * 1609.34), 50000);
  var status = document.getElementById('discoverStatus');
  var btn = document.getElementById('discoverBtn');
 
