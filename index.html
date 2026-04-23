@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8"/>
@@ -2086,15 +2086,24 @@ function _buildRebuildBody(a) {
       '<div style="padding:18px 24px 0;">'
       + '<div style="font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.09em;color:var(--teal);margin-bottom:10px;">Discovery Intelligence</div>'
       + '<div id="' + containerId + '-bullets" style="display:flex;flex-direction:column;gap:8px;margin-bottom:10px;"></div>'
+      + '<div id="' + containerId + '-progress" style="display:none;margin-bottom:10px;">'
+      + '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:5px;">'
+      + '<span id="' + containerId + '-progress-label" style="font-size:.68rem;color:var(--dim);">Generating report…</span>'
+      + '<span id="' + containerId + '-progress-pct" style="font-size:.68rem;color:var(--teal);font-weight:700;">0%</span>'
+      + '</div>'
+      + '<div style="height:4px;background:var(--surface2);border-radius:2px;overflow:hidden;">'
+      + '<div id="' + containerId + '-progress-bar" style="height:100%;width:0%;background:linear-gradient(90deg,var(--teal),rgba(0,188,212,.5));border-radius:2px;transition:width .8s ease;"></div>'
+      + '</div>'
+      + '</div>'
       + '<div id="' + containerId + '-btn-wrap">'
       + '<button id="' + containerId + '-btn" '
-      + 'onclick="loadDiscoveryBullets(\'' + encodeURIComponent(domain) + '\',\'' + containerId + '\')" '
+      + 'onclick="generateDiscoveryIntel(\'' + encodeURIComponent(domain) + '\',\'' + containerId + '\')" '
       + 'style="width:100%;display:flex;align-items:center;justify-content:center;gap:8px;padding:12px 16px;'
       + 'background:linear-gradient(135deg,rgba(0,188,212,.15),rgba(0,188,212,.06));'
       + 'border:1px solid var(--teal-border);border-radius:8px;color:var(--teal);font-size:.82rem;font-weight:700;cursor:pointer;transition:all .15s;" '
       + 'onmouseover="this.style.background=\'rgba(0,188,212,.22)\'" '
       + 'onmouseout="this.style.background=\'linear-gradient(135deg,rgba(0,188,212,.15),rgba(0,188,212,.06))\'" >'
-      + '🔍 Get Discovery Report'
+      + '🔍 Generate Intel'
       + '</button>'
       + '</div>'
       + '<div id="' + containerId + '-link" style="display:none;margin-top:10px;">'
@@ -2113,66 +2122,119 @@ function _buildRebuildBody(a) {
   return profileSection + discoverySection + '<div style="padding:0 24px 24px;">' + _buildScoreBreakdown(a) + '</div>';
 }
 
-async function loadDiscoveryBullets(encodedDomain, containerId) {
+async function generateDiscoveryIntel(encodedDomain, containerId) {
   var domain = decodeURIComponent(encodedDomain);
-  var bulletsEl = document.getElementById(containerId + '-bullets');
-  var btnWrapEl = document.getElementById(containerId + '-btn-wrap');
-  var btnEl     = document.getElementById(containerId + '-btn');
-  var linkEl    = document.getElementById(containerId + '-link');
+  var bulletsEl   = document.getElementById(containerId + '-bullets');
+  var btnWrapEl   = document.getElementById(containerId + '-btn-wrap');
+  var btnEl       = document.getElementById(containerId + '-btn');
+  var linkEl      = document.getElementById(containerId + '-link');
+  var progressEl  = document.getElementById(containerId + '-progress');
+  var progressBar = document.getElementById(containerId + '-progress-bar');
+  var progressPct = document.getElementById(containerId + '-progress-pct');
+  var progressLbl = document.getElementById(containerId + '-progress-label');
 
-  // Loading state
-  if (btnEl) {
-    btnEl.disabled = true;
-    btnEl.innerHTML =
-      '<div style="width:13px;height:13px;border:2px solid var(--teal);border-top-color:transparent;'
-      + 'border-radius:50%;animation:cp-spin .7s linear infinite;flex-shrink:0;"></div>'
-      + '<span>Running report…</span>';
+  var reportUrl = 'https://ignite.edwinlovett.com/research/?company=' + encodeURIComponent(domain);
+  var apiUrl    = reportUrl + '&format=json';
+
+  // Disable button immediately
+  if (btnEl) btnEl.disabled = true;
+
+  // Step 1: Fast path — check if already cached
+  try {
+    var checkResp = await fetch(apiUrl);
+    var checkData = await checkResp.json();
+    if (checkData.success && checkData.report) {
+      _renderDiscoveryBullets(checkData.report, bulletsEl, btnWrapEl, linkEl);
+      return;
+    }
+  } catch(e) {
+    _showDiscoveryError(bulletsEl, btnEl, 'Unable to reach Discovery.AI. Check your connection and try again.');
+    return;
   }
 
-  try {
-    var resp = await fetch('https://ignite.edwinlovett.com/research/?company=' + encodeURIComponent(domain) + '&format=json');
-    var data = await resp.json();
+  // Step 2: Fire silent generation trigger (discard response — CORS may block it)
+  fetch(reportUrl).catch(function() {});
 
-    if (data.success && data.report) {
-      var bullets = _extractDiscoveryBullets(data.report);
-      if (bulletsEl) {
-        bulletsEl.innerHTML = bullets.map(function(b) {
-          return '<div style="display:flex;gap:10px;align-items:flex-start;padding:10px 14px;'
-            + 'background:var(--surface2);border:1px solid var(--border);border-radius:8px;">'
-            + '<div style="color:var(--teal);font-size:.85rem;flex-shrink:0;margin-top:1px;">→</div>'
-            + '<div style="font-size:.8rem;color:var(--text);line-height:1.55;">' + b + '</div>'
-            + '</div>';
-        }).join('');
+  // Step 3: Show progress bar, hide button
+  if (btnWrapEl) btnWrapEl.style.display = 'none';
+  if (progressEl) progressEl.style.display = 'block';
+
+  // Animate 0←90% over ~45s
+  var startTime = Date.now();
+  var estimatedMs = 45000;
+  var progressInterval = setInterval(function() {
+    var elapsed = Date.now() - startTime;
+    var pct = Math.min(90, Math.round((elapsed / estimatedMs) * 90));
+    if (progressBar) progressBar.style.width = pct + '%';
+    if (progressPct) progressPct.textContent = pct + '%';
+    if (progressLbl) progressLbl.textContent = 'Generating report… ' + Math.round(elapsed / 1000) + 's';
+  }, 800);
+
+  // Step 4: Poll every 5s, up to 24 attempts (~2 min)
+  var maxAttempts = 24;
+  var attempt = 0;
+
+  var poll = async function() {
+    attempt++;
+    try {
+      var resp = await fetch(apiUrl);
+      var data = await resp.json();
+      if (data.success && data.report) {
+        clearInterval(progressInterval);
+        if (progressBar) progressBar.style.width = '100%';
+        if (progressPct) progressPct.textContent = '100%';
+        if (progressLbl) progressLbl.textContent = 'Report ready!';
+        setTimeout(function() {
+          if (progressEl) progressEl.style.display = 'none';
+          _renderDiscoveryBullets(data.report, bulletsEl, btnWrapEl, linkEl);
+        }, 600);
+        return;
       }
-      if (btnWrapEl) btnWrapEl.style.display = 'none';
-      if (linkEl) linkEl.style.display = 'block';
+    } catch(e) { /* transient — keep polling */ }
 
-    } else {
+    if (attempt >= maxAttempts) {
+      clearInterval(progressInterval);
+      if (progressEl) progressEl.style.display = 'none';
       if (bulletsEl) {
         bulletsEl.innerHTML =
           '<div style="padding:12px 14px;background:var(--surface2);border:1px solid var(--border);'
           + 'border-radius:8px;font-size:.78rem;color:var(--dim);line-height:1.5;">'
-          + 'No report found for <strong style="color:var(--text);">' + domain + '</strong> yet. '
-          + 'Click “View Full Discovery Report” to generate one — then re-open this card to load the bullets.'
+          + 'Still generating — reopen this card in a moment to load the bullets.'
           + '</div>';
       }
-      if (btnWrapEl) btnWrapEl.style.display = 'none';
+      if (btnWrapEl) btnWrapEl.style.display = 'block';
+      if (btnEl) { btnEl.disabled = false; btnEl.innerHTML = '🔍 Generate Intel'; }
       if (linkEl) linkEl.style.display = 'block';
+      return;
     }
+    setTimeout(poll, 5000);
+  };
 
-  } catch(e) {
-    if (bulletsEl) {
-      bulletsEl.innerHTML =
-        '<div style="padding:12px 14px;background:var(--surface2);border:1px solid rgba(248,113,113,.2);'
-        + 'border-radius:8px;font-size:.78rem;color:var(--dim);">'
-        + 'Unable to reach Discovery.AI. Check your connection and try again.'
+  setTimeout(poll, 5000);
+}
+
+function _renderDiscoveryBullets(report, bulletsEl, btnWrapEl, linkEl) {
+  var bullets = _extractDiscoveryBullets(report);
+  if (bulletsEl) {
+    bulletsEl.innerHTML = bullets.map(function(b) {
+      return '<div style="display:flex;gap:10px;align-items:flex-start;padding:10px 14px;'
+        + 'background:var(--surface2);border:1px solid var(--border);border-radius:8px;">'
+        + '<div style="color:var(--teal);font-size:.85rem;flex-shrink:0;margin-top:1px;">→</div>'
+        + '<div style="font-size:.8rem;color:var(--text);line-height:1.55;">' + b + '</div>'
         + '</div>';
-    }
-    if (btnEl) {
-      btnEl.disabled = false;
-      btnEl.innerHTML = '🔍 Retry';
-    }
+    }).join('');
   }
+  if (btnWrapEl) btnWrapEl.style.display = 'none';
+  if (linkEl) linkEl.style.display = 'block';
+}
+
+function _showDiscoveryError(bulletsEl, btnEl, msg) {
+  if (bulletsEl) {
+    bulletsEl.innerHTML =
+      '<div style="padding:12px 14px;background:var(--surface2);border:1px solid rgba(248,113,113,.2);'
+      + 'border-radius:8px;font-size:.78rem;color:var(--dim);">' + msg + '</div>';
+  }
+  if (btnEl) { btnEl.disabled = false; btnEl.innerHTML = '🔍 Generate Intel'; }
 }
 
 function _extractDiscoveryBullets(report) {
