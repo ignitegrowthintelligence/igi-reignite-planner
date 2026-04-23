@@ -287,6 +287,7 @@ const zipCache = {};
 
 // ─── IGI SCORE PANEL ────────────────────────────────────────────────────────────
 const _scoreReg = {}; let _scoreRegIdx = 0;
+const _callPrepReg = {}; let _callPrepIdx = 0;
 function registerScore(data) { var id='igs'+(++_scoreRegIdx); _scoreReg[id]=data; return id; }
 function openScorePanel(sid) {
   var data=_scoreReg[sid]; if (!data) return;
@@ -483,7 +484,15 @@ function refreshPlanModal() {
       var safeName = (a.name||'').replace(/\\/g,'\\\\').replace(/'/g,"\\'");
       var noteVal = (a.nextStep||'').replace(/"/g,'&quot;');
       html += '<tr>'
-        + '<td><strong style="color:#fff;">'+(a.name||'—')+'</strong></td>'
+        + (function() {
+            var cpid = registerCallPrep(s, a);
+            var displayName = a.name || a.acct || a.adv || '—';
+            return '<td><strong style="color:#fff;cursor:pointer;text-decoration:underline;text-decoration-color:rgba(0,188,212,.35);text-underline-offset:3px;transition:color .15s;" '
+              + 'onclick="openCallPrep(\''+cpid+'\')" '
+              + 'onmouseover="this.style.color=\'var(--teal)\'" '
+              + 'onmouseout="this.style.color=\'#fff\'" '
+              + 'title="Click for call prep">' + displayName + '</strong></td>';
+          })()
         + '<td class="hide-mobile" style="color:var(--dim);font-size:.78rem;">'+(a.cat||a.type||'—')+'</td>'
         + '<td class="text-right hide-mobile">'
         + '<input type="text" value="'+(a.rev||a.estRev||0)+'" '
@@ -1918,11 +1927,316 @@ function closeModal() {
   setTimeout(function(){ overlay.style.display='none'; }, 180);
 }
 
+// ─── CALL PREP CARD ──────────────────────────────────────────────────────────
+function registerCallPrep(section, acct) {
+  var id = 'cp' + (++_callPrepIdx);
+  _callPrepReg[id] = { section: section, acct: acct };
+  return id;
+}
+
+function openCallPrep(cpid) {
+  var entry = _callPrepReg[cpid];
+  if (!entry) return;
+  var box = document.getElementById('callPrepBox');
+  box.innerHTML = buildCallPrepHTML(entry.section, entry.acct);
+  var overlay = document.getElementById('callPrepOverlay');
+  overlay.style.display = 'flex';
+  requestAnimationFrame(function() {
+    overlay.style.opacity = '1';
+    box.style.transform = 'scale(1)';
+  });
+}
+
+function closeCallPrep() {
+  var overlay = document.getElementById('callPrepOverlay');
+  overlay.style.opacity = '0';
+  overlay.querySelector('#callPrepBox').style.transform = 'scale(.95)';
+  setTimeout(function() { overlay.style.display = 'none'; }, 180);
+}
+
+function buildCallPrepHTML(section, a) {
+  var sectionMeta = {
+    close:   { label: 'Close Now',        color: 'var(--red)',    icon: '🔴' },
+    protect: { label: 'Protect & Expand', color: 'var(--green)',  icon: '🟢' },
+    reclaim: { label: 'Reclaim',          color: 'var(--yellow)', icon: '🟡' },
+    rebuild: { label: 'Rebuild',          color: 'var(--teal)',   icon: '🔵' }
+  };
+  var meta = sectionMeta[section] || { label: section, color: 'var(--teal)', icon: '📋' };
+  var score = Math.round(a.score || 0);
+  var scoreColor = score >= 80 ? 'var(--green)' : score >= 60 ? 'var(--yellow)' : 'var(--red)';
+
+  var header =
+    '<div style="padding:22px 24px 16px;border-bottom:1px solid var(--border);position:relative;">'
+    + '<button onclick="closeCallPrep()" style="position:absolute;top:14px;right:14px;background:var(--surface2);border:1px solid var(--border);color:var(--dim);border-radius:6px;padding:5px 9px;cursor:pointer;font-size:.8rem;">✕</button>'
+    + '<div style="font-size:.6rem;font-weight:700;text-transform:uppercase;letter-spacing:.12em;color:' + meta.color + ';margin-bottom:6px;">' + meta.icon + ' ' + meta.label + '</div>'
+    + '<div style="display:flex;align-items:flex-start;justify-content:space-between;gap:16px;">'
+    + '<div style="font-weight:900;font-size:1.2rem;color:#fff;line-height:1.25;flex:1;">' + (a.name || a.acct || a.adv || '—') + '</div>'
+    + '<div style="text-align:center;flex-shrink:0;background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:8px 14px;">'
+    + '<div style="font-size:2.2rem;font-weight:900;line-height:1;color:' + scoreColor + ';">' + score + '</div>'
+    + '<div style="font-size:.55rem;color:var(--dim);letter-spacing:.1em;text-transform:uppercase;margin-top:2px;">IGI Score</div>'
+    + '</div></div>'
+    + '<div style="font-size:.72rem;color:var(--dim);margin-top:4px;">' + (a.cat || a.type || '') + '</div>'
+    + '</div>';
+
+  var body = section === 'rebuild' ? _buildRebuildBody(a) : _buildLaneBody(section, a);
+  return header + body;
+}
+
+function _profileRow(label, valueHTML) {
+  return '<div style="display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--border);">'
+    + '<div style="font-size:.68rem;color:var(--dim);width:80px;flex-shrink:0;">' + label + '</div>'
+    + '<div style="flex:1;">' + valueHTML + '</div>'
+    + '</div>';
+}
+
+function _buildRebuildBody(a) {
+  var gp = a._places || {};
+  var website = a._website || gp.websiteUri || null;
+  var phone = gp.nationalPhoneNumber || null;
+  var address = gp.formattedAddress || null;
+  var rating = gp.rating || null;
+  var reviewCount = gp.userRatingCount || 0;
+  var status = gp.businessStatus || null;
+  var hours = gp.regularOpeningHours || null;
+
+  var isOpenNow = null;
+  if (hours && hours.periods) {
+    var now = new Date();
+    var day = now.getDay();
+    var timeNow = now.getHours() * 100 + now.getMinutes();
+    hours.periods.forEach(function(p) {
+      if (p.open && p.open.day === day) {
+        var openTime = (p.open.hour || 0) * 100 + (p.open.minute || 0);
+        var closeTime = p.close ? (p.close.hour || 0) * 100 + (p.close.minute || 0) : 2400;
+        if (timeNow >= openTime && timeNow < closeTime) isOpenNow = true;
+        else if (isOpenNow === null) isOpenNow = false;
+      }
+    });
+  }
+
+  function starRating(r) {
+    var full = Math.floor(r);
+    return '<span style="color:var(--yellow);font-size:.85rem;">' + '★'.repeat(full)
+      + '<span style="color:var(--surface3);">' + '★'.repeat(5 - full) + '</span></span>';
+  }
+
+  var rows = [];
+  if (phone) rows.push(_profileRow('Phone',
+    '<a href="tel:' + phone.replace(/\s/g,'') + '" style="font-size:.88rem;font-weight:700;color:var(--teal);text-decoration:none;">' + phone + '</a>'));
+  if (address) rows.push(_profileRow('Address',
+    '<div style="font-size:.82rem;color:var(--text);line-height:1.4;">' + address + '</div>'));
+  if (rating) rows.push(_profileRow('Rating',
+    starRating(rating)
+    + ' <span style="font-size:.82rem;color:#fff;font-weight:700;">' + rating.toFixed(1) + '</span>'
+    + ' <span style="font-size:.72rem;color:var(--dim);">(' + reviewCount.toLocaleString() + ' reviews)</span>'));
+  if (status) {
+    var isOp = status === 'OPERATIONAL';
+    var statusLabel = isOp ? 'Operational' : status.replace(/_/g,' ').toLowerCase().replace(/^\w/, function(c){return c.toUpperCase();});
+    var openStr = isOpenNow === true
+      ? ' &nbsp;·&nbsp; <span style="color:var(--green);">Open now</span>'
+      : isOpenNow === false
+      ? ' &nbsp;·&nbsp; <span style="color:var(--red);">Closed now</span>'
+      : '';
+    rows.push(_profileRow('Status',
+      '<span style="font-size:.82rem;font-weight:600;color:' + (isOp ? 'var(--green)' : 'var(--red)') + ';">' + statusLabel + '</span>' + openStr));
+  }
+  if (website) {
+    var displayUrl = website.replace(/^https?:\/\/(www\.)?/,'').replace(/\/$/,'');
+    rows.push(_profileRow('Website',
+      '<a href="' + (website.startsWith('http') ? website : 'https://' + website) + '" target="_blank" rel="noopener" '
+      + 'style="font-size:.82rem;color:var(--teal);text-decoration:none;font-weight:600;">' + displayUrl + ' →</a>'));
+  }
+
+  var profileSection = rows.length
+    ? '<div style="padding:18px 24px 0;">'
+      + '<div style="font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.09em;color:var(--teal);margin-bottom:10px;">Business Profile</div>'
+      + '<div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:2px 14px;">'
+      + rows.join('')
+      + '</div></div>'
+    : '';
+
+  var discoverySection = '';
+  if (website) {
+    var domain = (function(url) {
+      try {
+        return new URL(url.startsWith('http') ? url : 'https://' + url).hostname.replace(/^www\./,'');
+      } catch(e) {
+        return url.replace(/^https?:\/\//,'').replace(/^www\./,'').split('/')[0];
+      }
+    })(website);
+    var reportUrl = 'https://ignite.edwinlovett.com/research/?company=' + encodeURIComponent(domain);
+    discoverySection =
+      '<div style="padding:18px 24px 0;">'
+      + '<div style="font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.09em;color:var(--teal);margin-bottom:10px;">Discovery Intelligence</div>'
+      + '<a href="' + reportUrl + '" target="_blank" rel="noopener" '
+      + 'style="display:flex;align-items:center;justify-content:space-between;padding:14px 18px;background:var(--surface2);border:1px solid var(--teal-border);border-radius:8px;text-decoration:none;transition:background .15s;" '
+      + 'onmouseover="this.style.background=\'rgba(0,188,212,.1)\'" onmouseout="this.style.background=\'var(--surface2)\'" >'
+      + '<div>'
+      + '<div style="font-size:.85rem;font-weight:700;color:var(--teal);">View Full Discovery Report</div>'
+      + '<div style="font-size:.7rem;color:var(--dim);margin-top:2px;">Market research · Competitors · Ad intelligence · ' + domain + '</div>'
+      + '</div>'
+      + '<div style="font-size:1.1rem;color:var(--teal);">→</div>'
+      + '</a></div>';
+  }
+
+  return profileSection + discoverySection + '<div style="padding:0 24px 24px;">' + _buildScoreBreakdown(a) + '</div>';
+}
+
+function _buildLaneBody(section, a) {
+  var statsHTML = '';
+  var talkingPoints = [];
+
+  if (section === 'close') {
+    var conf = a.conf || '—';
+    var confColor = conf === '95%' ? 'var(--green)' : conf === '75%' ? 'var(--yellow)' : 'var(--dim)';
+    var daysIn = a.daysIn || 0;
+    var daysColor = daysIn > 60 ? 'var(--red)' : daysIn > 30 ? 'var(--yellow)' : 'var(--green)';
+
+    statsHTML = _cpStatCard('Deal Value', fmt(a.rev), 'Total pipeline value', 'var(--teal)')
+      + _cpStatCard('Confidence', conf, 'Blueprint stage', confColor)
+      + _cpStatCard('Days in Pipeline', daysIn + ' days', daysIn > 60 ? '⚠ Needs urgency' : daysIn > 30 ? 'Getting stale' : 'Active & fresh', daysColor)
+      + _cpStatCard('Product Type', a.type || '—', a.isIgnite ? 'Ignite involved ✓' : 'Broadcast only', a.isIgnite ? 'var(--teal)' : 'var(--dim)');
+
+    if (a.apr || a.may || a.jun) {
+      statsHTML += '<div style="grid-column:1/-1;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:14px 16px;">'
+        + '<div style="font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--teal);margin-bottom:10px;">Monthly Breakdown</div>'
+        + '<div style="display:flex;gap:24px;">'
+        + (a.apr ? '<div><div style="font-size:.68rem;color:var(--dim);">April</div><div style="font-size:.95rem;font-weight:700;color:#fff;">' + fmt(a.apr) + '</div></div>' : '')
+        + (a.may ? '<div><div style="font-size:.68rem;color:var(--dim);">May</div><div style="font-size:.95rem;font-weight:700;color:#fff;">' + fmt(a.may) + '</div></div>' : '')
+        + (a.jun ? '<div><div style="font-size:.68rem;color:var(--dim);">June</div><div style="font-size:.95rem;font-weight:700;color:#fff;">' + fmt(a.jun) + '</div></div>' : '')
+        + '</div></div>';
+    }
+
+    if (conf === '95%') talkingPoints.push('Near-certain close — confirm a close date and get paperwork moving. Your job is logistics, not persuasion.');
+    else if (conf === '75%') talkingPoints.push('Strong deal, not locked. Identify and remove the last remaining objection before this call ends.');
+    else if (conf === '50%') talkingPoints.push('Deal at a crossroads — bring a deadline-anchored offer. At 50%, someone else could close them first.');
+    else talkingPoints.push('Low confidence — qualify hard. Ask directly: what needs to change for this to move forward?');
+
+    if (daysIn > 60) talkingPoints.push('In pipeline ' + daysIn + ' days — create urgency. Offer a limited-time incentive or set a hard decision deadline on this call.');
+    else if (daysIn > 30) talkingPoints.push('Pipeline is ' + daysIn + ' days in — lock in a next step with a specific date before you hang up.');
+
+    if (a.isIgnite) talkingPoints.push('Ignite product is in this deal. Lead with digital performance data — they\'re already open to digital.');
+    else talkingPoints.push('Broadcast-only deal. Consider introducing Ignite as a small add-on — even a test buy strengthens the relationship.');
+
+    if (a.notes && a.notes.trim()) {
+      var note = a.notes.split('\n')[0].substring(0, 140).trim();
+      talkingPoints.push('Pipeline note: "' + note + (a.notes.length > 140 ? '…' : '') + '"');
+    }
+
+  } else if (section === 'protect') {
+    var yoyPct = a.rev25 > 0 ? Math.round(((a.rev26 - a.rev25) / a.rev25) * 100) : null;
+    var yoyStr = yoyPct !== null ? (yoyPct > 0 ? '+' : '') + yoyPct + '% YoY' : '—';
+    var trendLabel = a.trend === 1 ? '▲ Growing' : a.trend === -1 ? '▼ Declining' : '→ Flat';
+    var trendColor = a.trend === 1 ? 'var(--green)' : a.trend === -1 ? 'var(--red)' : 'var(--dim)';
+
+    statsHTML = _cpStatCard('2026 Revenue', fmt(a.rev26), yoyStr, a.trend === 1 ? 'var(--green)' : a.trend === -1 ? 'var(--red)' : 'var(--text)')
+      + _cpStatCard('2025 Revenue', fmt(a.rev25), 'Prior year', 'var(--dim)')
+      + _cpStatCard('Trend', trendLabel, yoyStr, trendColor)
+      + _cpStatCard('Account Executive', a.ae || '—', 'Assigned AE', 'var(--text)');
+
+    if (a.trend === 1) {
+      talkingPoints.push('Growing account — up ' + (yoyPct !== null ? Math.abs(yoyPct) + '%' : '') + ' YoY. Come prepared with an expansion proposal. What product lines aren\'t they using yet?');
+      talkingPoints.push('Protect the relationship first, then upsell. Don\'t skip the check-in — even a growing client can be lured away by a competitor.');
+    } else if (a.trend === -1) {
+      talkingPoints.push('⚠ Revenue declining ' + (yoyPct !== null ? Math.abs(yoyPct) + '%' : '') + ' YoY — at-risk client. Open by asking what\'s changed, not by pitching.');
+      talkingPoints.push('Don\'t wait for them to cancel. A proactive retention offer now is far more effective than a win-back call later.');
+    } else {
+      talkingPoints.push('Revenue flat — within 10% of last year. Look for an untapped product line. Flat isn\'t safe if competitors are growing around them.');
+    }
+    if (a.ae && a.ae.trim()) talkingPoints.push('AE is ' + a.ae + ' — coordinate before the call. They may have recent context or active conversations in play.');
+    talkingPoints.push('Ask about their marketing goals for the rest of the year. Anchor any upsell to a specific result they want, not just a product you\'re selling.');
+
+  } else if (section === 'reclaim') {
+    var lastActive = (a.allRev25 > 0 || a.ignRev25 > 0) ? '2025'
+      : (a.allRev24 > 0 || a.ignRev24 > 0) ? '2024' : 'Before 2024';
+    var peakAll = Math.max(a.allRev24 || 0, a.allRev25 || 0);
+    var peakDisplay = peakAll > 0 ? peakAll : (a.rev || 0);
+    var peakIgn = Math.max(a.ignRev24 || 0, a.ignRev25 || 0);
+    var ignHistory = (a.source === 'ignite' || a.source === 'both');
+
+    statsHTML = _cpStatCard('Peak Spend', fmt(peakDisplay), 'Highest year on record', 'var(--text)')
+      + _cpStatCard('Last Active', lastActive, 'Most recent spend year', lastActive === '2025' ? 'var(--green)' : lastActive === '2024' ? 'var(--yellow)' : 'var(--dim)')
+      + _cpStatCard('Ignite History', ignHistory ? '✓ Former Buyer' : 'Broadcast Only', ignHistory ? 'Already understands digital' : 'Needs digital intro', ignHistory ? 'var(--teal)' : 'var(--dim)')
+      + _cpStatCard('Priority', a.bucket || '—', 'Reclaim bucket', a.bucket === 'Reclaim Now' ? 'var(--green)' : a.bucket === 'Reapproach Later' ? 'var(--yellow)' : 'var(--dim)');
+
+    if (lastActive === '2025') talkingPoints.push('Left within the past year — recency is your biggest asset. Acknowledge the gap first: "We noticed you\'re not active with us." Don\'t open with a pitch.');
+    else if (lastActive === '2024') talkingPoints.push('Last spent in 2024 — still reclaimable. Reference their prior investment and ask what changed. A seasonal offer can reactivate quickly.');
+    else talkingPoints.push('Longer lapse (2+ years) — treat this closer to a new business call. Lead with market results, not relationship history.');
+
+    if (ignHistory) {
+      talkingPoints.push('Former Ignite buyer — skip the digital education. Go straight to: "Here\'s what\'s changed since you ran with us, and what your category is doing now."');
+      if (peakIgn > 0) talkingPoints.push('Their peak Ignite spend was ' + fmt(peakIgn) + '. Use that as your anchor — you\'re asking them to return to a level they\'ve already committed to.');
+    } else {
+      talkingPoints.push('Broadcast-only history — reclaiming on digital requires an education moment. Lead with a local case study from their category.');
+    }
+    if (peakDisplay > 0) talkingPoints.push('Peak spend of ' + fmt(peakDisplay) + ' confirms a real advertising budget. Don\'t underpack the offer.');
+  }
+
+  var statGrid = statsHTML
+    ? '<div style="padding:18px 24px 0;">'
+      + '<div style="font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.09em;color:var(--teal);margin-bottom:12px;">Key Numbers</div>'
+      + '<div style="display:grid;grid-template-columns:repeat(2,1fr);gap:10px;">' + statsHTML + '</div></div>'
+    : '';
+
+  var tpSection = talkingPoints.length
+    ? '<div style="padding:18px 24px 0;">'
+      + '<div style="font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.09em;color:var(--teal);margin-bottom:12px;">📞 Call Prep</div>'
+      + '<div style="display:flex;flex-direction:column;gap:8px;">'
+      + talkingPoints.map(function(pt) {
+          return '<div style="display:flex;gap:10px;align-items:flex-start;padding:10px 14px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;">'
+            + '<div style="color:var(--teal);font-size:.85rem;flex-shrink:0;margin-top:1px;">→</div>'
+            + '<div style="font-size:.8rem;color:var(--text);line-height:1.55;">' + pt + '</div>'
+            + '</div>';
+        }).join('')
+      + '</div></div>'
+    : '';
+
+  return statGrid + tpSection + '<div style="padding:0 24px 24px;">' + _buildScoreBreakdown(a) + '</div>';
+}
+
+function _cpStatCard(label, value, sub, valueColor) {
+  return '<div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:12px 14px;">'
+    + '<div style="font-size:.62rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--dim);margin-bottom:4px;">' + label + '</div>'
+    + '<div style="font-size:1rem;font-weight:800;color:' + (valueColor || '#fff') + ';margin-bottom:2px;">' + (value || '—') + '</div>'
+    + '<div style="font-size:.68rem;color:var(--dim);">' + (sub || '') + '</div>'
+    + '</div>';
+}
+
+function _buildScoreBreakdown(a) {
+  var sd = a._scoreData || null;
+  if (!sd || !sd.components || !sd.components.length) return '';
+  return '<div style="margin-top:24px;padding-top:18px;border-top:1px solid var(--border);">'
+    + '<div style="font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--teal);margin-bottom:14px;">IGI Score Breakdown</div>'
+    + sd.components.map(function(c) {
+        var pct = c.max > 0 ? Math.round((c.score / c.max) * 100) : 0;
+        var barColor = pct >= 70 ? 'var(--green)' : pct >= 40 ? 'var(--yellow)' : 'var(--red)';
+        return '<div style="margin-bottom:14px;">'
+          + '<div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:4px;">'
+          + '<div style="font-size:.78rem;font-weight:600;color:var(--text);">' + c.label + '</div>'
+          + '<div style="font-size:.78rem;font-weight:800;color:' + barColor + ';">' + c.score
+          + '<span style="color:var(--dim);font-weight:400;font-size:.68rem;">/' + c.max + '</span></div>'
+          + '</div>'
+          + '<div style="background:var(--surface2);border-radius:4px;height:6px;overflow:hidden;margin-bottom:4px;">'
+          + '<div style="height:100%;width:' + pct + '%;background:' + barColor + ';border-radius:4px;"></div>'
+          + '</div>'
+          + '<div style="font-size:.67rem;color:var(--dim);line-height:1.4;">' + c.detail + '</div>'
+          + '</div>';
+      }).join('')
+    + '</div>';
+}
+
 // ─── INIT ─────────────────────────────────────────────────────────────────────
 loadPlanLocal();
 buildCategoryFilters();
 syncUpdatePlanBtn();
-document.addEventListener('keydown', function(e){ if(e.key==='Escape'){ var o=document.getElementById('igiModalOverlay'); if(o&&o.style.display!=='none') closeModal(); } });
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Escape') {
+    var cp = document.getElementById('callPrepOverlay');
+    if (cp && cp.style.display !== 'none') { closeCallPrep(); return; }
+    var o = document.getElementById('igiModalOverlay');
+    if (o && o.style.display !== 'none') closeModal();
+  }
+});
 updateSummaryCards([
   {label:'Upload Files',value:'↑',sub:'Start by uploading a file in any tab'},
   {label:'IGI Score',value:'Auto',sub:'Powered by Ignite Growth Intelligence'},
@@ -1961,6 +2275,11 @@ checkSharedMode().then(function(isShared) {
   <div style="padding:12px 20px;border-top:1px solid var(--border);flex-shrink:0;text-align:center;">
     <div style="font-size:.62rem;color:var(--dim);letter-spacing:.04em;">Powered by <span style="color:var(--teal);font-weight:700;">Ignite Growth Intelligence</span> &middot; IGI Score</div>
   </div>
+</div>
+
+<!-- Call Prep Card Modal -->
+<div id="callPrepOverlay" onclick="if(event.target===this)closeCallPrep()" style="display:none;position:fixed;inset:0;z-index:2100;background:rgba(0,0,0,.72);align-items:center;justify-content:center;opacity:0;transition:opacity .18s;padding:16px;">
+  <div id="callPrepBox" style="background:var(--surface);border:1px solid var(--teal-border);border-radius:14px;width:min(720px,100%);max-height:90vh;overflow-y:auto;box-shadow:0 28px 70px rgba(0,0,0,.7);transform:scale(.95);transition:transform .18s;"></div>
 </div>
 
 <!-- Plan Management Modal -->
