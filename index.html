@@ -54,6 +54,7 @@
     .section-header{font-size:.68rem;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:var(--teal);margin-bottom:12px;}
     .mobile-scroll{overflow-x:auto;}
     @media(max-width:768px){.hide-mobile{display:none;}}
+  @keyframes cp-spin { to { transform: rotate(360deg); } }
   </style>
 </head>
 <body class="min-h-screen">
@@ -2065,21 +2066,110 @@ function _buildRebuildBody(a) {
       }
     })(website);
     var reportUrl = 'https://ignite.edwinlovett.com/research/?company=' + encodeURIComponent(domain);
+    var containerId = 'disc-' + Math.random().toString(36).slice(2, 8);
     discoverySection =
       '<div style="padding:18px 24px 0;">'
       + '<div style="font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.09em;color:var(--teal);margin-bottom:10px;">Discovery Intelligence</div>'
+      + '<div id="' + containerId + '" style="margin-bottom:10px;"></div>'
+      + '<button onclick="loadDiscoveryBullets(\'' + encodeURIComponent(domain) + '\',\'' + containerId + '\',this)" '
+      + 'style="width:100%;display:flex;align-items:center;justify-content:center;gap:8px;padding:11px 16px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--dim);font-size:.78rem;font-weight:600;cursor:pointer;margin-bottom:10px;transition:all .15s;" '
+      + 'onmouseover="this.style.borderColor=\'var(--teal-border)\';this.style.color=\'var(--text)\'" '
+      + 'onmouseout="this.style.borderColor=\'var(--border)\';this.style.color=\'var(--dim)\'" >'
+      + '🔍 Load Discovery Intelligence'
+      + '</button>'
       + '<a href="' + reportUrl + '" target="_blank" rel="noopener" '
-      + 'style="display:flex;align-items:center;justify-content:space-between;padding:14px 18px;background:var(--surface2);border:1px solid var(--teal-border);border-radius:8px;text-decoration:none;transition:background .15s;" '
+      + 'style="display:flex;align-items:center;justify-content:space-between;padding:12px 16px;background:var(--surface2);border:1px solid var(--teal-border);border-radius:8px;text-decoration:none;transition:background .15s;" '
       + 'onmouseover="this.style.background=\'rgba(0,188,212,.1)\'" onmouseout="this.style.background=\'var(--surface2)\'" >'
       + '<div>'
-      + '<div style="font-size:.85rem;font-weight:700;color:var(--teal);">View Full Discovery Report</div>'
-      + '<div style="font-size:.7rem;color:var(--dim);margin-top:2px;">Market research · Competitors · Ad intelligence · ' + domain + '</div>'
+      + '<div style="font-size:.82rem;font-weight:700;color:var(--teal);">View Full Discovery Report</div>'
+      + '<div style="font-size:.68rem;color:var(--dim);margin-top:2px;">Market research · Competitors · Ad intelligence · ' + domain + '</div>'
       + '</div>'
-      + '<div style="font-size:1.1rem;color:var(--teal);">→</div>'
-      + '</a></div>';
+      + '<div style="font-size:1rem;color:var(--teal);">→</div>'
+      + '</a>'
+      + '</div>';
   }
 
   return profileSection + discoverySection + '<div style="padding:0 24px 24px;">' + _buildScoreBreakdown(a) + '</div>';
+}
+
+async function loadDiscoveryBullets(encodedDomain, containerId, btn) {
+  var domain = decodeURIComponent(encodedDomain);
+  var container = document.getElementById(containerId);
+  if (!container) return;
+
+  if (btn) {
+    btn.disabled = true;
+    btn.innerHTML = '<div style="width:13px;height:13px;border:2px solid var(--teal);border-top-color:transparent;border-radius:50%;animation:cp-spin .7s linear infinite;"></div>'
+      + '<span style="color:var(--dim);">Loading…</span>';
+  }
+
+  try {
+    var resp = await fetch('https://ignite.edwinlovett.com/research/?company=' + encodeURIComponent(domain) + '&format=json');
+    var data = await resp.json();
+
+    if (data.success && data.report) {
+      var bullets = _extractDiscoveryBullets(data.report);
+      container.innerHTML = bullets.map(function(b) {
+        return '<div style="display:flex;gap:10px;align-items:flex-start;padding:10px 14px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;margin-bottom:8px;">'
+          + '<div style="color:var(--teal);font-size:.85rem;flex-shrink:0;margin-top:1px;">→</div>'
+          + '<div style="font-size:.8rem;color:var(--text);line-height:1.55;">' + b + '</div>'
+          + '</div>';
+      }).join('');
+      if (btn) btn.style.display = 'none';
+    } else {
+      container.innerHTML =
+        '<div style="padding:12px 14px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;margin-bottom:8px;">'
+        + '<div style="font-size:.78rem;color:var(--dim);line-height:1.5;">'
+        + 'No cached report found for <strong style="color:var(--text);">' + domain + '</strong>. '
+        + 'Click “View Full Discovery Report” below to generate one — then reload this card to see the bullets.'
+        + '</div></div>';
+      if (btn) btn.style.display = 'none';
+    }
+  } catch(e) {
+    container.innerHTML =
+      '<div style="padding:12px 14px;background:var(--surface2);border:1px solid rgba(248,113,113,.2);border-radius:8px;margin-bottom:8px;">'
+      + '<div style="font-size:.78rem;color:var(--dim);">Unable to reach Discovery.AI. Check your connection and try again.</div>'
+      + '</div>';
+    if (btn) {
+      btn.disabled = false;
+      btn.innerHTML = '🔍 Retry';
+    }
+  }
+}
+
+function _extractDiscoveryBullets(report) {
+  var bullets = [];
+
+  if (report.marketingInsights && report.marketingInsights.summary) {
+    bullets.push('Marketing focus: ' + report.marketingInsights.summary);
+  }
+  if (report.adLibrary && report.adLibrary.length > 0) {
+    var platforms = [];
+    report.adLibrary.forEach(function(ad) {
+      if (ad.platform && platforms.indexOf(ad.platform) < 0) platforms.push(ad.platform);
+    });
+    bullets.push('Currently running ads on ' + platforms.join(' and ') + ' — active digital advertiser.');
+  } else {
+    bullets.push('No active ad campaigns detected in public ad libraries — potential opening for Ignite digital.');
+  }
+  if (report.competitorAnalysis && report.competitorAnalysis.length > 0) {
+    var top = report.competitorAnalysis[0];
+    var cnt = report.competitorAnalysis.length;
+    bullets.push(cnt + ' local competitor' + (cnt !== 1 ? 's' : '') + ' identified. Strongest: '
+      + top.name + (top.marketPosition ? ' — ' + top.marketPosition : '') + '.');
+  }
+  if (report.marketResearch && report.marketResearch.trends && report.marketResearch.trends.length > 0) {
+    bullets.push('Market trend: ' + report.marketResearch.trends[0]);
+  } else if (report.marketResearch && report.marketResearch.summary) {
+    bullets.push('Market context: ' + report.marketResearch.summary);
+  }
+  if (report.marketingInsights && report.marketingInsights.recommendations && report.marketingInsights.recommendations.length > 0) {
+    bullets.push('Seller angle: ' + report.marketingInsights.recommendations[0]);
+  } else if (report.marketingInsights && report.marketingInsights.messagingStrategy) {
+    bullets.push('Messaging angle: ' + report.marketingInsights.messagingStrategy);
+  }
+
+  return bullets.slice(0, 5);
 }
 
 function _buildLaneBody(section, a) {
