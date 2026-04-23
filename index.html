@@ -1591,44 +1591,47 @@ function buildCategoryFilters() {
  countEl.style.color = atLimit ? 'var(--yellow)' : 'var(--dim)';
  }
 
- var tiers = ['High Priority', 'Core', 'Opportunistic'];
- var tierPts = { 'High Priority': '30 pts', 'Core': '20 pts', 'Opportunistic': '10 pts' };
- var tierColors = { 'High Priority': 'var(--green)', 'Core': 'var(--teal)', 'Opportunistic': 'var(--yellow)' };
+ var tierDefs = [
+ { name: 'High Priority', color: 'var(--green)', cats: ['Attorney/Legal','Auto Dealers','Banks/Financial','Furniture Stores','Gambling/Casinos','Hospital','HVAC','Plumbing','University/College'] },
+ { name: 'Core', color: 'var(--teal)', cats: ['Carpet/Flooring','Cleaning Services','Contractors/Builders','Dentists','Doctors/Clinics','Home Repair/Hardware','Insurance','Med Spa','Real Estate','Recreational Vehicle'] },
+ { name: 'Opportunistic', color: 'var(--yellow)', cats: ['Auto Repair','Casual Dining','Employment/Recruiting','Eye Care','Health/Fitness','Hotel/Resort','Lawn/Garden','Salons/Personal Care','Senior Living'] }
+ ];
 
- container.innerHTML = tiers.map(function(tier) {
- var cats = Object.keys(CATEGORY_CONFIG).filter(function(c){ return CATEGORY_CONFIG[c].tier === tier; });
+ container.innerHTML = tierDefs.map(function(td) {
+ var tier = td.name;
+ var cats = td.cats;
  var isOpen = !!_accordionOpen[tier];
  var chevron = isOpen ? '&#9660;' : '&#9658;';
  var selectedInTier = cats.filter(function(c){ return activeCategories.has(c); }).length;
  var tierBadge = selectedInTier > 0 ? ' <span style="background:rgba(0,188,212,.18);color:var(--teal);border:1px solid var(--teal-border);border-radius:10px;padding:1px 7px;font-size:.65rem;font-weight:700;margin-left:6px;">' + selectedInTier + ' selected</span>' : '';
 
- var items = isOpen ? cats.map(function(cat) {
+ var items = isOpen ? '<div style="display:grid;grid-template-columns:repeat(5,1fr);gap:2px;padding:6px 8px;">'
+ + cats.map(function(cat) {
  var isActive = activeCategories.has(cat);
  var isDisabled = !isActive && atLimit;
- return '<label style="display:flex;align-items:center;gap:8px;padding:6px 10px;border-radius:6px;cursor:'
+ return '<label style="display:flex;align-items:center;gap:6px;padding:5px 8px;border-radius:6px;cursor:'
  + (isDisabled ? 'not-allowed' : 'pointer')
  + ';opacity:' + (isDisabled ? '.35' : '1')
  + ';background:' + (isActive ? 'rgba(0,188,212,.1)' : 'transparent')
  + ';transition:background .15s;">'
  + '<input type="checkbox" ' + (isActive ? 'checked' : '') + ' ' + (isDisabled ? 'disabled' : '')
  + ' onchange="toggleCategoryFilter(\'' + cat + '\',this.checked)"'
- + ' style="accent-color:var(--teal);width:14px;height:14px;cursor:' + (isDisabled ? 'not-allowed' : 'pointer') + ';flex-shrink:0;">'
- + '<span style="font-size:.78rem;color:' + (isActive ? '#fff' : isDisabled ? 'rgba(255,255,255,.25)' : 'var(--text)') + ';">' + cat + '</span>'
- + (isActive ? '<span style="margin-left:auto;color:var(--teal);font-size:.7rem;">&#10003;</span>' : '')
+ + ' style="accent-color:var(--teal);width:13px;height:13px;cursor:' + (isDisabled ? 'not-allowed' : 'pointer') + ';flex-shrink:0;">'
+ + '<span style="font-size:.75rem;color:' + (isActive ? '#fff' : isDisabled ? 'rgba(255,255,255,.25)' : 'var(--text)') + ';line-height:1.3;">' + cat + '</span>'
  + '</label>';
- }).join('') : '';
+ }).join('')
+ + '</div>' : '';
 
  return '<div style="margin-bottom:6px;border:1px solid var(--border);border-radius:8px;overflow:hidden;">'
  + '<button onclick="_accordionOpen[\'' + tier + '\']=!' + (isOpen?'true':'false') + ';buildCategoryFilters();" '
  + 'style="width:100%;display:flex;align-items:center;justify-content:space-between;padding:9px 14px;background:var(--surface2);border:none;cursor:pointer;text-align:left;">'
  + '<span style="display:flex;align-items:center;gap:8px;">'
- + '<span style="font-size:.7rem;font-weight:700;color:' + tierColors[tier] + ';">' + tier + '</span>'
- + '<span style="font-size:.65rem;color:var(--dim);">' + tierPts[tier] + '</span>'
+ + '<span style="font-size:.7rem;font-weight:700;color:' + td.color + ';">' + tier + '</span>'
  + tierBadge
  + '</span>'
  + '<span style="color:var(--dim);font-size:.7rem;">' + chevron + '</span>'
  + '</button>'
- + (isOpen ? '<div style="padding:6px 4px;">' + items + '</div>' : '')
+ + items
  + '</div>';
  }).join('');
 }
