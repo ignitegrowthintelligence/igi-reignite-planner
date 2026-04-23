@@ -4,6 +4,20 @@
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
   <title>Re-Ignite Planner — IGI</title>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyBAMYMSTML-jSF74KNzYFfx8e8sikTiB7s",
+      authDomain: "re-ignite-planner.firebaseapp.com",
+      projectId: "re-ignite-planner",
+      storageBucket: "re-ignite-planner.firebasestorage.app",
+      messagingSenderId: "922690493850",
+      appId: "1:922690493850:web:e72b57490f4388db8c6e23"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+  </script>
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
@@ -54,16 +68,17 @@
         <div id="marketLabel" style="font-size:.68rem;color:var(--dim);letter-spacing:.05em;">IGNITE GROWTH INTELLIGENCE</div>
       </div>
     </div>
-    <div class="flex items-center gap-3">
+    <div class="flex items-center gap-3" id="ribbonActions">
       <input id="marketInput" type="text" placeholder="Market name (e.g. Utica, NY)"
         style="background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:6px 12px;color:var(--text);font-size:.78rem;width:200px;outline:none;"
         oninput="document.getElementById('marketLabel').textContent=this.value||'IGNITE GROWTH INTELLIGENCE'"/>
-      <button onclick="startNewPlan()" style="background:var(--surface2);border:1px solid var(--border);color:var(--dim);border-radius:6px;padding:6px 12px;font-size:.75rem;font-weight:600;cursor:pointer;white-space:nowrap;transition:all .15s;" onmouseover="this.style.borderColor='var(--teal-border)';this.style.color='var(--text)'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--dim)'">+ New Plan</button>
-      <button onclick="switchTab('library')" style="background:var(--surface2);border:1px solid var(--border);color:var(--dim);border-radius:6px;padding:6px 12px;font-size:.75rem;font-weight:600;cursor:pointer;white-space:nowrap;transition:all .15s;" onmouseover="this.style.borderColor='var(--teal-border)';this.style.color='var(--text)'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--dim)'">📂 Saved Plans</button>
-      <a href="https://ignitegrowthintelligence.github.io/igi-command-center/" target="_blank"
+      <button id="ribbonNewPlan" onclick="startNewPlan()" style="background:var(--surface2);border:1px solid var(--border);color:var(--dim);border-radius:6px;padding:6px 12px;font-size:.75rem;font-weight:600;cursor:pointer;white-space:nowrap;transition:all .15s;" onmouseover="this.style.borderColor='var(--teal-border)';this.style.color='var(--text)'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--dim)'">+ New Plan</button>
+      <button id="ribbonSavedPlans" onclick="switchTab('library')" style="background:var(--surface2);border:1px solid var(--border);color:var(--dim);border-radius:6px;padding:6px 12px;font-size:.75rem;font-weight:600;cursor:pointer;white-space:nowrap;transition:all .15s;" onmouseover="this.style.borderColor='var(--teal-border)';this.style.color='var(--text)'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--dim)'">📂 Saved Plans</button>
+      <a id="ribbonCommandCenter" href="https://ignitegrowthintelligence.github.io/igi-command-center/" target="_blank"
         style="background:var(--teal-dim);border:1px solid var(--teal-border);color:var(--teal);border-radius:6px;padding:6px 12px;font-size:.75rem;text-decoration:none;white-space:nowrap;">
         Command Center
       </a>
+      <div id="sharedModeBadge" style="display:none;background:rgba(251,191,36,.12);border:1px solid rgba(251,191,36,.3);color:var(--yellow);border-radius:6px;padding:5px 12px;font-size:.72rem;font-weight:700;">👁 View Only</div>
     </div>
   </div>
 </header>
@@ -74,6 +89,11 @@
 
   <!-- Tabs -->
   <div style="background:var(--surface);border:1px solid var(--border);border-radius:8px;overflow:hidden;">
+    <div id="sharedPlanBanner" style="display:none;padding:10px 18px;background:rgba(251,191,36,.08);border-bottom:1px solid rgba(251,191,36,.25);">
+      <span style="font-size:.78rem;color:var(--yellow);font-weight:600;">🔗 Shared Plan View</span>
+      <span id="sharedPlanTitle" style="font-size:.78rem;color:var(--text);margin-left:8px;"></span>
+      <a href="https://ignitegrowthintelligence.github.io/igi-reignite-planner/" style="float:right;font-size:.72rem;color:var(--teal);text-decoration:none;">Open Planner →</a>
+    </div>
     <div style="background:var(--surface);border-bottom:1px solid var(--border);padding:10px 16px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
       <button onclick="switchTab('close')"   id="tab-close"   class="tab-active   px-4 py-2 text-sm transition-all">Close Now</button>
       <button onclick="switchTab('protect')" id="tab-protect" class="tab-inactive px-4 py-2 text-sm transition-all">Protect &amp; Expand</button>
@@ -150,13 +170,14 @@
           <div style="font-weight:800;font-size:1.1rem;color:#fff;">Market Attack Plan</div>
           <div id="planDashMarket" style="font-size:.72rem;color:var(--dim);margin-top:2px;">Enter market name in the top-right corner</div>
         </div>
-        <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
+        <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;" id="planActionBtns">
           <span id="planUpdatedMsg" style="display:none;font-size:.72rem;color:var(--green);font-weight:700;transition:opacity .4s;">&#10003; Plan updated</span>
-          <button id="updatePlanBtn" onclick="updateCurrentPlan()" style="background:var(--teal);color:#000;border:none;border-radius:6px;padding:7px 14px;font-size:.75rem;font-weight:700;cursor:pointer;opacity:.35;" disabled>&#128190; Update Plan</button>
-          <button onclick="savePlanUrl()" style="background:var(--teal-dim);border:1px solid var(--teal-border);color:var(--teal);border-radius:6px;padding:7px 14px;font-size:.75rem;font-weight:700;cursor:pointer;">🔗 Share URL</button>
-          <button onclick="exportPlan()" style="background:var(--teal-dim);border:1px solid var(--teal-border);color:var(--teal);border-radius:6px;padding:7px 14px;font-size:.75rem;font-weight:700;cursor:pointer;">⬇ Export CSV</button>
-          <button onclick="exportPlanPdf()" style="background:var(--teal-dim);border:1px solid var(--teal-border);color:var(--teal);border-radius:6px;padding:7px 14px;font-size:.75rem;font-weight:700;cursor:pointer;">🖨 Export PDF</button>
-          <button onclick="confirmClearPlan()" style="background:rgba(248,113,113,.1);border:1px solid rgba(248,113,113,.3);color:var(--red);border-radius:6px;padding:7px 14px;font-size:.75rem;cursor:pointer;">Clear All</button>
+          <span id="shareUrlMsg" style="display:none;font-size:.72rem;color:var(--green);font-weight:700;transition:opacity .4s;">&#10003; Link copied</span>
+          <button id="updatePlanBtn" onclick="updateCurrentPlan()" class="plan-edit-only" style="background:var(--teal);color:#000;border:none;border-radius:6px;padding:7px 14px;font-size:.75rem;font-weight:700;cursor:pointer;opacity:.35;" disabled>&#128190; Update Plan</button>
+          <button onclick="sharePlanUrl()" style="background:var(--teal-dim);border:1px solid var(--teal-border);color:var(--teal);border-radius:6px;padding:7px 14px;font-size:.75rem;font-weight:700;cursor:pointer;">🔗 Share URL</button>
+          <button onclick="exportPlan()" class="plan-edit-only" style="background:var(--teal-dim);border:1px solid var(--teal-border);color:var(--teal);border-radius:6px;padding:7px 14px;font-size:.75rem;font-weight:700;cursor:pointer;">⬇ Export CSV</button>
+          <button onclick="exportPlanPdf()" class="plan-edit-only" style="background:var(--teal-dim);border:1px solid var(--teal-border);color:var(--teal);border-radius:6px;padding:7px 14px;font-size:.75rem;font-weight:700;cursor:pointer;">🖨 Export PDF</button>
+          <button onclick="confirmClearPlan()" class="plan-edit-only" style="background:rgba(248,113,113,.1);border:1px solid rgba(248,113,113,.3);color:var(--red);border-radius:6px;padding:7px 14px;font-size:.75rem;cursor:pointer;">Clear All</button>
         </div>
       </div>
       <!-- Share URL bar -->
@@ -502,140 +523,197 @@ function updateRevenue(section, name, value) {
   }
 }
 function savePlanLocal() { try{localStorage.setItem('reignite_plan',JSON.stringify(plan));}catch(e){} }
-function getSavedPlans() {
-  try { return JSON.parse(localStorage.getItem('reignite_library') || '[]'); } catch(e) { return []; }
-}
 function saveToLibrary() {
-  // If already named, update directly
   if (state.loadedPlanName && state.loadedPlanId) {
     updateCurrentPlan();
     return;
   }
-  // Otherwise prompt for a name
   showNamePlanModal(function(name) {
-    _doSaveToLibrary(name);
+    savePlanToFirestore(name).then(function(){ loadAllPlans(); });
   });
 }
-function _doSaveToLibrary(market) {
-  if (!market) return;
-  var total = Object.values(plan).reduce(function(s,a){return s+a.length;},0);
-  var library = getSavedPlans();
-  var existing = library.findIndex(function(p){ return p.market.toLowerCase()===market.toLowerCase(); });
-  var now = Date.now();
-  var id = existing>=0 ? library[existing].id : now.toString();
-  var entry = {
-    id: id,
-    market: market,
-    createdAt: existing>=0 ? library[existing].createdAt : now,
-    updatedAt: now,
-    plan: JSON.parse(JSON.stringify(plan))
-  };
-  if (existing>=0) { library[existing] = entry; } else { library.unshift(entry); }
-  try { localStorage.setItem('reignite_library', JSON.stringify(library)); } catch(e) { alert('Save failed — storage may be full.'); return; }
-  state.loadedPlanName = market;
-  state.loadedPlanId = id;
-  document.getElementById('marketInput').value = market;
-  document.getElementById('marketLabel').textContent = market;
-  syncUpdatePlanBtn();
-  renderLibraryTab();
+function renderLibraryTab() { loadAllPlans(); }
+function loadPlanLocal() {
+  try { var d=JSON.parse(localStorage.getItem('reignite_plan')||'{}'); Object.keys(plan).forEach(function(s){if(d[s])plan[s]=d[s];}); updatePlanFab(); } catch(e){}
 }
-function loadFromLibrary(id) {
-  var library = getSavedPlans();
-  var entry = library.find(function(p){ return p.id===id; });
-  if (!entry) return;
-  document.getElementById('marketInput').value = entry.market;
-  document.getElementById('marketLabel').textContent = entry.market;
-  Object.keys(plan).forEach(function(s){ plan[s] = entry.plan[s] || []; });
-  state.loadedPlanName = entry.market;
-  state.loadedPlanId = entry.id;
+// ─── FIRESTORE PLAN FUNCTIONS ──────────────────────────────────────────────────────
+function _currentPlanSnapshot() {
+  return JSON.stringify({ market: document.getElementById('marketInput').value||'', plan: plan });
+}
+
+async function savePlanToFirestore(name) {
+  var data = { name: name, createdAt: firebase.firestore.FieldValue.serverTimestamp(), updatedAt: firebase.firestore.FieldValue.serverTimestamp(), data: JSON.parse(JSON.stringify(plan)) };
+  var ref = await db.collection('plans').add(data);
+  state.loadedPlanId = ref.id;
+  state.loadedPlanName = name;
+  state.lastSavedData = _currentPlanSnapshot();
+  document.getElementById('marketInput').value = name;
+  document.getElementById('marketLabel').textContent = name;
+  syncUpdatePlanBtn();
+  return ref.id;
+}
+
+async function updatePlanInFirestore() {
+  if (!state.loadedPlanId) return;
+  await db.collection('plans').doc(state.loadedPlanId).update({ updatedAt: firebase.firestore.FieldValue.serverTimestamp(), data: JSON.parse(JSON.stringify(plan)) });
+  state.lastSavedData = _currentPlanSnapshot();
+  var msg = document.getElementById('planUpdatedMsg');
+  if (msg) { msg.style.display='inline'; msg.style.opacity='1'; setTimeout(function(){ msg.style.opacity='0'; setTimeout(function(){ msg.style.display='none'; msg.style.opacity='1'; },400); },2000); }
+}
+
+async function loadPlanFromFirestore(planId) {
+  var snap = await db.collection('plans').doc(planId).get();
+  if (!snap.exists) { console.warn('Plan not found:', planId); return null; }
+  var data = snap.data();
+  Object.keys(plan).forEach(function(s){ plan[s] = (data.data && data.data[s]) ? data.data[s] : []; });
+  state.loadedPlanId = planId;
+  state.loadedPlanName = data.name || '';
+  state.lastSavedData = _currentPlanSnapshot();
+  document.getElementById('marketInput').value = data.name || '';
+  document.getElementById('marketLabel').textContent = data.name || 'IGNITE GROWTH INTELLIGENCE';
   savePlanLocal();
   updatePlanFab();
   syncUpdatePlanBtn();
-  switchTab('plan');
-  refreshPlanModal();
+  return data;
 }
-function deleteFromLibrary(id, market) {
-  if (!confirm('Delete the saved plan for "'+market+'"? This cannot be undone.')) return;
-  var library = getSavedPlans().filter(function(p){ return p.id!==id; });
-  localStorage.setItem('reignite_library', JSON.stringify(library));
-  renderLibraryTab();
-}
-function renderLibraryTab() {
+
+async function loadAllPlans() {
   var list = document.getElementById('libraryList');
   if (!list) return;
   var query = (document.getElementById('librarySearch')||{}).value || '';
-  var library = getSavedPlans();
-  if (query.trim()) {
-    library = library.filter(function(p){ return p.market.toLowerCase().includes(query.toLowerCase()); });
+  list.innerHTML = '<div style="color:var(--dim);font-size:.8rem;padding:20px 0;">Loading…</div>';
+  try {
+    var snap = await db.collection('plans').orderBy('updatedAt','desc').get();
+    var plans = [];
+    snap.forEach(function(doc){ plans.push(Object.assign({ id: doc.id }, doc.data())); });
+    if (query.trim()) plans = plans.filter(function(p){ return p.name && p.name.toLowerCase().includes(query.toLowerCase()); });
+    _renderLibraryList(plans);
+  } catch(e) {
+    list.innerHTML = '<div style="color:var(--red);font-size:.8rem;padding:20px 0;">Failed to load plans: ' + e.message + '</div>';
   }
-  library.sort(function(a,b){ return b.createdAt - a.createdAt; });
+}
+
+async function deletePlanFromFirestore(planId, name) {
+  showModal({
+    title: 'Delete Plan?',
+    body: 'Delete <strong style="color:#fff;">"' + name + '"</strong>? This cannot be undone.',
+    buttons: [
+      { label: 'Delete', style: 'danger', action: async function() {
+        closeModal();
+        await db.collection('plans').doc(planId).delete();
+        if (state.loadedPlanId === planId) { state.loadedPlanId = null; state.loadedPlanName = null; syncUpdatePlanBtn(); }
+        loadAllPlans();
+      }},
+      { label: 'Cancel', style: 'secondary', action: closeModal }
+    ]
+  });
+}
+
+function _renderLibraryList(library) {
+  var list = document.getElementById('libraryList');
+  if (!list) return;
+  var query = (document.getElementById('librarySearch')||{}).value || '';
   if (!library.length) {
     list.innerHTML = '<div style="text-align:center;color:var(--dim);padding:60px 0;font-size:.88rem;">'
-      +(query ? 'No plans match "'+query+'".' : 'No saved plans yet.<br><span style="font-size:.78rem;">Build a plan in the Plan tab, then hit Save Current Plan.</span>')
+      +(query ? 'No plans match “'+query+'”.' : 'No saved plans yet.<br><span style="font-size:.78rem;">Create a plan and click Save Current Plan.</span>')
       +'</div>';
     return;
   }
   list.innerHTML = '<div style="display:flex;flex-direction:column;gap:10px;">'
     + library.map(function(entry) {
-      var total = Object.values(entry.plan).reduce(function(s,a){return s+a.length;},0);
-      var rev = Object.values(entry.plan).reduce(function(s,arr){
-        return s + arr.reduce(function(s2,a){return s2+(a.rev||a.estRev||0);},0);
+      var pd = entry.data || {};
+      var total = Object.values(pd).reduce(function(s,a){ return s+(Array.isArray(a)?a.length:0); },0);
+      var rev = Object.values(pd).reduce(function(s,arr){
+        return s + (Array.isArray(arr) ? arr.reduce(function(s2,a){ return s2+(a.rev||a.estRev||0); },0) : 0);
       },0);
-      var sectionCounts = {close:0,protect:0,reclaim:0,rebuild:0};
-      Object.keys(sectionCounts).forEach(function(s){ sectionCounts[s]=(entry.plan[s]||[]).length; });
-      var created = new Date(entry.createdAt).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
-      var updated = new Date(entry.updatedAt).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
+      var sc = {close:0,protect:0,reclaim:0,rebuild:0};
+      Object.keys(sc).forEach(function(s){ sc[s]=(pd[s]||[]).length; });
+      var updTs = entry.updatedAt && entry.updatedAt.toDate ? entry.updatedAt.toDate() : (entry.updatedAt ? new Date(entry.updatedAt) : null);
+      var crTs = entry.createdAt && entry.createdAt.toDate ? entry.createdAt.toDate() : (entry.createdAt ? new Date(entry.createdAt) : null);
+      var created = crTs ? crTs.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}) : '';
+      var updated = updTs ? updTs.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}) : '';
       var sameDate = created === updated;
-      var safeMarket = entry.market.replace(/'/g,"\\'");
+      var safeName = (entry.name||'').replace(/'/g,"\\'");
+      var shareUrl = 'https://ignitegrowthintelligence.github.io/igi-reignite-planner/?plan=' + entry.id;
       return '<div class="card p-4" style="border:1px solid var(--border);transition:border-color .2s;" onmouseover="this.style.borderColor=\'var(--teal-border)\'" onmouseout="this.style.borderColor=\'var(--border)\'" >'
         +'<div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;">'
-        +'<div style="flex:1;cursor:pointer;" onclick="loadFromLibrary(\''+entry.id+'\')" >'
-        +'<div style="font-weight:800;font-size:1rem;color:#fff;margin-bottom:4px;">'+entry.market+'</div>'
-        +'<div style="font-size:.72rem;color:var(--dim);">Created '+created+(sameDate?'':' &nbsp;&middot;&nbsp; Updated '+updated)+'</div>'
+        +'<div style="flex:1;cursor:pointer;" onclick="loadPlanFromFirestore(\''+entry.id+'\').then(function(){ switchTab(\'plan\'); refreshPlanModal(); })" >'
+        +'<div style="font-weight:800;font-size:1rem;color:#fff;margin-bottom:4px;">'+(entry.name||'Untitled')+'</div>'
+        +'<div style="font-size:.72rem;color:var(--dim);">'+created+(sameDate||!updated?'':' &nbsp;&middot;&nbsp; Updated '+updated)+'</div>'
         +'<div style="display:flex;gap:16px;margin-top:10px;flex-wrap:wrap;">'
         +'<span style="font-size:.72rem;color:var(--text);"><span style="color:var(--teal);font-weight:700;">'+total+'</span> accounts</span>'
         +'<span style="font-size:.72rem;color:var(--text);"><span style="color:var(--green);font-weight:700;">'+fmt(rev)+'</span> opportunity</span>'
-        +(sectionCounts.close?'<span style="font-size:.68rem;color:var(--dim);">&#128308; '+sectionCounts.close+' Close</span>':'')
-        +(sectionCounts.protect?'<span style="font-size:.68rem;color:var(--dim);">&#128994; '+sectionCounts.protect+' Protect</span>':'')
-        +(sectionCounts.reclaim?'<span style="font-size:.68rem;color:var(--dim);">&#128993; '+sectionCounts.reclaim+' Reclaim</span>':'')
-        +(sectionCounts.rebuild?'<span style="font-size:.68rem;color:var(--dim);">&#128309; '+sectionCounts.rebuild+' Rebuild</span>':'')
+        +(sc.close?'<span style="font-size:.68rem;color:var(--dim);">&#128308; '+sc.close+' Close</span>':'')
+        +(sc.protect?'<span style="font-size:.68rem;color:var(--dim);">&#128994; '+sc.protect+' Protect</span>':'')
+        +(sc.reclaim?'<span style="font-size:.68rem;color:var(--dim);">&#128993; '+sc.reclaim+' Reclaim</span>':'')
+        +(sc.rebuild?'<span style="font-size:.68rem;color:var(--dim);">&#128309; '+sc.rebuild+' Rebuild</span>':'')
         +'</div>'
         +'</div>'
         +'<div style="display:flex;gap:8px;flex-shrink:0;">'
-        +'<button onclick="loadFromLibrary(\''+entry.id+'\')" style="background:var(--teal-dim);border:1px solid var(--teal-border);color:var(--teal);border-radius:6px;padding:6px 12px;font-size:.75rem;font-weight:700;cursor:pointer;">Load</button>'
-        +'<button onclick="event.stopPropagation();deleteFromLibrary(\''+entry.id+'\',\''+safeMarket+'\')" style="background:rgba(248,113,113,.1);border:1px solid rgba(248,113,113,.3);color:var(--red);border-radius:6px;padding:6px 10px;font-size:.75rem;cursor:pointer;" title="Delete">&#128465;</button>'
+        +'<button onclick="navigator.clipboard.writeText(\''+shareUrl+'\').then(function(){var b=event.target;b.textContent=\'Copied!\';setTimeout(function(){b.textContent=\'Copy Link\';},2000);})" style="background:var(--surface2);border:1px solid var(--border);color:var(--dim);border-radius:6px;padding:6px 10px;font-size:.72rem;cursor:pointer;">Copy Link</button>'
+        +'<button onclick="loadPlanFromFirestore(\''+entry.id+'\').then(function(){ switchTab(\'plan\'); refreshPlanModal(); })" style="background:var(--teal-dim);border:1px solid var(--teal-border);color:var(--teal);border-radius:6px;padding:6px 12px;font-size:.75rem;font-weight:700;cursor:pointer;">Load</button>'
+        +'<button onclick="event.stopPropagation();deletePlanFromFirestore(\''+entry.id+'\',\''+safeName+'\')" style="background:rgba(248,113,113,.1);border:1px solid rgba(248,113,113,.3);color:var(--red);border-radius:6px;padding:6px 10px;font-size:.75rem;cursor:pointer;" title="Delete">&#128465;</button>'
         +'</div>'
         +'</div>'
         +'</div>';
     }).join('')
     +'</div>';
 }
-function loadPlanLocal() {
-  try { var d=JSON.parse(localStorage.getItem('reignite_plan')||'{}'); Object.keys(plan).forEach(function(s){if(d[s])plan[s]=d[s];}); updatePlanFab(); } catch(e){}
+
+async function sharePlanUrl() {
+  // Ensure plan is saved first
+  var planId = state.loadedPlanId;
+  if (!planId) {
+    // Need to save — get name first
+    var needName = !state.loadedPlanName;
+    var doShare = async function(name) {
+      planId = await savePlanToFirestore(name);
+      var url = 'https://ignitegrowthintelligence.github.io/igi-reignite-planner/?plan=' + planId;
+      navigator.clipboard.writeText(url).catch(function(){});
+      var shareMsg = document.getElementById('shareUrlMsg');
+      if (shareMsg) { shareMsg.style.display='inline'; shareMsg.style.opacity='1'; setTimeout(function(){ shareMsg.style.opacity='0'; setTimeout(function(){ shareMsg.style.display='none'; shareMsg.style.opacity='1'; },400); },2500); }
+    };
+    if (needName) { showNamePlanModal(function(name){ doShare(name); }); }
+    else { doShare(state.loadedPlanName); }
+    return;
+  }
+  var url = 'https://ignitegrowthintelligence.github.io/igi-reignite-planner/?plan=' + planId;
+  navigator.clipboard.writeText(url).catch(function(){});
+  var shareMsg = document.getElementById('shareUrlMsg');
+  if (shareMsg) { shareMsg.style.display='inline'; shareMsg.style.opacity='1'; setTimeout(function(){ shareMsg.style.opacity='0'; setTimeout(function(){ shareMsg.style.display='none'; shareMsg.style.opacity='1'; },400); },2500); }
 }
-function savePlanUrl() {
-  var market=document.getElementById('marketInput').value||'';
-  var payload=JSON.stringify({market:market,plan:plan,created:new Date().toISOString().split('T')[0]});
-  var encoded=btoa(unescape(encodeURIComponent(payload))).replace(/\+/g,'-').replace(/\//g,'_').replace(/=/g,'');
-  var url=location.href.split('#')[0]+'#plan='+encoded;
-  document.getElementById('planUrlInput').value=url;
-  document.getElementById('planUrlBar').style.display='block';
-  history.replaceState(null,'',url);
-}
-function copyPlanUrl() {
-  var inp=document.getElementById('planUrlInput');
-  navigator.clipboard.writeText(inp.value).then(function(){var b=inp.nextElementSibling;b.textContent='Copied!';setTimeout(function(){b.textContent='Copy';},2000);});
-}
-function loadPlanFromUrl() {
-  var hash=location.hash;
-  if (!hash.includes('plan=')) return;
-  try {
-    var encoded=hash.split('plan=')[1];
-    var decoded=decodeURIComponent(escape(atob(encoded.replace(/-/g,'+').replace(/_/g,'/'))));
-    var data=JSON.parse(decoded);
-    if (data.market) document.getElementById('marketInput').value=data.market;
-    if (data.plan) { Object.keys(plan).forEach(function(s){if(data.plan[s])plan[s]=data.plan[s];}); updatePlanFab(); }
-  } catch(e){}
+
+async function checkSharedMode() {
+  var pid = new URLSearchParams(window.location.search).get('plan');
+  if (!pid) return false;
+  // Enter shared (read-only) mode
+  var data = await loadPlanFromFirestore(pid);
+  if (!data) {
+    document.body.innerHTML = '<div style="padding:60px;text-align:center;color:var(--dim);font-size:1rem;">Plan not found or has been deleted.</div>';
+    return true;
+  }
+  // Show banner
+  var banner = document.getElementById('sharedPlanBanner');
+  if (banner) { banner.style.display='block'; }
+  var titleEl = document.getElementById('sharedPlanTitle');
+  if (titleEl) titleEl.textContent = '— ' + (data.name||'');
+  // Show badge
+  var badge = document.getElementById('sharedModeBadge');
+  if (badge) badge.style.display='block';
+  // Hide edit-only ribbon elements
+  ['ribbonNewPlan','ribbonSavedPlans','ribbonCommandCenter','marketInput'].forEach(function(id){
+    var el = document.getElementById(id); if (el) el.style.display='none';
+  });
+  // Hide edit-only tabs
+  ['tab-rebuild','tab-plan','tab-library'].forEach(function(id){
+    var el = document.getElementById(id); if (el) el.style.display='none';
+  });
+  // Hide edit-only plan buttons
+  document.querySelectorAll('.plan-edit-only').forEach(function(el){ el.style.display='none'; });
+  // Switch to Close tab and render plan
+  switchTab('close');
+  refreshPlanModal();
+  return true;
 }
 function exportPlan() {
   var market=document.getElementById('marketInput').value||'Market';
@@ -1745,29 +1823,7 @@ function syncUpdatePlanBtn() {
 }
 
 function updateCurrentPlan() {
-  if (!state.loadedPlanName || !state.loadedPlanId) return;
-  var library = getSavedPlans();
-  var idx = library.findIndex(function(p){ return p.id === state.loadedPlanId; });
-  var now = Date.now();
-  var entry = {
-    id: state.loadedPlanId,
-    market: state.loadedPlanName,
-    createdAt: idx>=0 ? library[idx].createdAt : now,
-    updatedAt: now,
-    plan: JSON.parse(JSON.stringify(plan))
-  };
-  if (idx>=0) { library[idx] = entry; } else { library.unshift(entry); }
-  try { localStorage.setItem('reignite_library', JSON.stringify(library)); } catch(e) { alert('Save failed.'); return; }
-  renderLibraryTab();
-  var msg = document.getElementById('planUpdatedMsg');
-  if (msg) {
-    msg.style.display = 'inline';
-    msg.style.opacity = '1';
-    setTimeout(function(){
-      msg.style.opacity = '0';
-      setTimeout(function(){ msg.style.display = 'none'; msg.style.opacity = '1'; }, 400);
-    }, 2000);
-  }
+  updatePlanInFirestore();
 }
 
 function showNamePlanModal(onConfirm) {
@@ -1864,8 +1920,6 @@ function closeModal() {
 
 // ─── INIT ─────────────────────────────────────────────────────────────────────
 loadPlanLocal();
-loadPlanFromUrl();
-renderLibraryTab();
 buildCategoryFilters();
 syncUpdatePlanBtn();
 document.addEventListener('keydown', function(e){ if(e.key==='Escape'){ var o=document.getElementById('igiModalOverlay'); if(o&&o.style.display!=='none') closeModal(); } });
@@ -1875,6 +1929,12 @@ updateSummaryCards([
   {label:'Geography',value:'ZIP+Radius',sub:'Rebuild tab — filter by distance'},
   {label:'Market',value:'Enter name',sub:'Top-right corner'}
 ]);
+checkSharedMode().then(function(isShared) {
+  if (!isShared) {
+    // Normal mode
+    loadAllPlans();
+  }
+});
 </script>
 
 <!-- IGI Score Backdrop -->
