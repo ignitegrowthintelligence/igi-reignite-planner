@@ -2162,8 +2162,23 @@ async function generateDiscoveryIntel(encodedDomain, containerId) {
   var jobApiUrl = 'https://ignite.edwinlovett.com/research/research-job-api.php';
   var cacheUrl  = 'https://ignite.edwinlovett.com/research/?company=' + encodeURIComponent(domain) + '&format=json';
 
-  // Disable button immediately
+  // Disable button and show progress immediately
   if (btnEl) btnEl.disabled = true;
+  if (btnWrapEl) btnWrapEl.style.display = 'none';
+  if (progressEl) progressEl.style.display = 'block';
+  if (progressLbl) progressLbl.textContent = 'Connecting to Discovery AI…';
+  if (progressPct) progressPct.textContent = '0%';
+
+  // Start progress animation immediately
+  var startTime = Date.now();
+  var estimatedMs = 90000;
+  var progressInterval = setInterval(function() {
+    var elapsed = Date.now() - startTime;
+    var pct = Math.min(90, Math.round((elapsed / estimatedMs) * 90));
+    if (progressBar) progressBar.style.width = pct + '%';
+    if (progressPct) progressPct.textContent = pct + '%';
+    if (progressLbl) progressLbl.textContent = 'Generating report… ' + Math.round(elapsed / 1000) + 's';
+  }, 1000);
 
   // Step 1: POST to job API — returns cached report or enqueues a job
   var jobData;
@@ -2175,38 +2190,38 @@ async function generateDiscoveryIntel(encodedDomain, containerId) {
     });
     jobData = await postResp.json();
   } catch(e) {
+    clearInterval(progressInterval);
+    if (progressEl) progressEl.style.display = 'none';
+    if (btnWrapEl) btnWrapEl.style.display = 'block';
+    if (btnEl) btnEl.disabled = false;
     _showDiscoveryError(bulletsEl, btnWrapEl, btnEl, 'Unable to reach Discovery.AI. Check your connection and try again.');
     return;
   }
 
-  // Step 2: Cached — render bullets immediately
+  // Step 2: Cached — stop interval and show completion immediately
   if (jobData.status === 'complete' && jobData.result && jobData.result.report) {
-    _renderDiscoveryBullets(jobData.result.report, bulletsEl, btnWrapEl, linkEl);
-    var _cachedProspect = window._rebuildProspects && window._rebuildProspects[containerId];
-    if (_cachedProspect) _applyDiscoveryToScore(jobData.result.report, _cachedProspect, containerId);
+    clearInterval(progressInterval);
+    if (progressBar) progressBar.style.width = '100%';
+    if (progressPct) progressPct.textContent = '100%';
+    if (progressLbl) progressLbl.textContent = 'Report ready!';
+    setTimeout(function() {
+      if (progressEl) progressEl.style.display = 'none';
+      _renderDiscoveryBullets(jobData.result.report, bulletsEl, btnWrapEl, linkEl);
+      var _cachedProspect = window._rebuildProspects && window._rebuildProspects[containerId];
+      if (_cachedProspect) _applyDiscoveryToScore(jobData.result.report, _cachedProspect, containerId);
+    }, 400);
     return;
   }
 
   // Step 3: Job enqueued — validate we have a jobId/pollUrl
   if (!jobData.jobId || !jobData.pollUrl) {
+    clearInterval(progressInterval);
+    if (progressEl) progressEl.style.display = 'none';
+    if (btnWrapEl) btnWrapEl.style.display = 'block';
+    if (btnEl) btnEl.disabled = false;
     _showDiscoveryError(bulletsEl, btnWrapEl, btnEl, 'Unexpected response from Discovery.AI. Try again.');
     return;
   }
-
-  // Show progress bar, hide button
-  if (btnWrapEl) btnWrapEl.style.display = 'none';
-  if (progressEl) progressEl.style.display = 'block';
-
-  // Animate 0←90% over ~90s
-  var startTime = Date.now();
-  var estimatedMs = 90000;
-  var progressInterval = setInterval(function() {
-    var elapsed = Date.now() - startTime;
-    var pct = Math.min(90, Math.round((elapsed / estimatedMs) * 90));
-    if (progressBar) progressBar.style.width = pct + '%';
-    if (progressPct) progressPct.textContent = pct + '%';
-    if (progressLbl) progressLbl.textContent = 'Generating report… ' + Math.round(elapsed / 1000) + 's';
-  }, 1000);
 
   // Step 4: Poll job status every 2.5s, max 72 attempts (~3 min)
   var pollUrl = jobData.pollUrl;
