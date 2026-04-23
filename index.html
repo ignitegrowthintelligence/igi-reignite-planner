@@ -343,15 +343,16 @@ function cleanNum(s) {
   const v = parseFloat(str);
   return isNaN(v) ? 0 : (neg ? -v : v);
 }
-function scoreBadge(s, scoreData) {
+function scoreBadge(s, scoreData, containerId) {
   var s100=Math.round(s||0);
   var cls=s100>=80?'score-high':s100>=60?'score-mid':'score-low';
+  var idAttr = containerId ? ' id="score-badge-'+containerId+'"' : '';
   if (scoreData) {
     scoreData.total=s100;
     var sid=registerScore(scoreData);
-    return '<span class="score-badge '+cls+'" onclick="openScorePanel(\''+sid+'\')" style="cursor:pointer;" title="Click for IGI Score breakdown">'+s100+'</span>';
+    return '<span'+idAttr+' class="score-badge '+cls+'" onclick="openScorePanel(\''+sid+'\')" style="cursor:pointer;" title="Click for IGI Score breakdown">'+s100+'</span>';
   }
-  return '<span class="score-badge '+cls+'">'+s100+'</span>';
+  return '<span'+idAttr+' class="score-badge '+cls+'">'+s100+'</span>';
 }
 function tierBadge(s) {
   if (s>=85) return '<span class="badge-now">IGI T1</span>';
@@ -1159,7 +1160,7 @@ function parseRebuild(rows, fname) {
     var r=rows[i]; if (!r||!r[cName]||String(r[cName]).trim()==='') continue;
     var name=String(r[cName]).trim(), cat=String(r[cCat]||'').trim();
     var rev=cleanNum(r[cRev]);
-    var prospect={name:name,cat:cat,rev:rev,dist:null,estRev:rev,_tags:{}};
+    var prospect={name:name,cat:cat,rev:rev,dist:null,estRev:rev,_tags:{},_rebuildId:'rb-'+Math.random().toString(36).slice(2,9)};
     prospect.score=computeScore(prospect);
     prospects.push(prospect);
   }
@@ -1317,19 +1318,34 @@ function scoreLocalOwnership(prospect) {
 }
 
 function scoreMarketOpportunity(prospect) {
- var uploaded = (state.rebuild && state.rebuild.uploaded) ? state.rebuild.uploaded : [];
- if (!uploaded.length) {
- return {score: 8, detail: 'No Protect & Expand data uploaded — default score applied. Upload your P&E file to enable market saturation scoring.'};
- }
- var cat = prospect.cat || '';
- var count = uploaded.filter(function(p){ return p.cat === cat; }).length;
- var score, detail;
- if (count === 0) { score = 15; detail = 'No existing ' + cat + ' clients — untapped category opportunity.'; }
- else if (count <= 2) { score = 11; detail = count + ' existing ' + cat + ' client(s) — early penetration, strong upside.'; }
- else if (count <= 5) { score = 6; detail = count + ' existing ' + cat + ' clients — growing presence in this category.'; }
- else if (count <= 10) { score = 2; detail = count + ' existing ' + cat + ' clients — becoming competitive.'; }
- else { score = 0; detail = count + ' existing ' + cat + ' clients — saturated. Harder to grow here.'; }
- return {score: score, detail: detail};
+  // If Discovery Intelligence data has been generated, use it to score
+  if (prospect._discoveryData) {
+    var dd = prospect._discoveryData;
+    var platforms = dd.adPlatforms || [];
+    var pixels = dd.pixels || [];
+    var score, detail;
+
+    if (!prospect._website) {
+      score = 3;
+      detail = 'No website found — cold to digital advertising.';
+    } else if (platforms.length >= 2) {
+      score = 15;
+      detail = 'Active on ' + platforms.length + ' ad platforms — proven digital spender.';
+    } else if (platforms.length === 1) {
+      score = 10;
+      detail = 'Running ' + platforms[0] + ' ads — partial digital adopter.';
+    } else if (pixels.length > 0) {
+      score = 7;
+      detail = 'Marketing pixels detected — has digital infrastructure.';
+    } else {
+      score = 4;
+      detail = 'No ad activity detected — untapped digital prospect.';
+    }
+    return {score: score, detail: detail};
+  }
+
+  // Default: no Discovery data yet
+  return {score: 8, detail: 'Click Generate Intel below to score market opportunity based on detected ad platforms and marketing pixels.'};
 }
 
 function scoreLocalControl(prospect) {
@@ -1642,6 +1658,7 @@ async function discoverProspects() {
  businessStatus: place.businessStatus || 'OPERATIONAL'
  }
  };
+ if (!prospect._rebuildId) prospect._rebuildId = 'rb-'+Math.random().toString(36).slice(2,9);
  prospect.score = computeScore(prospect);
  allProspects.push(prospect);
  });
@@ -1805,7 +1822,7 @@ function renderRebuild(prospects, radius) {
         ? '<a href="'+p._website+'" target="_blank" rel="noopener" style="color:var(--teal);text-decoration:none;" title="'+p._website+'">🔗 Visit</a>'
         : '<span style="color:var(--dim);">—</span>')
         +'</td>'
-        +'<td class="text-right">'+scoreBadge(p.score,p._scoreData)+'</td>'
+        +'<td class="text-right">'+scoreBadge(p.score,p._scoreData,p._rebuildId)+'</td>'
         +'<td class="hide-mobile">'+tierBadge(p.score)+'</td>'
         +'</tr>';
     }).join('')+'</tbody></table></div>';
@@ -2071,6 +2088,9 @@ function _buildRebuildBody(a) {
       + '</div></div>'
     : '';
 
+  // Register prospect for Discovery score wiring
+  window._rebuildProspects = window._rebuildProspects || {};
+
   var discoverySection = '';
   if (website) {
     var domain = (function(url) {
@@ -2082,6 +2102,9 @@ function _buildRebuildBody(a) {
       }
     })(website);
     var containerId = 'disc-' + Math.random().toString(36).slice(2, 8);
+    window._rebuildProspects[containerId] = a;
+    // Store active containerId on prospect so _applyDiscoveryToScore can target panel elements
+    a._activeContainerId = containerId;
     discoverySection =
       '<div style="padding:18px 24px 0;">'
       + '<div style="font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.09em;color:var(--teal);margin-bottom:10px;">Discovery Intelligence</div>'
@@ -2119,7 +2142,10 @@ function _buildRebuildBody(a) {
       + '</div>';
   }
 
-  return profileSection + discoverySection + '<div style="padding:0 24px 24px;">' + _buildScoreBreakdown(a) + '</div>';
+  var scoreBreakdownHtml = website
+    ? '<div id="score-breakdown-' + (containerId||'') + '" style="padding:0 24px 24px;">' + _buildScoreBreakdownWithFlash(a, containerId||'') + '</div>'
+    : '<div style="padding:0 24px 24px;">' + _buildScoreBreakdown(a) + '</div>';
+  return profileSection + discoverySection + scoreBreakdownHtml;
 }
 
 async function generateDiscoveryIntel(encodedDomain, containerId) {
@@ -2156,6 +2182,8 @@ async function generateDiscoveryIntel(encodedDomain, containerId) {
   // Step 2: Cached — render bullets immediately
   if (jobData.status === 'complete' && jobData.result && jobData.result.report) {
     _renderDiscoveryBullets(jobData.result.report, bulletsEl, btnWrapEl, linkEl);
+    var _cachedProspect = window._rebuildProspects && window._rebuildProspects[containerId];
+    if (_cachedProspect) _applyDiscoveryToScore(jobData.result.report, _cachedProspect, containerId);
     return;
   }
 
@@ -2203,6 +2231,8 @@ async function generateDiscoveryIntel(encodedDomain, containerId) {
             var cacheData = await cacheResp.json();
             if (cacheData.success && cacheData.report) {
               _renderDiscoveryBullets(cacheData.report, bulletsEl, btnWrapEl, linkEl);
+              var _polledProspect = window._rebuildProspects && window._rebuildProspects[containerId];
+              if (_polledProspect) _applyDiscoveryToScore(cacheData.report, _polledProspect, containerId);
             } else {
               if (bulletsEl) bulletsEl.innerHTML = _discInfoHtml('Report generated! Click “View Full Discovery Report” to read it.');
               if (btnWrapEl) btnWrapEl.style.display = 'none';
@@ -2240,6 +2270,67 @@ async function generateDiscoveryIntel(encodedDomain, containerId) {
   };
 
   setTimeout(poll, 2500);
+}
+
+function _applyDiscoveryToScore(report, prospect, containerId) {
+  // Extract ad platforms
+  var adPlatforms = (report.currentMarketing && report.currentMarketing.adPlatforms) || [];
+  var detectedAds = (report.currentMarketing && report.currentMarketing.detectedAds) || [];
+  var pixels = (report.pixelAnalysis && report.pixelAnalysis.pixels) || [];
+
+  // Build combined deduplicated platform list
+  var combined = adPlatforms.slice();
+  detectedAds.forEach(function(ad) {
+    var p = ad.platform || ad.source;
+    if (p && combined.indexOf(p) < 0) combined.push(p);
+  });
+
+  // Store on prospect
+  prospect._discoveryData = {
+    adPlatforms: combined,
+    pixels: pixels,
+    generatedAt: Date.now()
+  };
+
+  // Recalculate total score
+  prospect.score = computeScore(prospect);
+  var newScore = prospect.score;
+  var s100 = Math.round(newScore);
+
+  // Update score badge in table row (keyed by stable _rebuildId)
+  var rebuildId = prospect._rebuildId;
+  if (rebuildId) {
+    var badge = document.getElementById('score-badge-' + rebuildId);
+    if (badge) {
+      badge.textContent = s100;
+      badge.className = 'score-badge ' + (s100 >= 80 ? 'score-high' : s100 >= 60 ? 'score-mid' : 'score-low');
+    }
+  }
+
+  // Update Market Opportunity detail + flash in the currently-open call prep panel
+  // Panel elements are keyed by containerId (set fresh each time card opens)
+  if (prospect._scoreData) {
+    var oppComp = prospect._scoreData.components.filter(function(c){ return c.label === 'Market Opportunity'; })[0];
+
+    var detailEl = document.getElementById('opp-detail-' + containerId);
+    if (detailEl && oppComp) detailEl.textContent = oppComp.detail;
+
+    var flashEl = document.getElementById('opp-flash-' + containerId);
+    if (flashEl) {
+      flashEl.style.opacity = '1';
+      flashEl.style.transition = 'none';
+      setTimeout(function() {
+        flashEl.style.transition = 'opacity 1s';
+        flashEl.style.opacity = '0';
+      }, 2000);
+    }
+
+    // Re-render the score breakdown container in the panel with fresh data
+    var breakdownEl = document.getElementById('score-breakdown-' + containerId);
+    if (breakdownEl) {
+      breakdownEl.innerHTML = _buildScoreBreakdownWithFlash(prospect, containerId);
+    }
+  }
 }
 
 function _renderDiscoveryBullets(report, bulletsEl, btnWrapEl, linkEl) {
@@ -2469,7 +2560,36 @@ function _cpStatCard(label, value, sub, valueColor) {
     + '</div>';
 }
 
+function _buildScoreBreakdownContent(a) {
+  var sd = a._scoreData || null;
+  if (!sd || !sd.components || !sd.components.length) return '';
+  return sd.components.map(function(c) {
+      var pct = c.max > 0 ? Math.round((c.score / c.max) * 100) : 0;
+      var barColor = pct >= 70 ? 'var(--green)' : pct >= 40 ? 'var(--yellow)' : 'var(--red)';
+      return '<div style="margin-bottom:14px;">'
+        + '<div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:4px;">'
+        + '<div style="font-size:.78rem;font-weight:600;color:var(--text);">' + c.label + '</div>'
+        + '<div style="font-size:.78rem;font-weight:800;color:' + barColor + ';">' + c.score
+        + '<span style="color:var(--dim);font-weight:400;font-size:.68rem;">/' + c.max + '</span></div>'
+        + '</div>'
+        + '<div style="background:var(--surface2);border-radius:4px;height:6px;overflow:hidden;margin-bottom:4px;">'
+        + '<div style="height:100%;width:' + pct + '%;background:' + barColor + ';border-radius:4px;"></div>'
+        + '</div>'
+        + '<div style="font-size:.67rem;color:var(--dim);line-height:1.4;">' + c.detail + '</div>'
+        + '</div>';
+    }).join('');
+}
+
 function _buildScoreBreakdown(a) {
+  var sd = a._scoreData || null;
+  if (!sd || !sd.components || !sd.components.length) return '';
+  return '<div style="margin-top:24px;padding-top:18px;border-top:1px solid var(--border);">'
+    + '<div style="font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--teal);margin-bottom:14px;">IGI Score Breakdown</div>'
+    + _buildScoreBreakdownContent(a)
+    + '</div>';
+}
+
+function _buildScoreBreakdownWithFlash(a, containerId) {
   var sd = a._scoreData || null;
   if (!sd || !sd.components || !sd.components.length) return '';
   return '<div style="margin-top:24px;padding-top:18px;border-top:1px solid var(--border);">'
@@ -2477,16 +2597,20 @@ function _buildScoreBreakdown(a) {
     + sd.components.map(function(c) {
         var pct = c.max > 0 ? Math.round((c.score / c.max) * 100) : 0;
         var barColor = pct >= 70 ? 'var(--green)' : pct >= 40 ? 'var(--yellow)' : 'var(--red)';
+        var isOpp = c.label === 'Market Opportunity';
         return '<div style="margin-bottom:14px;">'
           + '<div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:4px;">'
           + '<div style="font-size:.78rem;font-weight:600;color:var(--text);">' + c.label + '</div>'
+          + '<div style="display:flex;align-items:center;gap:8px;">'
+          + (isOpp ? '<span id="opp-flash-' + containerId + '" style="font-size:.65rem;color:var(--teal);font-weight:600;opacity:0;transition:opacity 1s;">✓ Score updated</span>' : '')
           + '<div style="font-size:.78rem;font-weight:800;color:' + barColor + ';">' + c.score
           + '<span style="color:var(--dim);font-weight:400;font-size:.68rem;">/' + c.max + '</span></div>'
+          + '</div>'
           + '</div>'
           + '<div style="background:var(--surface2);border-radius:4px;height:6px;overflow:hidden;margin-bottom:4px;">'
           + '<div style="height:100%;width:' + pct + '%;background:' + barColor + ';border-radius:4px;"></div>'
           + '</div>'
-          + '<div style="font-size:.67rem;color:var(--dim);line-height:1.4;">' + c.detail + '</div>'
+          + '<div ' + (isOpp ? 'id="opp-detail-' + containerId + '"' : '') + ' style="font-size:.67rem;color:var(--dim);line-height:1.4;">' + c.detail + '</div>'
           + '</div>';
       }).join('')
     + '</div>';
