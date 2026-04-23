@@ -1655,7 +1655,9 @@ async function discoverProspects() {
  rating: place.rating || null,
  userRatingCount: place.userRatingCount || 0,
  websiteUri: place.websiteUri || '',
- businessStatus: place.businessStatus || 'OPERATIONAL'
+ businessStatus: place.businessStatus || 'OPERATIONAL',
+ nationalPhoneNumber: place.nationalPhoneNumber || null,
+ regularOpeningHours: place.regularOpeningHours || null
  }
  };
  if (!prospect._rebuildId) prospect._rebuildId = 'rb-'+Math.random().toString(36).slice(2,9);
