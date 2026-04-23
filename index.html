@@ -238,15 +238,12 @@
       </div>
       <div style="margin-bottom:16px;">
         <div id="categoryFilterPanel">
-          <div style="font-size:.68rem;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:var(--teal);margin-bottom:10px;">
-            Target Categories
-            <span style="font-size:.65rem;color:var(--dim);font-weight:400;text-transform:none;letter-spacing:0;"> &mdash; select before discovering</span>
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+            <div style="font-size:.68rem;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:var(--teal);">Target Categories <span style="font-size:.65rem;color:var(--dim);font-weight:400;text-transform:none;letter-spacing:0;">&mdash; select up to 3 before discovering</span></div>
+            <span id="catSelectionCount" style="font-size:.68rem;color:var(--dim);white-space:nowrap;">Select up to 3</span>
           </div>
-          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
-            <span id="catSelectionCount" style="font-size:.68rem;color:var(--dim);">Select up to 3</span>
-          </div>
-          <div id="catLimitWarn" style="display:none;font-size:.68rem;color:var(--yellow);margin-bottom:6px;">&#9888; Max 3 categories &mdash; uncheck one to select another</div>
-          <div style="display:flex;flex-wrap:wrap;gap:8px;" id="categoryCheckboxes"></div>
+          <div id="catLimitWarn" style="display:none;font-size:.68rem;color:var(--yellow);margin-bottom:8px;padding:5px 10px;background:rgba(251,191,36,.08);border:1px solid rgba(251,191,36,.25);border-radius:6px;">&#9888; Maximum 3 categories selected &mdash; uncheck one to select another</div>
+          <div id="categoryCheckboxes"></div>
         </div>
       </div>
       <div id="rebuild-content"></div>
@@ -1063,42 +1060,70 @@ function parseRebuild(rows, fname) {
 // ─── REBUILD (auto-discover) ─────────────────────────────────────────────────
 const GOOGLE_PLACES_KEY = 'AIzaSyD8bC6HVmYrb6MudvcXW92Q5OYpvnoxytY';
 const CATEGORY_CONFIG = {
- 'Legal/Attorneys': {types:['lawyer'], searchQuery:'lawyer', avgRev:84152},
- 'HVAC': {types:['hvac_contractor'], searchQuery:'HVAC contractor', avgRev:52000},
- 'Plumbing': {types:['plumber'], searchQuery:'plumber', avgRev:40000},
- 'Roofing': {types:['roofing_contractor'], searchQuery:'roofing contractor', avgRev:48000},
- 'Med Spa / Aesthetics':{types:['spa'], searchQuery:'medical spa', avgRev:55000},
- 'Senior Living': {types:['nursing_home'], searchQuery:'senior living nursing home',avgRev:35000},
- 'Hospital': {types:['hospital'], searchQuery:'hospital', avgRev:26235},
- 'Medical Clinic': {types:['doctor'], searchQuery:'medical clinic doctor', avgRev:26235},
- 'Dentist': {types:['dentist'], searchQuery:'dentist', avgRev:28000},
- 'Banks/Financial': {types:['bank'], searchQuery:'bank credit union', avgRev:56927},
- 'Insurance': {types:['insurance_agency'], searchQuery:'insurance agency', avgRev:38000},
- 'Real Estate': {types:['real_estate_agency'],searchQuery:'real estate agency', avgRev:42000},
- 'Auto Dealer': {types:['car_dealer'], searchQuery:'auto dealer car dealer', avgRev:26685},
- 'Auto Repair': {types:['car_repair'], searchQuery:'auto repair shop', avgRev:22000},
- 'Furniture': {types:['furniture_store'], searchQuery:'furniture store', avgRev:32000},
- 'University/College': {types:['university'], searchQuery:'university college', avgRev:21700},
- 'Casino': {types:['casino'], searchQuery:'casino', avgRev:59151}
+ // HIGH PRIORITY
+ 'Banks/Financial': { tier:'High Priority', types:['bank'], searchQuery:'bank credit union' },
+ 'Plumbing': { tier:'High Priority', types:['plumber'], searchQuery:'plumber' },
+ 'HVAC': { tier:'High Priority', types:['hvac_contractor'], searchQuery:'HVAC contractor' },
+ 'Gambling/Casinos': { tier:'High Priority', types:['casino'], searchQuery:'casino' },
+ 'Attorney/Legal': { tier:'High Priority', types:['lawyer'], searchQuery:'attorney lawyer law firm' },
+ 'Auto Dealers': { tier:'High Priority', types:['car_dealer'], searchQuery:'auto dealer car dealer' },
+ 'Hospital': { tier:'High Priority', types:['hospital'], searchQuery:'hospital medical center' },
+ 'Furniture Stores': { tier:'High Priority', types:['furniture_store'], searchQuery:'furniture store' },
+ 'University/College': { tier:'High Priority', types:['university'], searchQuery:'university college' },
+ // CORE
+ 'Med Spa': { tier:'Core', types:['spa'], searchQuery:'medical spa' },
+ 'Dentists': { tier:'Core', types:['dentist'], searchQuery:'dentist dental' },
+ 'Recreational Vehicle':{ tier:'Core', types:['rv_dealer'], searchQuery:'RV dealer recreational vehicle' },
+ 'Real Estate': { tier:'Core', types:['real_estate_agency'], searchQuery:'real estate agency' },
+ 'Home Repair/Hardware':{ tier:'Core', types:['hardware_store'], searchQuery:'hardware store home improvement' },
+ 'Insurance': { tier:'Core', types:['insurance_agency'], searchQuery:'insurance agency' },
+ 'Contractors/Builders':{ tier:'Core', types:['general_contractor'],searchQuery:'general contractor builder' },
+ 'Carpet/Flooring': { tier:'Core', types:['flooring_store'], searchQuery:'flooring carpet tile store' },
+ 'Cleaning Services': { tier:'Core', types:[], searchQuery:'cleaning service janitorial' },
+ 'Doctors/Clinics': { tier:'Core', types:['doctor'], searchQuery:'medical clinic doctor physician' },
+ // OPPORTUNISTIC
+ 'Eye Care': { tier:'Opportunistic', types:['optician'], searchQuery:'eye doctor optometrist optician' },
+ 'Employment/Recruiting': { tier:'Opportunistic', types:['employment_agency'], searchQuery:'staffing agency recruiting' },
+ 'Health/Fitness': { tier:'Opportunistic', types:['gym'], searchQuery:'gym fitness center health club' },
+ 'Lawn/Garden': { tier:'Opportunistic', types:['landscaper'], searchQuery:'landscaping lawn care' },
+ 'Auto Repair': { tier:'Opportunistic', types:['car_repair'], searchQuery:'auto repair shop mechanic' },
+ 'Hotel/Resort': { tier:'Opportunistic', types:['lodging'], searchQuery:'hotel resort inn' },
+ 'Senior Living': { tier:'Opportunistic', types:['nursing_home'], searchQuery:'senior living assisted living' },
+ 'Casual Dining': { tier:'Opportunistic', types:['restaurant'], searchQuery:'restaurant casual dining' },
+ 'Salons/Personal Care': { tier:'Opportunistic', types:['beauty_salon'], searchQuery:'salon hair beauty barber' },
 };
 const CATEGORY_SCORES = {
- 'Legal/Attorneys': 30,
+ // High Priority — 30pts
+ 'Banks/Financial': 30,
+ 'Plumbing': 30,
  'HVAC': 30,
+ 'Gambling/Casinos': 30,
+ 'Attorney/Legal': 30,
+ 'Auto Dealers': 30,
  'Hospital': 30,
- 'Banks/Financial': 25,
- 'Casino': 25,
- 'Auto Dealer': 25,
- 'Medical Clinic': 25,
- 'Senior Living': 23,
- 'Dentist': 22,
- 'Plumbing': 20,
- 'Roofing': 20,
- 'Med Spa / Aesthetics':20,
+ 'Furniture Stores': 30,
+ 'University/College': 30,
+ // Core — 20pts
+ 'Med Spa': 20,
+ 'Dentists': 20,
+ 'Recreational Vehicle':20,
+ 'Real Estate': 20,
+ 'Home Repair/Hardware':20,
  'Insurance': 20,
- 'Auto Repair': 18,
- 'Real Estate': 15,
- 'Furniture': 12,
- 'University/College': 10
+ 'Contractors/Builders':20,
+ 'Carpet/Flooring': 20,
+ 'Cleaning Services': 20,
+ 'Doctors/Clinics': 20,
+ // Opportunistic — 10pts
+ 'Eye Care': 10,
+ 'Employment/Recruiting':10,
+ 'Health/Fitness': 10,
+ 'Lawn/Garden': 10,
+ 'Auto Repair': 10,
+ 'Hotel/Resort': 10,
+ 'Senior Living': 10,
+ 'Casual Dining': 10,
+ 'Salons/Personal Care':10,
 };
 
 // ─── IGI SCORE ENGINE — REBUILD ───────────────────────────────────────────────
@@ -1117,49 +1142,26 @@ var NATIONAL_CHAINS = [
 
 function scoreBusinessScale(prospect) {
  var gp = prospect._places || {};
- var tags = prospect._tags || {};
 
- // Review count — 12 pts
+ // Review count — 22 pts
  var rc = gp.userRatingCount || 0;
- var reviewScore = rc >= 250 ? 12 : rc >= 101 ? 10 : rc >= 51 ? 8 : rc >= 26 ? 6 : rc >= 11 ? 4 : rc >= 1 ? 2 : 0;
+ var reviewScore = rc >= 500 ? 22 : rc >= 250 ? 18 : rc >= 100 ? 14 : rc >= 25 ? 9 : rc >= 1 ? 4 : 0;
 
- // Price level — 8 pts
- var pl = gp.priceLevel || '';
- var priceScore = pl === 'PRICE_LEVEL_VERY_EXPENSIVE' ? 8 : pl === 'PRICE_LEVEL_EXPENSIVE' ? 6 : pl === 'PRICE_LEVEL_MODERATE' ? 4 : pl === 'PRICE_LEVEL_INEXPENSIVE' ? 2 : 1;
-
- // Photo count — 4 pts
- var pc = gp.photoCount || 0;
- var photoScore = pc >= 30 ? 4 : pc >= 16 ? 3 : pc >= 6 ? 2 : pc >= 1 ? 1 : 0;
-
- // Website — 3 pts (from Places or OSM tags)
- var websiteUrl = gp.websiteUri || tags.website || tags['contact:website'] || tags['url'] || '';
+ // Website — 5 pts
+ var websiteUrl = gp.websiteUri || '';
  prospect._website = websiteUrl || null;
- var websiteScore = websiteUrl ? 3 : 0;
+ var websiteScore = websiteUrl ? 5 : 0;
 
- // Hours completeness — 2 pts
- var hoursScore = 0;
- if (gp.regularOpeningHours && gp.regularOpeningHours.weekdayDescriptions) {
- var days = gp.regularOpeningHours.weekdayDescriptions.length;
- hoursScore = days >= 7 ? 2 : days >= 3 ? 1 : 0;
- }
+ // Rating — 3 pts
+ var rating = gp.rating || 0;
+ var ratingScore = rating >= 4.5 ? 3 : rating >= 4.0 ? 2 : rating >= 3.5 ? 1 : 0;
 
- // Business status — 1 pt
- var statusScore = (!gp.businessStatus || gp.businessStatus === 'OPERATIONAL') ? 1 : 0;
+ var total = reviewScore + websiteScore + ratingScore;
 
- var total = reviewScore + priceScore + photoScore + websiteScore + hoursScore + statusScore;
-
- // Fallback when no Places data was retrieved
- if (!gp.userRatingCount && !gp.priceLevel && !gp.photoCount) {
- var fallback = websiteScore;
- return {score: fallback, detail: 'No Google Places data available — scored on OSM data only. Website: ' + (websiteUrl ? 'found' : 'not found') + '. Run discovery to enrich scores.'};
- }
-
- var detail = rc + ' reviews (' + reviewScore + '/12) · '
- + 'Price: ' + (pl.replace('PRICE_LEVEL_','') || 'Unknown') + ' (' + priceScore + '/8) · '
- + pc + ' photos (' + photoScore + '/4) · '
- + (websiteUrl ? 'Website ✓ (+3)' : 'No website (0/3)') + ' · '
- + (hoursScore > 0 ? 'Hours listed (+' + hoursScore + ')' : 'No hours (0/2)') + ' · '
- + (statusScore ? 'Active ✓ (+1)' : 'Status unknown (0/1)');
+ var detail = 'Reviews: ' + reviewScore + '/22 (' + rc + ' reviews) · '
+ + 'Website: ' + websiteScore + '/5 · '
+ + 'Rating: ' + ratingScore + '/3 (' + (rating ? rating.toFixed(1) : 'n/a') + ') — '
+ + 'Total: ' + total + '/30';
 
  return {score: total, detail: detail};
 }
@@ -1167,7 +1169,8 @@ function scoreBusinessScale(prospect) {
 function scoreCategoryVertical(cat) {
  var score = CATEGORY_SCORES[cat] !== undefined ? CATEGORY_SCORES[cat] : 10;
  var cfg = CATEGORY_CONFIG[cat] || {};
- var detail = (cat || 'Unknown') + ' — ' + score + '/30 pts. Avg portfolio client: ' + fmt(cfg.avgRev || 0) + '/yr.';
+ var tier = cfg.tier || 'Unknown';
+ var detail = (cat || 'Unknown') + ' — ' + tier + ' tier · ' + score + '/30 pts';
  return {score: score, detail: detail};
 }
 
@@ -1438,21 +1441,16 @@ async function discoverProspects() {
  if (!catsToQuery.length) catsToQuery = Object.keys(CATEGORY_CONFIG);
 
  var allProspects = [];
- var seen = new Set();
+ var seenIds = new Set();
 
  for (var ci = 0; ci < catsToQuery.length; ci++) {
  var cat = catsToQuery[ci];
  var cfg = CATEGORY_CONFIG[cat];
- if (!cfg || !cfg.types || !cfg.types.length) continue;
+ if (!cfg) continue;
 
  status.innerHTML = '<span style="color:var(--teal);">Searching Google Places for '
  + cat + ' (' + (ci+1) + ' of ' + catsToQuery.length + ')...</span>';
- console.log('[IGI Discovery] Category:', cat, '| searchQuery:', cfg.searchQuery, '| includedType:', cfg.types && cfg.types[0]);
 
- var pageToken = null;
- var pageCount = 0;
-
- do {
  try {
  var body = {
  textQuery: cfg.searchQuery || cat,
@@ -1465,14 +1463,13 @@ async function discoverProspects() {
  }
  };
  if (cfg.types && cfg.types[0]) body.includedType = cfg.types[0];
- if (pageToken) body.pageToken = pageToken;
 
  var resp = await fetch('https://places.googleapis.com/v1/places:searchText', {
  method: 'POST',
  headers: {
  'Content-Type': 'application/json',
  'X-Goog-Api-Key': GOOGLE_PLACES_KEY,
- 'X-Goog-FieldMask':'places.displayName,places.location,places.rating,places.userRatingCount,places.priceLevel,places.photos,places.websiteUri,places.regularOpeningHours,places.businessStatus,places.formattedAddress,places.nationalPhoneNumber,nextPageToken'
+ 'X-Goog-FieldMask': 'places.id,places.displayName,places.formattedAddress,places.location,places.types,places.primaryType,places.userRatingCount,places.rating,places.websiteUri,places.businessStatus'
  },
  body: JSON.stringify(body)
  });
@@ -1480,50 +1477,45 @@ async function discoverProspects() {
  if (!resp.ok) {
  var errData = await resp.json().catch(function(){ return {}; });
  var errMsg = (errData.error && errData.error.message) ? errData.error.message : 'HTTP ' + resp.status;
- console.error('Places API error for category "' + cat + '":', errMsg, body);
- // If includedType caused the 400, retry without it
+ console.error('[IGI] Places error for "' + cat + '":', errMsg, body);
  if (resp.status === 400 && body.includedType) {
- console.warn('Retrying ' + cat + ' without includedType filter...');
  delete body.includedType;
  resp = await fetch('https://places.googleapis.com/v1/places:searchText', {
  method: 'POST',
  headers: {
  'Content-Type': 'application/json',
  'X-Goog-Api-Key': GOOGLE_PLACES_KEY,
- 'X-Goog-FieldMask':'places.displayName,places.location,places.rating,places.userRatingCount,places.priceLevel,places.photos,places.websiteUri,places.regularOpeningHours,places.businessStatus,places.formattedAddress,places.nationalPhoneNumber,nextPageToken'
+ 'X-Goog-FieldMask': 'places.id,places.displayName,places.formattedAddress,places.location,places.types,places.primaryType,places.userRatingCount,places.rating,places.websiteUri,places.businessStatus'
  },
  body: JSON.stringify(body)
  });
- if (!resp.ok) throw new Error('HTTP ' + resp.status + ' — ' + cat + ' search failed');
+ if (!resp.ok) throw new Error('HTTP ' + resp.status);
  } else {
  throw new Error(errMsg);
  }
  }
 
  var data = await resp.json();
- console.log('[IGI Discovery] ' + cat + ' page ' + (pageCount+1) + ' returned', (data.places||[]).length, 'places');
- pageToken = data.nextPageToken || null;
-
  (data.places || []).forEach(function(place) {
+ var pid = place.id || '';
  var name = place.displayName ? place.displayName.text : '';
  if (!name || name.length < 2) return;
- if (seen.has(name.toLowerCase())) return;
  if (place.businessStatus === 'CLOSED_PERMANENTLY') return;
+ if (pid && seenIds.has(pid)) return;
+ if (pid) seenIds.add(pid);
 
  var lat = place.location ? place.location.latitude : null;
  var lng = place.location ? place.location.longitude : null;
  var dist = (lat && lng) ? haversine(center.lat, center.lng, lat, lng) : null;
  if (dist !== null && dist > radiusMi) return;
 
- seen.add(name.toLowerCase());
-
  var prospect = {
  name: name,
  cat: cat,
  city: center.city,
  dist: dist,
- estRev: cfg.avgRev || 30000,
- rev: cfg.avgRev || 30000,
+ estRev: 30000,
+ rev: 30000,
  source: 'discovered',
  _tags: {},
  _lat: lat,
@@ -1532,149 +1524,120 @@ async function discoverProspects() {
  _places: {
  rating: place.rating || null,
  userRatingCount: place.userRatingCount || 0,
- priceLevel: place.priceLevel || '',
- photoCount: (place.photos || []).length,
  websiteUri: place.websiteUri || '',
- regularOpeningHours: place.regularOpeningHours || null,
  businessStatus: place.businessStatus || 'OPERATIONAL'
  }
  };
-
  prospect.score = computeScore(prospect);
  allProspects.push(prospect);
  });
 
- pageCount++;
- if (pageToken && pageCount < 3) {
- await new Promise(function(r){ setTimeout(r, 200); });
- }
  } catch(e) {
- status.innerHTML = '<span style="color:var(--yellow);">Warning: '
- + cat + ' search failed \u2014 ' + e.message + '. Continuing...</span>';
- pageToken = null;
+ console.warn('[IGI] ' + cat + ' search failed:', e.message);
+ status.innerHTML = '<span style="color:var(--yellow);">Warning: ' + cat + ' search failed — ' + e.message + '. Continuing...</span>';
  }
- } while (pageToken && pageCount < 3);
  }
 
  allProspects.sort(function(a,b){ return b.score - a.score; });
+ var display = allProspects.slice(0, 60);
 
  if (!allProspects.length) {
- status.innerHTML = '<span style="color:var(--red);">No prospects found. All category searches failed or returned 0 results. Open the browser console (F12) for details on which categories errored and why.</span>';
+ status.innerHTML = '<span style="color:var(--red);">No prospects found. Check the browser console (F12) for error details.</span>';
  btn.disabled = false; btn.style.opacity = '1';
  return;
  }
 
  if (!state.rebuild) state.rebuild = { uploaded:[], discovered:[] };
- state.rebuild._allDiscovered = allProspects;
- state.rebuild._discoverOffset = 0;
- state.rebuild._discoverCenter = center;
- state.rebuild._discoverRadiusMi = radiusMi;
-
- await _applyDiscoverBatch(status);
-
- btn.disabled = false; btn.style.opacity = '1';
-}
-
-async function _applyDiscoverBatch(statusEl) {
- var all = (state.rebuild && state.rebuild._allDiscovered) || [];
- var offset = (state.rebuild && state.rebuild._discoverOffset) || 0;
- var center = (state.rebuild && state.rebuild._discoverCenter) || {};
- var radiusMi = (state.rebuild && state.rebuild._discoverRadiusMi) || 0;
- var btn = document.getElementById('discoverBtn');
-
- if (btn) { btn.disabled = true; btn.style.opacity = '.6'; }
-
- var batch = all.slice(offset, offset + 50);
- var remaining = all.length - (offset + batch.length);
-
- if (!batch.length) {
- if (statusEl) statusEl.innerHTML = '<span style="color:var(--dim);">No more prospects to load.</span>';
- if (btn) { btn.disabled = false; btn.style.opacity = '1'; }
- return;
- }
-
- batch.sort(function(a,b){ return b.score - a.score; });
-
- state.rebuild.discovered = batch;
+ state.rebuild.discovered = display;
 
  activeCategories = new Set(['All']);
  buildCategoryFilters();
  mergeAndRenderRebuild();
 
- var chainCount = batch.filter(function(p){ return p._isNationalChain; }).length;
- var pageNum = Math.floor(offset / 50) + 1;
- var totalPages = Math.ceil(all.length / 50);
-
- var nextBtn = remaining > 0
- ? ' <button onclick="loadNextDiscoveredBatch()" style="margin-left:10px;background:rgba(0,188,212,.15);border:1px solid var(--teal-border);border-radius:6px;padding:4px 12px;color:var(--teal);font-size:.75rem;font-weight:700;cursor:pointer;">Next 50 →</button>'
- : '';
-
- if (statusEl) statusEl.innerHTML =
- '<span style="color:var(--green);">Showing ' + batch.length + ' of ' + all.length
- + ' prospects — Page ' + pageNum + ' of ' + totalPages
+ var chainCount = display.filter(function(p){ return p._isNationalChain; }).length;
+ var avgScore = Math.round(display.reduce(function(s,p){ return s+p.score; },0) / display.length);
+ status.innerHTML = '<span style="color:var(--green);">Found ' + allProspects.length + ' prospects'
+ + (allProspects.length > 60 ? ' — showing top 60' : '')
  + (chainCount ? ' (' + chainCount + ' chains scored low)' : '')
- + ' · ' + remaining + ' remaining · Powered by Google Places</span>'
- + nextBtn;
+ + ' · Avg IGI Score: ' + avgScore
+ + ' · Powered by Google Places</span>';
 
  updateSummaryCards([
- { label:'This Batch', value:batch.length, sub:'Page ' + pageNum + ' of ' + totalPages },
- { label:'Total Found', value:all.length, sub:'In ' + radiusMi + ' mi radius' },
- { label:'Avg IGI Score', value:batch.length ? Math.round(batch.reduce(function(s,p){return s+p.score;},0)/batch.length) : 0, sub:'This batch' },
- { label:'Remaining', value:remaining, sub:remaining > 0 ? 'Click Next 50 →' : 'All loaded' }
+ { label:'Prospects Found', value:display.length, sub:allProspects.length > 60 ? 'Top 60 of '+allProspects.length : 'All results' },
+ { label:'Avg IGI Score', value:avgScore, sub:'Across all results' },
+ { label:'Categories', value:new Set(display.map(function(p){ return p.cat; })).size, sub:'Business types found' },
+ { label:'Search Radius', value:radiusMi+' mi', sub:'From '+center.city }
  ]);
 
- if (btn) { btn.disabled = false; btn.style.opacity = '1'; }
+ btn.disabled = false; btn.style.opacity = '1';
 }
 
-async function loadNextDiscoveredBatch() {
- if (!state.rebuild || !state.rebuild._allDiscovered) return;
- state.rebuild._discoverOffset = (state.rebuild._discoverOffset || 0) + 50;
- var statusEl = document.getElementById('discoverStatus');
- await _applyDiscoverBatch(statusEl);
-}
+var FILTER_CATEGORIES = Object.keys(CATEGORY_CONFIG);
+var activeCategories = new Set();
 
-var FILTER_CATEGORIES = ['All'].concat(Object.keys(CATEGORY_CONFIG));
-var activeCategories = new Set(['All']);
 
+var _accordionOpen = {};
 
 function buildCategoryFilters() {
  var container = document.getElementById('categoryCheckboxes');
  if (!container) return;
  var MAX_CATS = 3;
- var atLimit = !activeCategories.has('All') && activeCategories.size >= MAX_CATS;
+ var atLimit = activeCategories.size >= MAX_CATS;
+
  var countEl = document.getElementById('catSelectionCount');
  if (countEl) {
- var n = activeCategories.has('All') ? 0 : activeCategories.size;
+ var n = activeCategories.size;
  countEl.textContent = n > 0 ? n + ' of ' + MAX_CATS + ' selected' : 'Select up to ' + MAX_CATS;
  countEl.style.color = atLimit ? 'var(--yellow)' : 'var(--dim)';
  }
- container.innerHTML = FILTER_CATEGORIES.map(function(cat) {
+
+ var tiers = ['High Priority', 'Core', 'Opportunistic'];
+ var tierPts = { 'High Priority': '30 pts', 'Core': '20 pts', 'Opportunistic': '10 pts' };
+ var tierColors = { 'High Priority': 'var(--green)', 'Core': 'var(--teal)', 'Opportunistic': 'var(--yellow)' };
+
+ container.innerHTML = tiers.map(function(tier) {
+ var cats = Object.keys(CATEGORY_CONFIG).filter(function(c){ return CATEGORY_CONFIG[c].tier === tier; });
+ var isOpen = !!_accordionOpen[tier];
+ var chevron = isOpen ? '&#9660;' : '&#9658;';
+ var selectedInTier = cats.filter(function(c){ return activeCategories.has(c); }).length;
+ var tierBadge = selectedInTier > 0 ? ' <span style="background:rgba(0,188,212,.18);color:var(--teal);border:1px solid var(--teal-border);border-radius:10px;padding:1px 7px;font-size:.65rem;font-weight:700;margin-left:6px;">' + selectedInTier + ' selected</span>' : '';
+
+ var items = isOpen ? cats.map(function(cat) {
  var isActive = activeCategories.has(cat);
  var isDisabled = !isActive && atLimit;
- if (cat === 'All') isDisabled = !activeCategories.has('All') && activeCategories.size > 0;
- return '<label style="display:flex;align-items:center;gap:6px;padding:5px 10px;background:'
- + (isActive ? 'rgba(0,188,212,.18)' : 'var(--surface2)')
- + ';border:1px solid ' + (isActive ? 'var(--teal-border)' : 'var(--border)')
- + ';border-radius:20px;cursor:' + (isDisabled ? 'not-allowed' : 'pointer')
- + ';font-size:.75rem;color:' + (isActive ? 'var(--teal)' : isDisabled ? 'rgba(255,255,255,.2)' : 'var(--dim)')
- + ';opacity:' + (isDisabled ? '.4' : '1')
- + ';transition:all .15s;">'
+ return '<label style="display:flex;align-items:center;gap:8px;padding:6px 10px;border-radius:6px;cursor:'
+ + (isDisabled ? 'not-allowed' : 'pointer')
+ + ';opacity:' + (isDisabled ? '.35' : '1')
+ + ';background:' + (isActive ? 'rgba(0,188,212,.1)' : 'transparent')
+ + ';transition:background .15s;">'
  + '<input type="checkbox" ' + (isActive ? 'checked' : '') + ' ' + (isDisabled ? 'disabled' : '')
  + ' onchange="toggleCategoryFilter(\'' + cat + '\',this.checked)"'
- + ' style="accent-color:var(--teal);width:13px;height:13px;cursor:' + (isDisabled ? 'not-allowed' : 'pointer') + ';">' 
- + cat + '</label>';
+ + ' style="accent-color:var(--teal);width:14px;height:14px;cursor:' + (isDisabled ? 'not-allowed' : 'pointer') + ';flex-shrink:0;">'
+ + '<span style="font-size:.78rem;color:' + (isActive ? '#fff' : isDisabled ? 'rgba(255,255,255,.25)' : 'var(--text)') + ';">' + cat + '</span>'
+ + (isActive ? '<span style="margin-left:auto;color:var(--teal);font-size:.7rem;">&#10003;</span>' : '')
+ + '</label>';
+ }).join('') : '';
+
+ return '<div style="margin-bottom:6px;border:1px solid var(--border);border-radius:8px;overflow:hidden;">'
+ + '<button onclick="_accordionOpen[\'' + tier + '\']=!' + (isOpen?'true':'false') + ';buildCategoryFilters();" '
+ + 'style="width:100%;display:flex;align-items:center;justify-content:space-between;padding:9px 14px;background:var(--surface2);border:none;cursor:pointer;text-align:left;">'
+ + '<span style="display:flex;align-items:center;gap:8px;">'
+ + '<span style="font-size:.7rem;font-weight:700;color:' + tierColors[tier] + ';">' + tier + '</span>'
+ + '<span style="font-size:.65rem;color:var(--dim);">' + tierPts[tier] + '</span>'
+ + tierBadge
+ + '</span>'
+ + '<span style="color:var(--dim);font-size:.7rem;">' + chevron + '</span>'
+ + '</button>'
+ + (isOpen ? '<div style="padding:6px 4px;">' + items + '</div>' : '')
+ + '</div>';
  }).join('');
 }
 
 function toggleCategoryFilter(cat, checked) {
  var MAX_CATS = 3;
- if (cat === 'All') {
- activeCategories = checked ? new Set(['All']) : new Set();
- } else {
- activeCategories.delete('All');
  if (checked) {
  if (activeCategories.size >= MAX_CATS) {
- buildCategoryFilters(); // re-render to uncheck the box visually
+ buildCategoryFilters();
  var warn = document.getElementById('catLimitWarn');
  if (warn) { warn.style.display = 'block'; setTimeout(function(){ warn.style.display = 'none'; }, 3000); }
  return;
@@ -1682,8 +1645,6 @@ function toggleCategoryFilter(cat, checked) {
  activeCategories.add(cat);
  } else {
  activeCategories.delete(cat);
- }
- if (activeCategories.size === 0) activeCategories = new Set(['All']);
  }
  var warn = document.getElementById('catLimitWarn');
  if (warn) warn.style.display = 'none';
