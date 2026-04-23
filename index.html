@@ -2153,7 +2153,7 @@ async function generateDiscoveryIntel(encodedDomain, containerId) {
   }
 
   // Step 2: Fire silent generation trigger (discard response — CORS may block it)
-  fetch(reportUrl).catch(function() {});
+  fetch(reportUrl, { mode: 'no-cors' }).catch(function() {});
 
   // Step 3: Show progress bar, hide button
   if (btnWrapEl) btnWrapEl.style.display = 'none';
