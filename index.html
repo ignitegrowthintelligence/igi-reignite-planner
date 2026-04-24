@@ -1328,35 +1328,29 @@ function scoreLocalOwnership(prospect) {
  return {score: 25, detail: 'Independent local business — full control over marketing budget. Highest priority.'};
 }
 
-function scoreMarketOpportunity(prospect) {
-  // If Discovery Intelligence data has been generated, use it to score
-  if (prospect._discoveryData) {
-    var dd = prospect._discoveryData;
-    var platforms = dd.adPlatforms || [];
-    var pixels = dd.pixels || [];
-    var score, detail;
+function scoreCompetitors(prospect) {
+ var cat = prospect.cat || '';
+ var allProspects = (state.rebuild && state.rebuild.prospects) ? state.rebuild.prospects : [];
 
-    if (!prospect._website) {
-      score = 3;
-      detail = 'No website found — cold to digital advertising.';
-    } else if (platforms.length >= 2) {
-      score = 15;
-      detail = 'Active on ' + platforms.length + ' ad platforms — proven digital spender.';
-    } else if (platforms.length === 1) {
-      score = 10;
-      detail = 'Running ' + platforms[0] + ' ads — partial digital adopter.';
-    } else if (pixels.length > 0) {
-      score = 7;
-      detail = 'Marketing pixels detected — has digital infrastructure.';
-    } else {
-      score = 4;
-      detail = 'No ad activity detected — untapped digital prospect.';
-    }
-    return {score: score, detail: detail};
-  }
+ // All businesses in same category, excluding this prospect
+ var sameCategory = allProspects.filter(function(p) {
+ return p !== prospect && (p.cat || '') === cat;
+ });
 
-  // Default: no Discovery data yet
-  return {score: 8, detail: 'Click Generate Intel below to score market opportunity based on detected ad platforms and marketing pixels.'};
+ // Count formidable competitors: Business Scale score >= 20/30
+ var formidableCount = sameCategory.filter(function(p) {
+ return scoreBusinessScale(p).score >= 20;
+ }).length;
+
+ var score, label;
+ if (formidableCount >= 12) { score = 15; label = 'Dominant market — high urgency to advertise'; }
+ else if (formidableCount >= 8) { score = 12; label = 'Strong established competition'; }
+ else if (formidableCount >= 4) { score = 8; label = 'Moderate competition — room to move'; }
+ else if (formidableCount >= 1) { score = 4; label = 'Few strong players — opportunity to lead'; }
+ else { score = 1; label = 'No established competitors found'; }
+
+ var detail = formidableCount + ' of ' + sameCategory.length + ' same-category businesses score 20+/30 on Business Scale — ' + label + '.';
+ return { score: score, detail: detail };
 }
 
 function scoreLocalControl(prospect) {
@@ -1450,9 +1444,9 @@ function computeScore(prospect) {
  var scale = scoreBusinessScale(prospect);
  var catVert = scoreCategoryVertical(cat);
  var ownership = scoreLocalOwnership(prospect);
- var opportunity = scoreMarketOpportunity(prospect);
+ var comp = scoreCompetitors(prospect);
 
- var total = Math.min(100, scale.score + catVert.score + ownership.score + opportunity.score);
+ var total = Math.min(100, scale.score + catVert.score + ownership.score + comp.score);
 
  // Hard cap national chains — never above 20
  if (prospect._isNationalChain) total = Math.min(20, total);
@@ -1460,13 +1454,13 @@ function computeScore(prospect) {
  prospect._scoreData = {
  name: prospect.name,
  sub: 'Rebuild · ' + (cat || 'Unknown Category'),
- description: 'IGI Score built from 4 components: Business Scale (Google Places signals), Category & Vertical fit, Local Ownership type, and Market Opportunity based on your existing client penetration.',
+ description: 'IGI Score built from 4 components: Business Scale (Google Places signals), Category & Vertical fit, Local Ownership type, and Competitors based on formidable businesses in the same category.',
  total: total,
  components: [
  {label:'Business Scale', score:scale.score, max:30, detail:scale.detail},
  {label:'Category & Vertical', score:catVert.score, max:30, detail:catVert.detail},
  {label:'Local Ownership', score:ownership.score, max:25, detail:ownership.detail},
- {label:'Market Opportunity', score:opportunity.score, max:15, detail:opportunity.detail}
+ {label:'Competitors', score:comp.score, max:15, detail:comp.detail}
  ]
  };
 
@@ -1551,6 +1545,50 @@ async function filterRebuild() {
   renderRebuild(prospects, radius);
 }
 
+// Build a stable cache key from the search parameters
+function buildDiscoveryCacheKey(zip, catsToQuery, radiusMi) {
+ var catPart = catsToQuery.length === Object.keys(CATEGORY_CONFIG).length
+ ? 'ALL'
+ : catsToQuery.slice().sort().join('|');
+ return zip + '_' + catPart + '_' + radiusMi + 'mi';
+}
+
+// Try to load discovery results from Firestore cache
+async function loadDiscoveryCache(cacheKey) {
+ try {
+ var doc = await db.collection('discovery_cache').doc(cacheKey).get();
+ if (!doc.exists) return null;
+ var data = doc.data();
+ if (!data || !data.expiresAt) return null;
+ var expiresAt = data.expiresAt.toDate ? data.expiresAt.toDate() : new Date(data.expiresAt);
+ if (new Date() > expiresAt) return null; // expired
+ return data;
+ } catch(e) {
+ console.warn('[IGI] Cache read failed:', e.message);
+ return null;
+ }
+}
+
+// Save discovery results to Firestore cache
+async function saveDiscoveryCache(cacheKey, zip, catsToQuery, radiusMi, allProspects) {
+ try {
+ var now = new Date();
+ var expiresAt = new Date(now.getTime() + 365 * 24 * 60 * 60 * 1000);
+ await db.collection('discovery_cache').doc(cacheKey).set({
+ cacheKey: cacheKey,
+ zip: zip,
+ categories: catsToQuery,
+ radiusMi: radiusMi,
+ results: allProspects,
+ cachedAt: firebase.firestore.Timestamp.fromDate(now),
+ expiresAt: firebase.firestore.Timestamp.fromDate(expiresAt)
+ });
+ } catch(e) {
+ console.warn('[IGI] Cache write failed:', e.message);
+ // Non-fatal — results were already displayed
+ }
+}
+
 async function discoverProspects() {
  var zip = document.getElementById('zipInput').value.replace(/\D/g,'');
  if (zip.length !== 5) { alert('Enter a valid 5-digit ZIP code first.'); return; }
@@ -1580,6 +1618,54 @@ async function discoverProspects() {
  ? Object.keys(CATEGORY_CONFIG)
  : Array.from(activeCategories).filter(function(c){ return CATEGORY_CONFIG[c]; });
  if (!catsToQuery.length) catsToQuery = Object.keys(CATEGORY_CONFIG);
+
+ // ── Cache check ──────────────────────────────────────────────
+ var cacheKey = buildDiscoveryCacheKey(zip, catsToQuery, radiusMi);
+ status.innerHTML = '<span style="color:var(--teal);">Checking cache...</span>';
+
+ var cached = await loadDiscoveryCache(cacheKey);
+ if (cached && cached.results && cached.results.length) {
+ // Restore _rebuildId and re-score each cached prospect (scores may have changed)
+ var restoredProspects = cached.results.map(function(p) {
+ if (!p._rebuildId) p._rebuildId = 'rb-' + Math.random().toString(36).slice(2,9);
+ p.score = computeScore(p);
+ return p;
+ });
+
+ restoredProspects.sort(function(a,b){ return b.score - a.score; });
+ var display = restoredProspects.slice(0, 60);
+
+ if (!state.rebuild) state.rebuild = { uploaded:[], discovered:[] };
+ state.rebuild.discovered = display;
+
+ activeCategories = new Set(['All']);
+ buildCategoryFilters();
+ mergeAndRenderRebuild();
+
+ var chainCount = display.filter(function(p){ return p._isNationalChain; }).length;
+ var avgScore = Math.round(display.reduce(function(s,p){ return s+p.score; },0) / display.length);
+ var cachedAt = cached.cachedAt.toDate ? cached.cachedAt.toDate() : new Date(cached.cachedAt);
+ var daysAgo = Math.round((new Date() - cachedAt) / (1000 * 60 * 60 * 24));
+ var daysAgoLabel = daysAgo === 0 ? 'today' : daysAgo + ' day' + (daysAgo === 1 ? '' : 's') + ' ago';
+
+ status.innerHTML = '<span style="color:var(--green);">Found ' + display.length + ' prospects'
+ + (restoredProspects.length > 60 ? ' — showing top 60' : '')
+ + (chainCount ? ' (' + chainCount + ' chains scored low)' : '')
+ + ' · Avg IGI Score: ' + avgScore
+ + '</span>'
+ + ' <span style="color:var(--dim);font-size:.72rem;">· Results from cache · ' + daysAgoLabel + '</span>';
+
+ updateSummaryCards([
+ { label:'Prospects Found', value:display.length, sub:restoredProspects.length > 60 ? 'Top 60 of '+restoredProspects.length : 'All results' },
+ { label:'Avg IGI Score', value:avgScore, sub:'Across all results' },
+ { label:'Categories', value:new Set(display.map(function(p){ return p.cat; })).size, sub:'Business types found' },
+ { label:'Search Radius', value:radiusMi+' mi', sub:'From '+center.city }
+ ]);
+
+ btn.disabled = false; btn.style.opacity = '1';
+ return;
+ }
+ // ── End cache check ──────────────────────────────────────────
 
  var allProspects = [];
  var seenIds = new Set();
@@ -1682,6 +1768,11 @@ async function discoverProspects() {
  }
  }
 
+ // Save fresh results to cache (fire-and-forget, non-blocking)
+ if (allProspects.length > 0) {
+ saveDiscoveryCache(cacheKey, zip, catsToQuery, radiusMi, allProspects);
+ }
+
  allProspects.sort(function(a,b){ return b.score - a.score; });
  var display = allProspects.slice(0, 60);
 
@@ -1704,7 +1795,8 @@ async function discoverProspects() {
  + (allProspects.length > 60 ? ' — showing top 60' : '')
  + (chainCount ? ' (' + chainCount + ' chains scored low)' : '')
  + ' · Avg IGI Score: ' + avgScore
- + ' · Powered by Google Places</span>';
+ + ' · Powered by Google Places</span>'
+ + ' <span style="color:var(--dim);font-size:.72rem;">· Fresh results saved to cache</span>';
 
  updateSummaryCards([
  { label:'Prospects Found', value:display.length, sub:allProspects.length > 60 ? 'Top 60 of '+allProspects.length : 'All results' },
@@ -2335,10 +2427,10 @@ function _applyDiscoveryToScore(report, prospect, containerId) {
     }
   }
 
-  // Update Market Opportunity detail + flash in the currently-open call prep panel
+  // Update Competitors detail + flash in the currently-open call prep panel
   // Panel elements are keyed by containerId (set fresh each time card opens)
   if (prospect._scoreData) {
-    var oppComp = prospect._scoreData.components.filter(function(c){ return c.label === 'Market Opportunity'; })[0];
+    var oppComp = prospect._scoreData.components.filter(function(c){ return c.label === 'Competitors'; })[0];
 
     var detailEl = document.getElementById('opp-detail-' + containerId);
     if (detailEl && oppComp) detailEl.textContent = oppComp.detail;
@@ -2671,7 +2763,7 @@ function _buildScoreBreakdownWithFlash(a, containerId) {
     + sd.components.map(function(c) {
         var pct = c.max > 0 ? Math.round((c.score / c.max) * 100) : 0;
         var barColor = pct >= 70 ? 'var(--green)' : pct >= 40 ? 'var(--yellow)' : 'var(--red)';
-        var isOpp = c.label === 'Market Opportunity';
+        var isOpp = c.label === 'Competitors';
         return '<div style="margin-bottom:14px;">'
           + '<div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:4px;">'
           + '<div style="font-size:.78rem;font-weight:600;color:var(--text);">' + c.label + '</div>'
