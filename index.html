@@ -2385,73 +2385,109 @@ function _discInfoHtml(msg) {
 function _extractDiscoveryBullets(report) {
   var bullets = [];
 
-  // 1. Marketing goal
-  if (report.marketingObjective && report.marketingObjective.primaryGoal) {
-    bullets.push('Marketing goal: ' + report.marketingObjective.primaryGoal);
-  } else if (report.marketingInsights && report.marketingInsights.summary) {
-    bullets.push('Marketing focus: ' + report.marketingInsights.summary);
-  }
+  // ── Bullet 1: Marketing objective ────────────────────────────────────────────
+  var objOverview = (report.marketingObjective && (
+    report.marketingObjective.overview ||
+    report.marketingObjective.primaryGoal ||
+    report.marketingObjective.inferredGoal
+  )) || null;
+  if (objOverview) bullets.push('Goal: ' + objOverview);
 
-  // 2. Ad platforms / current marketing activity
-  var adLine = null;
+  // ── Bullet 2: Pixel / tracking gap ───────────────────────────────────────────
+  var pixelBullet = null;
+  if (report.pixelAnalysis) {
+    var pa = report.pixelAnalysis;
+    var hasAds = (pa.adWordsTags > 0) || pa.adwordsPixel ||
+      (pa.pixels && pa.pixels.some(function(p) {
+        return (p.type||'').toLowerCase().includes('adword') ||
+               (p.type||'').toLowerCase().includes('google_ads') ||
+               (p.name||'').toLowerCase().includes('adword');
+      }));
+    var hasRemarketing = pa.remarketing === true || pa.remarketingPixel === true ||
+      (pa.pixels && pa.pixels.some(function(p) {
+        return (p.type||'').toLowerCase().includes('remarketing');
+      }));
+    var hasGTM = (pa.gtmTags > 0) || pa.gtmScript === true ||
+      (pa.implementationStatus && pa.implementationStatus.gtmScript === true);
+    var gaps = [];
+    if (!hasAds) gaps.push('no AdWords conversion tracking');
+    if (!hasRemarketing) gaps.push('no remarketing pixels');
+    if (!hasGTM) gaps.push('no GTM');
+    pixelBullet = gaps.length > 0
+      ? 'Tracking gap: ' + gaps.join(', ') + ' — can\'t measure ad ROI. Strong opener.'
+      : 'Tracking looks solid: GTM, AdWords, and remarketing pixels all detected.';
+  }
+  if (pixelBullet) bullets.push(pixelBullet);
+
+  // ── Bullet 3: Active ad platforms (budget signal) ────────────────────────────
+  var adBullet = null;
   if (report.currentMarketing) {
-    var platforms = report.currentMarketing.adPlatforms;
-    if (platforms && platforms.length > 0) {
-      adLine = 'Currently running ads on ' + platforms.join(' and ') + ' — active digital advertiser.';
-    } else if (report.currentMarketing.detectedAds && report.currentMarketing.detectedAds.length > 0) {
-      var names = [];
-      report.currentMarketing.detectedAds.forEach(function(ad) {
-        var p = ad.platform || ad.source;
-        if (p && names.indexOf(p) < 0) names.push(p);
+    var cm = report.currentMarketing;
+    var adPlatforms = cm.adPlatforms || [];
+    if (adPlatforms.length === 0 && cm.detectedAds && cm.detectedAds.length > 0) {
+      cm.detectedAds.forEach(function(ad) {
+        var p = ad.platform || ad.source || '';
+        if (p && adPlatforms.indexOf(p) < 0) adPlatforms.push(p);
       });
-      adLine = names.length > 0
-        ? 'Currently running ads on ' + names.join(' and ') + ' — active digital advertiser.'
-        : 'No active ad campaigns detected — potential opening for Ignite.';
-    } else {
-      adLine = 'No active ad campaigns detected — potential opening for Ignite.';
     }
+    adBullet = adPlatforms.length > 0
+      ? 'Already spending on ' + adPlatforms.join(' + ') + ' — budget confirmed, easier sell.'
+      : 'No active ad spend detected — greenfield opportunity for Ignite.';
   } else if (report.adLibrary) {
     if (report.adLibrary.length > 0) {
-      var legacyPlatforms = [];
+      var legPlatforms = [];
       report.adLibrary.forEach(function(ad) {
-        if (ad.platform && legacyPlatforms.indexOf(ad.platform) < 0) legacyPlatforms.push(ad.platform);
+        if (ad.platform && legPlatforms.indexOf(ad.platform) < 0) legPlatforms.push(ad.platform);
       });
-      adLine = 'Currently running ads on ' + legacyPlatforms.join(' and ') + ' — active digital advertiser.';
+      adBullet = 'Already spending on ' + legPlatforms.join(' + ') + ' — budget confirmed, easier sell.';
     } else {
-      adLine = 'No active ad campaigns detected — potential opening for Ignite.';
+      adBullet = 'No active ad spend detected — greenfield opportunity for Ignite.';
     }
   }
-  if (adLine) bullets.push(adLine);
+  if (adBullet) bullets.push(adBullet);
 
-  // 3. Competitors
-  var competitors = report.competitors || report.competitorAnalysis;
-  if (competitors && competitors.length > 0) {
-    var top = competitors[0];
-    var cnt = competitors.length;
-    var topName = top.name || top.company || '';
-    var topPos  = top.positioning || top.marketPosition || '';
-    bullets.push(cnt + ' competitor' + (cnt !== 1 ? 's' : '') + ' identified. Strongest: '
-      + topName + (topPos ? ' — ' + topPos : '') + '.');
+  // ── Bullet 4: Customer LTV / value justification ─────────────────────────────
+  if (report.customerValue) {
+    var cv = report.customerValue;
+    var ltv = cv.estimatedLTV || cv.lifetimeValue || cv.ltvEstimate || null;
+    var dealSize = cv.typicalDealSize || cv.averageDealSize || null;
+    if (ltv) {
+      bullets.push('Client value: ' + ltv + (dealSize ? ' · Deal size: ' + dealSize : '') + ' — makes Ignite ROI easy to justify.');
+    } else if (dealSize) {
+      bullets.push('Typical deal size: ' + dealSize + ' — strong ROI case for ad spend.');
+    }
   }
 
-  // 4. Target audience / market trend
-  if (report.targetAudience && report.targetAudience.demographics) {
-    bullets.push('Target audience: ' + report.targetAudience.demographics);
-  } else if (report.messagingIdeas && report.messagingIdeas.themes && report.messagingIdeas.themes.length > 0) {
-    bullets.push('Key messaging theme: ' + report.messagingIdeas.themes[0]);
-  } else if (report.marketResearch && report.marketResearch.trends && report.marketResearch.trends.length > 0) {
-    bullets.push('Market trend: ' + report.marketResearch.trends[0]);
+  // ── Bullet 5: Top keyword opportunity ──────────────────────────────────────────
+  if (report.keywordResearch) {
+    var kr = report.keywordResearch;
+    var opps = kr.topOpportunities || kr.seedKeywords || [];
+    var best = null;
+    opps.forEach(function(kw) {
+      if (!best) { best = kw; return; }
+      var comp    = kw.competition   || kw.competitionScore  || kw.competitionIndex  || 100;
+      var bestComp = best.competition || best.competitionScore || best.competitionIndex || 100;
+      if (comp < bestComp) best = kw;
+    });
+    if (best) {
+      var kwName = best.keyword || best.term || best.name || '';
+      var vol    = best.volume  || best.searchVolume || best.monthlySearches || '';
+      var comp   = best.competition || best.competitionScore || best.competitionIndex || '';
+      var parts  = ['"' + kwName + '"'];
+      if (vol)  parts.push(vol + '/mo searches');
+      if (comp) parts.push('competition: ' + comp + '/100');
+      bullets.push('Top keyword opportunity: ' + parts.join(' · ') + '.');
+    }
   }
 
-  // 5. Top campaign recommendation / seller angle
-  if (report.marketingObjective && report.marketingObjective.campaignRecommendations
-      && report.marketingObjective.campaignRecommendations.length > 0) {
-    bullets.push('Seller angle: ' + report.marketingObjective.campaignRecommendations[0]);
-  } else if (report.messagingIdeas && report.messagingIdeas.themes && report.messagingIdeas.themes.length > 1) {
-    bullets.push('Messaging angle: ' + report.messagingIdeas.themes[1]);
-  } else if (report.marketingInsights && report.marketingInsights.recommendations
-      && report.marketingInsights.recommendations.length > 0) {
-    bullets.push('Seller angle: ' + report.marketingInsights.recommendations[0]);
+  // ── Fallback: pull from messagingIdeas if fewer than 3 bullets ─────────────────
+  if (bullets.length < 3 && report.messagingIdeas) {
+    var mi = report.messagingIdeas;
+    if (mi.competitorComparisons && mi.competitorComparisons.length > 0) {
+      bullets.push('Differentiator: ' + mi.competitorComparisons[0]);
+    } else if (mi.themes && mi.themes.length > 0) {
+      bullets.push('Key messaging theme: ' + mi.themes[0]);
+    }
   }
 
   return bullets.slice(0, 5);
