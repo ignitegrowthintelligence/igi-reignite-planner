@@ -122,22 +122,25 @@
 
     <!-- PROTECT & EXPAND -->
     <div id="panel-protect" class="p-5 hidden">
-      <div class="section-header">Protect &amp; Expand - Current Active Clients</div>
+      <div class="section-header">Protect &amp; Expand — Current Active Clients</div>
+      <div style="font-size:.75rem;color:var(--dim);margin-bottom:12px;">
+        Upload the Basic Revenue Report to populate both this tab and Reclaim automatically.
+      </div>
       <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
         <div class="upload-zone p-6 text-center" onclick="document.getElementById('f-protect').click()"
-             ondragover="event.preventDefault();this.classList.add('drag')" ondragleave="this.classList.remove('drag')"
-             ondrop="event.preventDefault();this.classList.remove('drag');handleFile('protect',event.dataTransfer.files[0])">
+          ondragover="event.preventDefault();this.classList.add('drag')" ondragleave="this.classList.remove('drag')"
+          ondrop="event.preventDefault();this.classList.remove('drag');handleFile('protect',event.dataTransfer.files[0])">
           <div style="font-size:1.5rem;margin-bottom:6px;">📊</div>
-          <div style="font-weight:600;font-size:.85rem;">All Revenue Report</div>
-          <div style="font-size:.72rem;color:var(--dim);margin-top:4px;">Total revenue by client - all product lines</div>
+          <div style="font-weight:600;font-size:.85rem;">Basic Revenue Report — All Products</div>
+          <div style="font-size:.72rem;color:var(--dim);margin-top:4px;">Auto-segments into Active (Protect) and Lapsed (Reclaim)</div>
           <input type="file" id="f-protect" accept=".csv,.xlsx,.xls" style="display:none" onchange="handleFile('protect',this.files[0])"/>
         </div>
         <div class="upload-zone p-6 text-center" onclick="document.getElementById('f-protect-ign').click()"
-             ondragover="event.preventDefault();this.classList.add('drag')" ondragleave="this.classList.remove('drag')"
-             ondrop="event.preventDefault();this.classList.remove('drag');handleFile('protect-ignite',event.dataTransfer.files[0])">
+          ondragover="event.preventDefault();this.classList.add('drag')" ondragleave="this.classList.remove('drag')"
+          ondrop="event.preventDefault();this.classList.remove('drag');handleFile('protect-ignite',event.dataTransfer.files[0])">
           <div style="font-size:1.5rem;margin-bottom:6px;">🎯</div>
-          <div style="font-weight:600;font-size:.85rem;">Ignite Revenue Only <span style="font-size:.68rem;color:var(--dim);font-weight:400;">(optional)</span></div>
-          <div style="font-size:.72rem;color:var(--dim);margin-top:4px;">Ignite-only report - shows Ignite vs. Broadcast split</div>
+          <div style="font-weight:600;font-size:.85rem;">Basic Revenue Report — Ignite Only <span style="font-size:.68rem;color:var(--dim);font-weight:400;">(optional)</span></div>
+          <div style="font-size:.72rem;color:var(--dim);margin-top:4px;">Adds Ignite vs. Broadcast split to both tabs</div>
           <input type="file" id="f-protect-ign" accept=".csv,.xlsx,.xls" style="display:none" onchange="handleFile('protect-ignite',this.files[0])"/>
         </div>
       </div>
@@ -148,22 +151,9 @@
     </div>
     <!-- RECLAIM -->
     <div id="panel-reclaim" class="p-5 hidden">
-      <div class="section-header">Reclaim - Former Clients</div>
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-        <div class="upload-zone p-6 text-center" onclick="document.getElementById('f-reclaim-all').click()"
-             ondragover="event.preventDefault();this.classList.add('drag')" ondragleave="this.classList.remove('drag')"
-             ondrop="event.preventDefault();this.classList.remove('drag');handleFile('reclaim-all',event.dataTransfer.files[0])">
-          <div style="font-size:1.5rem;margin-bottom:6px;">📁</div>
-          <div style="font-weight:600;font-size:.85rem;">5-Year Non-Returning - All Revenue</div>
-          <input type="file" id="f-reclaim-all" accept=".csv,.xlsx,.xls" style="display:none" onchange="handleFile('reclaim-all',this.files[0])"/>
-        </div>
-        <div class="upload-zone p-6 text-center" onclick="document.getElementById('f-reclaim-ign').click()"
-             ondragover="event.preventDefault();this.classList.add('drag')" ondragleave="this.classList.remove('drag')"
-             ondrop="event.preventDefault();this.classList.remove('drag');handleFile('reclaim-ignite',event.dataTransfer.files[0])">
-          <div style="font-size:1.5rem;margin-bottom:6px;">🎯</div>
-          <div style="font-weight:600;font-size:.85rem;">5-Year Non-Returning - Ignite Only</div>
-          <input type="file" id="f-reclaim-ign" accept=".csv,.xlsx,.xls" style="display:none" onchange="handleFile('reclaim-ignite',this.files[0])"/>
-        </div>
+      <div class="section-header">Reclaim — Former Clients</div>
+      <div id="reclaim-placeholder" style="text-align:center;padding:40px 20px;color:var(--dim);font-size:.82rem;border:1px dashed var(--border);border-radius:8px;margin-bottom:16px;">
+        Upload the Basic Revenue Report on the <strong style="color:var(--teal);">Protect &amp; Expand</strong> tab to automatically populate lapsed clients here.
       </div>
       <div style="display:flex;justify-content:flex-end;margin-bottom:8px;">
         <button onclick="clearTab('reclaim')" style="background:rgba(248,113,113,.08);border:1px solid rgba(248,113,113,.25);color:var(--red);border-radius:6px;padding:5px 12px;font-size:.72rem;font-weight:600;cursor:pointer;">✕ Clear Tab</button>
@@ -350,6 +340,17 @@ function cleanNum(s) {
   const neg = String(s||'').includes('(');
   const v = parseFloat(str);
   return isNaN(v) ? 0 : (neg ? -v : v);
+}
+function _findYearTotals(headers) {
+  var totals = [];
+  headers.forEach(function(h, i) {
+    if (String(h).toLowerCase().trim() === 'total') totals.push(i);
+  });
+  return {
+    col24: totals[0] !== undefined ? totals[0] : -1,
+    col25: totals[1] !== undefined ? totals[1] : -1,
+    col26: totals[2] !== undefined ? totals[2] : -1
+  };
 }
 function scoreBadge(s, scoreData, containerId) {
   var s100=Math.round(s||0);
@@ -702,6 +703,10 @@ async function loadPlanFromFirestore(planId) {
   }
   if ((state.reclaimAll && state.reclaimAll.length) || (state.reclaimIgnite && state.reclaimIgnite.length)) {
     renderReclaim();
+    if (state.reclaimAll && state.reclaimAll.length) {
+      var ph = document.getElementById('reclaim-placeholder');
+      if (ph) ph.style.display = 'none';
+    }
   }
 
   savePlanLocal();
@@ -943,12 +948,10 @@ function handleFile(section, file) {
       var wb = XLSX.read(e.target.result, {type:'array', raw:false});
       var ws = wb.Sheets[wb.SheetNames[0]];
       var rows = XLSX.utils.sheet_to_json(ws, {header:1, defval:''});
-      if (section==='close')          parseClose(rows, file.name);
-      else if (section==='protect')   parseProtect(rows, file.name);
-      else if (section==='reclaim-all')    parseReclaim(rows, 'all', file.name);
-      else if (section==='reclaim-ignite') parseReclaim(rows, 'ignite', file.name);
-      else if (section==='protect-ignite') parseProtectIgnite(rows, file.name);
-      else if (section==='rebuild')   parseRebuild(rows, file.name);
+      if (section==='close') parseClose(rows, file.name);
+      else if (section==='protect') parseRevenueReport(rows, file.name);
+      else if (section==='protect-ignite') parseIgniteReport(rows, file.name);
+      else if (section==='rebuild') parseRebuild(rows, file.name);
     } catch(err) { alert('Error reading file: '+err.message); }
   };
   reader.readAsArrayBuffer(file);
@@ -1024,13 +1027,21 @@ function clearTab(section) {
     state.protect = [];
     state.protectIgnite = {};
     state.protectMeta = null;
+    state.reclaimAll = [];
+    state.reclaimIgnite = [];
+    state.reclaimMeta = null;
     document.getElementById('protect-content').innerHTML = '';
+    document.getElementById('reclaim-content').innerHTML = '';
+    var ph = document.getElementById('reclaim-placeholder');
+    if (ph) ph.style.display = '';
   }
   if (section === 'reclaim') {
     state.reclaimAll = [];
     state.reclaimIgnite = [];
     state.reclaimMeta = null;
     document.getElementById('reclaim-content').innerHTML = '';
+    var ph = document.getElementById('reclaim-placeholder');
+    if (ph) ph.style.display = '';
   }
 
   // Persist the cleared state if a plan is loaded
@@ -1063,69 +1074,175 @@ function renderClose(deals, budget, booked, pitched, fname) {
 }
 
 // ─── PROTECT & EXPAND ─────────────────────────────────────────────────────────
-function parseProtect(rows, fname) {
-  var hRow=0;
-  for (var i=0; i<Math.min(10,rows.length); i++) {
-    if (rows[i].join('').toLowerCase().includes('advertiser')&&rows[i].join('').toLowerCase().includes('market')) { hRow=i; break; }
+function parseRevenueReport(rows, fname) {
+  var hRow = 0;
+  for (var i = 0; i < Math.min(10, rows.length); i++) {
+    if (rows[i].join('').toLowerCase().includes('advertiser') && rows[i].join('').toLowerCase().includes('market')) {
+      hRow = i; break;
+    }
   }
-  var headers=rows[hRow]||[], col2025=-1, col2026=-1;
-  headers.forEach(function(h,i){ if (String(h).toLowerCase().includes('total')&&col2025<0) col2025=i; else if (String(h).toLowerCase().includes('total')&&col2025>=0&&col2026<0) col2026=i; });
-  var adMap={};
-  for (var i=hRow+1; i<rows.length; i++) {
-    var r=rows[i]; if (!r||!r[2]||String(r[2]).toLowerCase()==='total') continue;
-    var adv=String(r[2]).trim(), ae=String(r[1]||'').trim();
-    var r25=col2025>=0?cleanNum(r[col2025]):0, r26=col2026>=0?cleanNum(r[col2026]):0;
-    if (!adv) continue;
-    if (!adMap[adv]) adMap[adv]={name:adv,adv:adv,ae:ae,rev25:0,rev26:0};
-    adMap[adv].rev25+=r25; adMap[adv].rev26+=r26;
+
+  var headers = rows[hRow] || [];
+  var cols = _findYearTotals(headers);
+
+  var adMap = {};
+  for (var i = hRow + 1; i < rows.length; i++) {
+    var r = rows[i];
+    if (!r || !r[2]) continue;
+    var adv = String(r[2]).trim();
+    if (!adv || adv.toLowerCase() === 'total' || adv.toLowerCase() === 'grand total') continue;
+    var ae = String(r[1] || '').trim();
+    var market = String(r[0] || '').trim();
+    var r24 = cols.col24 >= 0 ? cleanNum(r[cols.col24]) : 0;
+    var r25 = cols.col25 >= 0 ? cleanNum(r[cols.col25]) : 0;
+    var r26 = cols.col26 >= 0 ? cleanNum(r[cols.col26]) : 0;
+    if (!adMap[adv]) adMap[adv] = { name: adv, adv: adv, ae: ae, market: market, rev24: 0, rev25: 0, rev26: 0 };
+    adMap[adv].rev24 += r24;
+    adMap[adv].rev25 += r25;
+    adMap[adv].rev26 += r26;
   }
-  var clients=Object.values(adMap).filter(function(c){return (c.rev25+c.rev26)>0;});
-  clients.forEach(function(c){
-    var traj=c.rev26>c.rev25*1.10?1:c.rev26<c.rev25*0.90?-1:0;
-    c.trend=traj; c.rev=c.rev26;
-    var valScore=c.rev26>=250000?35:c.rev26>=100000?28:c.rev26>=50000?20:c.rev26>=25000?12:6;
-    var valDetail=fmt(c.rev26)+' current revenue - '+(c.rev26>=250000?'premium account':c.rev26>=100000?'high-value client':c.rev26>=50000?'mid-tier client':'smaller account');
-    var growScore=traj===1?35:traj===0?20:5;
-    var growDetail=traj===1?'Growing ▲ - up more than 10% YoY, expand opportunity':traj===0?'Flat → - revenue stable within 10%':'Declining ▼ - down more than 10% YoY, protect urgently';
-    var ignScore=10; var ignDetail='Upload Ignite Revenue file to score Ignite mix';
-    var stabScore=(c.rev25>0&&c.rev26>0)?10:(c.rev25>0||c.rev26>0)?5:2;
-    var stabDetail=stabScore===10?'Active in both 2025 and 2026 - stable relationship':stabScore===5?'Active in one year only - monitor closely':'Minimal activity - at-risk account';
-    c.score=Math.min(100,valScore+growScore+ignScore+stabScore);
-    c._scoreComponents={valScore:valScore,valDetail:valDetail,growScore:growScore,growDetail:growDetail,ignScore:ignScore,ignDetail:ignDetail,stabScore:stabScore,stabDetail:stabDetail};
+
+  var allClients = Object.values(adMap).filter(function(c) {
+    return (c.rev24 + c.rev25 + c.rev26) > 0;
   });
-  clients.sort(function(a,b){return b.score-a.score;});
+
+  var protectClients = [];
+  var reclaimClients = [];
+
+  allClients.forEach(function(c) {
+    if (c.rev26 > 0) {
+      var traj = c.rev26 > c.rev25 * 1.10 ? 1 : c.rev26 < c.rev25 * 0.90 ? -1 : 0;
+      c.trend = traj;
+      c.rev = c.rev26;
+      var valScore = c.rev26 >= 250000 ? 35 : c.rev26 >= 100000 ? 28 : c.rev26 >= 50000 ? 20 : c.rev26 >= 25000 ? 12 : 6;
+      var valDetail = fmt(c.rev26) + ' current revenue - ' + (c.rev26 >= 250000 ? 'premium account' : c.rev26 >= 100000 ? 'high-value client' : c.rev26 >= 50000 ? 'mid-tier client' : 'smaller account');
+      var growScore = traj === 1 ? 35 : traj === 0 ? 20 : 5;
+      var growDetail = traj === 1 ? 'Growing \u25b2 - up more than 10% YoY, expand opportunity' : traj === 0 ? 'Flat \u2192 - revenue stable within 10%' : 'Declining \u25bc - down more than 10% YoY, protect urgently';
+      var ignScore = 10;
+      var ignDetail = 'Upload Ignite Revenue file to score Ignite mix';
+      var stabScore = (c.rev24 > 0 && c.rev25 > 0 && c.rev26 > 0) ? 10 : (c.rev25 > 0 && c.rev26 > 0) ? 8 : (c.rev26 > 0) ? 5 : 2;
+      var stabDetail = stabScore === 10 ? 'Active in 2024, 2025, and 2026 - long-term stable relationship'
+        : stabScore === 8 ? 'Active in 2025 and 2026 - solid 2-year relationship'
+        : 'New or returning client - monitor closely';
+      c.score = Math.min(100, valScore + growScore + ignScore + stabScore);
+      c._scoreComponents = { valScore: valScore, valDetail: valDetail, growScore: growScore, growDetail: growDetail, ignScore: ignScore, ignDetail: ignDetail, stabScore: stabScore, stabDetail: stabDetail };
+      protectClients.push(c);
+
+    } else if (c.rev25 > 0 || c.rev24 > 0) {
+      var peakSpend = Math.max(c.rev24, c.rev25);
+      c.rev = peakSpend;
+      var histScore = peakSpend >= 100000 ? 35 : peakSpend >= 50000 ? 26 : peakSpend >= 25000 ? 18 : peakSpend >= 10000 ? 10 : 5;
+      var histDetail = 'Peak spend of ' + fmt(peakSpend) + ' - ' + (peakSpend >= 100000 ? 'major former account' : peakSpend >= 50000 ? 'high-value lapsed client' : peakSpend >= 25000 ? 'mid-tier former client' : 'smaller former account');
+      var recScore = c.rev25 > 0 ? 35 : c.rev24 > 0 ? 22 : 10;
+      var recDetail = c.rev25 > 0 ? 'Spent in 2025 - very recent departure, highly reclaimable' : 'Last active in 2024 - still warm, priority outreach';
+      var rIgnScore = 0;
+      var rIgnDetail = 'Upload Ignite Revenue file to check Ignite history';
+      var stabScore2 = c.rev24 > 0 && c.rev25 > 0 ? 10 : 5;
+      var stabDetail2 = stabScore2 === 10 ? 'Spent in both 2024 and 2025 - consistent advertiser before leaving' : 'Spent in one year only - sporadic buyer';
+      var rScore = Math.min(100, histScore + recScore + rIgnScore + stabScore2);
+      var _sd = {
+        name: c.adv, sub: 'Reclaim \u00b7 Peak ' + fmt(peakSpend),
+        description: 'Scored on peak historical spend, how recently they left, whether they were an Ignite buyer, and spending consistency.',
+        total: rScore,
+        components: [
+          { label: 'Historical Spend', score: histScore, max: 35, detail: histDetail },
+          { label: 'Recency of Departure', score: recScore, max: 35, detail: recDetail },
+          { label: 'Ignite History', score: rIgnScore, max: 20, detail: rIgnDetail },
+          { label: 'Spend Consistency', score: stabScore2, max: 10, detail: stabDetail2 }
+        ]
+      };
+      c.score = rScore;
+      c._scoreData = _sd;
+      c.bucket = rScore >= 60 ? 'Reclaim Now' : rScore >= 40 ? 'Reapproach Later' : 'Low Priority';
+      c.isIgnite = false;
+      reclaimClients.push(c);
+    }
+  });
+
+  protectClients.sort(function(a, b) { return b.score - a.score; });
+  reclaimClients.sort(function(a, b) { return b.score - a.score; });
+
   var protectContent = document.getElementById('protect-content');
-  protectContent.innerHTML = '<div style="padding:20px;text-align:center;color:var(--dim);font-size:.82rem;" id="protect-enrich-status">Enriching accounts\u2026 0 of ' + clients.length + '</div>';
-  enrichAccountsWithPlaces(clients, function(cur, total) {
+  var reclaimContent = document.getElementById('reclaim-content');
+  var allForEnrich = protectClients.concat(reclaimClients);
+  protectContent.innerHTML = '<div style="padding:20px;text-align:center;color:var(--dim);font-size:.82rem;" id="protect-enrich-status">Enriching ' + allForEnrich.length + ' accounts\u2026 0 of ' + allForEnrich.length + '</div>';
+  reclaimContent.innerHTML = '<div style="padding:20px;text-align:center;color:var(--dim);font-size:.82rem;">Loading\u2026</div>';
+
+  var ph = document.getElementById('reclaim-placeholder');
+  if (ph) ph.style.display = 'none';
+
+  enrichAccountsWithPlaces(allForEnrich, function(cur, total) {
     var el = document.getElementById('protect-enrich-status');
     if (el) el.textContent = 'Enriching accounts\u2026 ' + cur + ' of ' + total;
-  }).then(function(enriched) {
-    state.protect = enriched;
+  }).then(function() {
+    state.protect = protectClients;
+    state.reclaimAll = reclaimClients;
+    state.reclaimIgnite = [];
     state.protectMeta = { fname: fname };
-    renderProtect(enriched, fname);
+    state.reclaimMeta = { fname: fname };
+
+    renderProtect(protectClients, fname);
+    renderReclaim();
+
+    updateSummaryCards([
+      { label: 'Active Clients', value: protectClients.length, sub: 'On Protect & Expand' },
+      { label: 'Lapsed Clients', value: reclaimClients.length, sub: 'On Reclaim' },
+      { label: '2026 Revenue', value: fmt(protectClients.reduce(function(s, c) { return s + c.rev26; }, 0)), sub: 'Active base' },
+      { label: 'Reclaim Opportunity', value: fmt(reclaimClients.reduce(function(s, c) { return s + c.rev; }, 0)), sub: 'Peak former spend' }
+    ]);
   });
   return;
 }
 
-// parseProtectIgnite - parses Ignite-only revenue file and merges into protect view
-function parseProtectIgnite(rows, fname) {
-  var hRow=0;
-  for (var i=0; i<Math.min(10,rows.length); i++) { if (rows[i].join("").toLowerCase().includes("advertiser")&&rows[i].join("").toLowerCase().includes("market")) { hRow=i; break; } }
-  var headers=rows[hRow]||[], col2025=-1, col2026=-1;
-  headers.forEach(function(h,i){ if (String(h).toLowerCase().includes("total")&&col2025<0) col2025=i; else if (String(h).toLowerCase().includes("total")&&col2025>=0&&col2026<0) col2026=i; });
-  var ignMap={};
-  for (var i=hRow+1; i<rows.length; i++) {
-    var r=rows[i]; if (!r||!r[2]||String(r[2]).toLowerCase()==="total") continue;
-    var adv=String(r[2]).trim();
-    var r25=col2025>=0?cleanNum(r[col2025]):0, r26=col2026>=0?cleanNum(r[col2026]):0;
-    if (!adv) continue;
-    if (!ignMap[adv]) ignMap[adv]={ign25:0,ign26:0};
-    ignMap[adv].ign25+=r25; ignMap[adv].ign26+=r26;
+function parseIgniteReport(rows, fname) {
+  var hRow = 0;
+  for (var i = 0; i < Math.min(10, rows.length); i++) {
+    if (rows[i].join('').toLowerCase().includes('advertiser') && rows[i].join('').toLowerCase().includes('market')) {
+      hRow = i; break;
+    }
   }
-  state.protectIgnite=ignMap;
-  // Re-render protect view with the new split data
-  if (state.protect) renderProtect(state.protect, fname);
-  console.log("Ignite file loaded:", Object.keys(ignMap).length, "clients");
+  var headers = rows[hRow] || [];
+  var cols = _findYearTotals(headers);
+  var ignMap = {};
+  for (var i = hRow + 1; i < rows.length; i++) {
+    var r = rows[i];
+    if (!r || !r[2]) continue;
+    var adv = String(r[2]).trim();
+    if (!adv || adv.toLowerCase() === 'total' || adv.toLowerCase() === 'grand total') continue;
+    var r24 = cols.col24 >= 0 ? cleanNum(r[cols.col24]) : 0;
+    var r25 = cols.col25 >= 0 ? cleanNum(r[cols.col25]) : 0;
+    var r26 = cols.col26 >= 0 ? cleanNum(r[cols.col26]) : 0;
+    if (!ignMap[adv]) ignMap[adv] = { ign24: 0, ign25: 0, ign26: 0 };
+    ignMap[adv].ign24 += r24;
+    ignMap[adv].ign25 += r25;
+    ignMap[adv].ign26 += r26;
+  }
+  state.protectIgnite = ignMap;
+
+  if (state.reclaimAll && state.reclaimAll.length) {
+    state.reclaimAll.forEach(function(c) {
+      var ign = ignMap[c.adv];
+      if (ign && (ign.ign24 + ign.ign25) > 0) {
+        c.isIgnite = true;
+        var ignScore = 20;
+        var ignDetail = 'Former Ignite buyer - already understands digital value, warm lead';
+        if (c._scoreData && c._scoreData.components) {
+          c._scoreData.components[2].score = ignScore;
+          c._scoreData.components[2].detail = ignDetail;
+          var newTotal = c._scoreData.components.reduce(function(s, comp) { return s + comp.score; }, 0);
+          c.score = Math.min(100, newTotal);
+          c._scoreData.total = c.score;
+          c.bucket = c.score >= 60 ? 'Reclaim Now' : c.score >= 40 ? 'Reapproach Later' : 'Low Priority';
+        }
+      }
+    });
+    state.reclaimAll.sort(function(a, b) { return b.score - a.score; });
+    renderReclaim();
+  }
+
+  if (state.protect && state.protect.length) {
+    renderProtect(state.protect, fname);
+  }
 }
 
 function renderProtect(clients, extraNote) {
@@ -1146,7 +1263,7 @@ function renderProtect(clients, extraNote) {
     +"<div class=\"mobile-scroll\"><table id=\"protect-table\" class=\"bp-table\"><thead><tr>"
     +"<th style=\"width:32px;\"></th><th class=\"text-left\">Advertiser</th>"
     +"<th class=\"text-left hide-mobile\">AE</th><th class=\"text-right accent\">IGI Score</th>"
-    +"<th class=\"text-right\">2025 Total</th><th class=\"text-right\">2026 Total</th>"
+    +"<th class=\"text-right hide-mobile\">2024 Total</th><th class=\"text-right\">2025 Total</th><th class=\"text-right\">2026 Total</th>"
     +(hasIgnite?"<th class=\"text-right hide-mobile\" style=\"color:var(--teal);\">Ignite</th><th class=\"text-right hide-mobile\" style=\"color:var(--orange);\">Broadcast</th>":"")
     +"<th class=\"text-right hide-mobile\">Trend</th><th class=\"text-left hide-mobile\">Action</th>"
     +"</tr></thead><tbody>"
@@ -1173,6 +1290,7 @@ function renderProtect(clients, extraNote) {
         +"<td><strong style=\"color:#fff;\">"+c.adv+"</strong>"+placesTierBadge(c._placesTier)+"</td>"
         +"<td class=\"hide-mobile\" style=\"color:var(--dim);font-size:.78rem;\">"+c.ae+"</td>"
         +"<td class=\"text-right\">"+scoreBadge(liveScore,_sd)+"</td>"
+        +"<td class=\"text-right hide-mobile\" style=\"color:var(--dim);\">"+fmt(c.rev24||0)+"</td>"
         +"<td class=\"text-right\" style=\"color:var(--dim);\">"+fmt(c.rev25)+"</td>"
         +"<td class=\"text-right\" style=\"color:#fff;font-weight:600;\">"+fmt(c.rev26)+"</td>"
         +(hasIgnite?"<td class=\"text-right hide-mobile\" style=\"color:var(--teal);\">"+( ign26!=null?fmt(ign26):"-")+"</td><td class=\"text-right hide-mobile\" style=\"color:var(--orange);\">"+( bcast26!=null?fmt(bcast26):"-")+"</td>":"")
@@ -1181,57 +1299,6 @@ function renderProtect(clients, extraNote) {
 }
 
 // ─── RECLAIM ──────────────────────────────────────────────────────────────────
-function parseReclaim(rows, type, fname) {
-  var hRow=0;
-  for (var i=0; i<Math.min(5,rows.length); i++) { if (rows[i].join('').toLowerCase().includes('advertiser')) { hRow=i; break; } }
-  var clients=[];
-  for (var i=hRow+1; i<rows.length; i++) {
-    var r=rows[i]; if (!r||!r[1]||String(r[1]).trim()==='Total'||String(r[1]).trim()==='') continue;
-    var adv=String(r[1]).trim(), r24=cleanNum(r[2]), r25=cleanNum(r[3]), r26=cleanNum(r[4]);
-    var peakSpend=Math.max(r24,r25);
-    var histScore=peakSpend>=100000?35:peakSpend>=50000?26:peakSpend>=25000?18:peakSpend>=10000?10:5;
-    var histDetail='Peak spend of '+fmt(peakSpend)+' - '+(peakSpend>=100000?'major former account':peakSpend>=50000?'high-value lapsed client':peakSpend>=25000?'mid-tier former client':'smaller former account');
-    var recScore=r25>0?35:r24>0?22:10;
-    var recDetail=r25>0?'Spent in 2025 - very recent departure, highly reclaimable':r24>0?'Last active in 2024 - still warm, priority outreach':'No spend in 2024-2025 - longer lapse, needs strong offer';
-    var ignScore2=type==='ignite'?20:0;
-    var ignDetail2=type==='ignite'?'Former Ignite buyer - already understands digital value, warm lead':'Broadcast-only history - digital education needed';
-    var stabScore=r24>0&&r25>0?10:(r24>0||r25>0)?5:0;
-    var stabDetail=stabScore===10?'Spent in both 2024 and 2025 - consistent advertiser before leaving':stabScore===5?'Spent in one year only - sporadic buyer':'No recorded spend in tracked years';
-    var score=Math.min(100,histScore+recScore+ignScore2+stabScore);
-    var _sd={name:adv,sub:'Reclaim · Peak '+fmt(peakSpend),description:'Scored on peak historical spend, how recently they left, whether they were an Ignite buyer, and spending consistency.',total:score,
-      components:[
-        {label:'Historical Spend',score:histScore,max:35,detail:histDetail},
-        {label:'Recency of Departure',score:recScore,max:35,detail:recDetail},
-        {label:'Ignite History',score:ignScore2,max:20,detail:ignDetail2},
-        {label:'Spend Consistency',score:stabScore,max:10,detail:stabDetail}
-      ]};
-    var bucket=score>=60?'Reclaim Now':score>=40?'Reapproach Later':'Low Priority';
-    clients.push({name:adv,adv:adv,rev24:r24,rev25:r25,rev26:r26,score:score,bucket:bucket,isIgnite:type==='ignite',rev:peakSpend,source:type,_scoreData:_sd});
-  }
-  clients.sort(function(a,b){return b.score-a.score;});
-  updateSummaryCards([
-    {label:'Former Clients',value:clients.length,sub:type==='ignite'?'Ignite buyers':'All revenue'},
-    {label:'2024 Pool',value:fmt(clients.reduce(function(s,c){return s+c.rev24;},0)),sub:'Former spend'},
-    {label:'2025 Pool',value:fmt(clients.reduce(function(s,c){return s+c.rev25;},0)),sub:'Most recent year'},
-    {label:'Reclaim Now',value:clients.filter(function(c){return c.bucket==='Reclaim Now';}).length,sub:'Top priority'}
-  ]);
-  var reclaimContent = document.getElementById('reclaim-content');
-  if (reclaimContent) {
-    reclaimContent.innerHTML = '<div style="padding:20px;text-align:center;color:var(--dim);font-size:.82rem;" id="reclaim-enrich-status">Enriching accounts\u2026 0 of ' + clients.length + '</div>';
-  }
-  enrichAccountsWithPlaces(clients, function(cur, total) {
-    var el = document.getElementById('reclaim-enrich-status');
-    if (el) el.textContent = 'Enriching accounts\u2026 ' + cur + ' of ' + total;
-  }).then(function(enriched) {
-    if (type === 'ignite') state.reclaimIgnite = enriched;
-    else state.reclaimAll = enriched;
-    state.reclaimMeta = state.reclaimMeta || {};
-    if (type === 'ignite') state.reclaimMeta.fnameIgnite = fname;
-    else state.reclaimMeta.fnameAll = fname;
-    renderReclaim();
-  });
-  return;
-}
 function renderReclaim() {
   var ign = state.reclaimIgnite || [];
   var all = state.reclaimAll || [];
