@@ -114,6 +114,9 @@
         <div style="font-size:.75rem;color:var(--dim);margin-top:4px;">CSV or Excel - drop here or click to browse</div>
         <input type="file" id="f-close" accept=".csv,.xlsx,.xls" style="display:none" onchange="handleFile('close',this.files[0])"/>
       </div>
+      <div style="display:flex;justify-content:flex-end;margin-bottom:8px;">
+        <button onclick="clearTab('close')" style="background:rgba(248,113,113,.08);border:1px solid rgba(248,113,113,.25);color:var(--red);border-radius:6px;padding:5px 12px;font-size:.72rem;font-weight:600;cursor:pointer;">✕ Clear Tab</button>
+      </div>
       <div id="close-content"></div>
     </div>
 
@@ -138,6 +141,9 @@
           <input type="file" id="f-protect-ign" accept=".csv,.xlsx,.xls" style="display:none" onchange="handleFile('protect-ignite',this.files[0])"/>
         </div>
       </div>
+      <div style="display:flex;justify-content:flex-end;margin-bottom:8px;">
+        <button onclick="clearTab('protect')" style="background:rgba(248,113,113,.08);border:1px solid rgba(248,113,113,.25);color:var(--red);border-radius:6px;padding:5px 12px;font-size:.72rem;font-weight:600;cursor:pointer;">✕ Clear Tab</button>
+      </div>
       <div id="protect-content"></div>
     </div>
     <!-- RECLAIM -->
@@ -158,6 +164,9 @@
           <div style="font-weight:600;font-size:.85rem;">5-Year Non-Returning - Ignite Only</div>
           <input type="file" id="f-reclaim-ign" accept=".csv,.xlsx,.xls" style="display:none" onchange="handleFile('reclaim-ignite',this.files[0])"/>
         </div>
+      </div>
+      <div style="display:flex;justify-content:flex-end;margin-bottom:8px;">
+        <button onclick="clearTab('reclaim')" style="background:rgba(248,113,113,.08);border:1px solid rgba(248,113,113,.25);color:var(--red);border-radius:6px;padding:5px 12px;font-size:.72rem;font-weight:600;cursor:pointer;">✕ Clear Tab</button>
       </div>
       <div id="reclaim-content"></div>
     </div>
@@ -1002,6 +1011,34 @@ function parseClose(rows, fname) {
   return;
 }
 
+function clearTab(section) {
+  var labels = { close: 'Close Now', protect: 'Protect & Expand', reclaim: 'Reclaim' };
+  if (!confirm('This will clear all uploaded accounts from the ' + labels[section] + ' tab. Continue?')) return;
+
+  if (section === 'close') {
+    state.close = [];
+    state.closeMeta = null;
+    document.getElementById('close-content').innerHTML = '';
+  }
+  if (section === 'protect') {
+    state.protect = [];
+    state.protectIgnite = {};
+    state.protectMeta = null;
+    document.getElementById('protect-content').innerHTML = '';
+  }
+  if (section === 'reclaim') {
+    state.reclaimAll = [];
+    state.reclaimIgnite = [];
+    state.reclaimMeta = null;
+    document.getElementById('reclaim-content').innerHTML = '';
+  }
+
+  // Persist the cleared state if a plan is loaded
+  if (state.loadedPlanId) {
+    updatePlanInFirestore();
+  }
+}
+
 function renderClose(deals, budget, booked, pitched, fname) {
   document.getElementById('close-content').innerHTML =
     '<input type="text" class="tab-search" data-table="close-table" placeholder="Search accounts..." oninput="filterTable(this)" style="background:var(--surface2);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:.8rem;width:100%;padding:7px 12px;margin-bottom:10px;outline:none;"/>'
@@ -1255,7 +1292,7 @@ function renderReclaim() {
     +'<th style="width:32px;"></th>'
     +'<th class="text-left">Advertiser</th>'
     +'<th class="text-right accent">IGI Score</th>'
-    +'<th class="text-left">Bucket</th>'
+    +'<th class="text-left" style="min-width:90px;white-space:nowrap;">Bucket</th>'
     +(hasAll?'<th class="text-right hide-mobile" style="color:var(--dim);">All Rev 2024</th>':'')
     +(hasAll?'<th class="text-right hide-mobile" style="color:var(--dim);">All Rev 2025</th>':'')
     +(hasAll?'<th class="text-right" style="color:var(--dim);">All Rev 2026</th>':'')
@@ -1266,10 +1303,10 @@ function renderReclaim() {
     +'</tr></thead><tbody>'
     +combined.map(function(c) {
       var bucket = c.bucket==='Reclaim Now'
-        ? '<span class="badge-now">RECLAIM NOW</span>'
+        ? '<span class="badge-now" style="white-space:nowrap;">RECLAIM NOW</span>'
         : c.bucket==='Reapproach Later'
-        ? '<span class="badge-reclaim">REAPPROACH</span>'
-        : '<span style="font-size:.68rem;color:var(--dim);">Low Priority</span>';
+        ? '<span class="badge-reclaim" style="white-space:nowrap;">REAPPROACH</span>'
+        : '<span style="font-size:.68rem;color:var(--dim);white-space:nowrap;">Low Priority</span>';
       var sourceBadge = c.source==='both'
         ? '<span style="font-size:.65rem;background:rgba(52,211,153,.15);color:var(--green);border:1px solid rgba(52,211,153,.3);border-radius:3px;padding:1px 6px;">\u2713 BOTH</span>'
         : c.source==='ignite'
