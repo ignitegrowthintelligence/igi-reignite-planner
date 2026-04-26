@@ -879,13 +879,25 @@ function parseClose(rows, fname) {
     }
   }
   deals.sort(function(a,b){return b.score-a.score;});
-  state.close=deals;
   updateSummaryCards([
     {label:'Budget',value:fmt(budget),sub:'Total goal'},
     {label:'Booked',value:fmt(booked),sub:budget?pct(booked/budget*100)+' of budget':''},
     {label:'Pipeline',value:fmt(pitched),sub:'Pending close'},
     {label:'Deals',value:deals.length,sub:'Returning accounts'}
   ]);
+  var closeContent = document.getElementById('close-content');
+  closeContent.innerHTML = '<div style="padding:20px;text-align:center;color:var(--dim);font-size:.82rem;" id="close-enrich-status">Enriching accounts with business data\u2026 0 of ' + deals.length + '</div>';
+  enrichAccountsWithPlaces(deals, function(cur, total) {
+    var el = document.getElementById('close-enrich-status');
+    if (el) el.textContent = 'Enriching accounts with business data\u2026 ' + cur + ' of ' + total;
+  }).then(function(enriched) {
+    state.close = enriched;
+    renderClose(enriched, budget, booked, pitched, fname);
+  });
+  return;
+}
+
+function renderClose(deals, budget, booked, pitched, fname) {
   document.getElementById('close-content').innerHTML =
     '<input type="text" class="tab-search" data-table="close-table" placeholder="Search accounts..." oninput="filterTable(this)" style="background:var(--surface2);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:.8rem;width:100%;padding:7px 12px;margin-bottom:10px;outline:none;"/>'
     +'<div style="margin-bottom:12px;font-size:.75rem;color:var(--dim);">'+fname+' - '+deals.length+' opportunities</div>'
@@ -897,7 +909,7 @@ function parseClose(rows, fname) {
     +'</tr></thead><tbody>'
     +deals.map(function(d){
       return '<tr>'+makeCheckbox('close',d)
-        +'<td><strong style="color:#fff;">'+d.acct+'</strong>'+(d.isIgnite?'<span class="badge-ignite" style="margin-left:6px;">IGNITE</span>':'')+'</td>'
+        +'<td><strong style="color:#fff;">'+d.acct+'</strong>'+(d.isIgnite?'<span class="badge-ignite" style="margin-left:6px;">IGNITE</span>':'')+placesTierBadge(d._placesTier)+'</td>'
         +'<td class="text-right">'+scoreBadge(d.score,d._scoreData)+'</td>'
         +'<td class="text-right" style="color:#fff;font-weight:600;">'+fmt(d.rev)+'</td>'
         +'<td class="text-right hide-mobile" style="color:'+(d.conf==='95%'?'var(--green)':d.conf==='75%'?'var(--yellow)':'var(--dim)')+';">'+d.conf+'</td>'
@@ -940,8 +952,16 @@ function parseProtect(rows, fname) {
     c._scoreComponents={valScore:valScore,valDetail:valDetail,growScore:growScore,growDetail:growDetail,ignScore:ignScore,ignDetail:ignDetail,stabScore:stabScore,stabDetail:stabDetail};
   });
   clients.sort(function(a,b){return b.score-a.score;});
-  state.protect=clients;
-  renderProtect(clients, fname);
+  var protectContent = document.getElementById('protect-content');
+  protectContent.innerHTML = '<div style="padding:20px;text-align:center;color:var(--dim);font-size:.82rem;" id="protect-enrich-status">Enriching accounts\u2026 0 of ' + clients.length + '</div>';
+  enrichAccountsWithPlaces(clients, function(cur, total) {
+    var el = document.getElementById('protect-enrich-status');
+    if (el) el.textContent = 'Enriching accounts\u2026 ' + cur + ' of ' + total;
+  }).then(function(enriched) {
+    state.protect = enriched;
+    renderProtect(enriched, fname);
+  });
+  return;
 }
 
 // parseProtectIgnite - parses Ignite-only revenue file and merges into protect view
@@ -1007,7 +1027,7 @@ function renderProtect(clients, extraNote) {
         ]};
       c.score=liveScore;
       return "<tr>"+makeCheckbox("protect",c)
-        +"<td><strong style=\"color:#fff;\">"+c.adv+"</strong></td>"
+        +"<td><strong style=\"color:#fff;\">"+c.adv+"</strong>"+placesTierBadge(c._placesTier)+"</td>"
         +"<td class=\"hide-mobile\" style=\"color:var(--dim);font-size:.78rem;\">"+c.ae+"</td>"
         +"<td class=\"text-right\">"+scoreBadge(liveScore,_sd)+"</td>"
         +"<td class=\"text-right\" style=\"color:var(--dim);\">"+fmt(c.rev25)+"</td>"
@@ -1046,14 +1066,25 @@ function parseReclaim(rows, type, fname) {
     clients.push({name:adv,adv:adv,rev24:r24,rev25:r25,rev26:r26,score:score,bucket:bucket,isIgnite:type==='ignite',rev:peakSpend,source:type,_scoreData:_sd});
   }
   clients.sort(function(a,b){return b.score-a.score;});
-  if (type==='ignite') state.reclaimIgnite=clients; else state.reclaimAll=clients;
-  renderReclaim();
   updateSummaryCards([
     {label:'Former Clients',value:clients.length,sub:type==='ignite'?'Ignite buyers':'All revenue'},
     {label:'2024 Pool',value:fmt(clients.reduce(function(s,c){return s+c.rev24;},0)),sub:'Former spend'},
     {label:'2025 Pool',value:fmt(clients.reduce(function(s,c){return s+c.rev25;},0)),sub:'Most recent year'},
     {label:'Reclaim Now',value:clients.filter(function(c){return c.bucket==='Reclaim Now';}).length,sub:'Top priority'}
   ]);
+  var reclaimContent = document.getElementById('reclaim-content');
+  if (reclaimContent) {
+    reclaimContent.innerHTML = '<div style="padding:20px;text-align:center;color:var(--dim);font-size:.82rem;" id="reclaim-enrich-status">Enriching accounts\u2026 0 of ' + clients.length + '</div>';
+  }
+  enrichAccountsWithPlaces(clients, function(cur, total) {
+    var el = document.getElementById('reclaim-enrich-status');
+    if (el) el.textContent = 'Enriching accounts\u2026 ' + cur + ' of ' + total;
+  }).then(function(enriched) {
+    if (type === 'ignite') state.reclaimIgnite = enriched;
+    else state.reclaimAll = enriched;
+    renderReclaim();
+  });
+  return;
 }
 function renderReclaim() {
   var ign = state.reclaimIgnite || [];
@@ -1143,7 +1174,7 @@ function renderReclaim() {
       }
       return '<tr>'
         +makeCheckbox('reclaim', c)
-        +'<td><strong style="color:#fff;">'+c.adv+'</strong></td>'
+        +'<td><strong style="color:#fff;">'+c.adv+'</strong>'+placesTierBadge(c._placesTier)+'</td>'
         +'<td class="text-right">'+scoreBadge(c.score, c._scoreData)+'</td>'
         +'<td>'+bucket+'</td>'
         +(hasAll?revCell(c.allRev24):'')
@@ -1251,6 +1282,114 @@ const CATEGORY_SCORES = {
  'Casual Dining': 10,
  'Salons/Personal Care':10,
 };
+
+// ─── PLACES ENRICHMENT HELPERS ────────────────────────────────────────────────
+function normalizeName(name) {
+  return name.toLowerCase().replace(/[^a-z0-9 ]/g, '').replace(/\s+/g, ' ').trim();
+}
+
+function detectCategoryFromPlace(place) {
+  var primaryType = place.primaryType || '';
+  var types = place.types || [];
+  var allTypes = [primaryType].concat(types);
+  for (var cat in CATEGORY_CONFIG) {
+    var cfg = CATEGORY_CONFIG[cat];
+    if (!cfg.types || !cfg.types.length) continue;
+    for (var i = 0; i < cfg.types.length; i++) {
+      if (allTypes.indexOf(cfg.types[i]) >= 0) {
+        return { category: cat, tier: cfg.tier };
+      }
+    }
+  }
+  return { category: null, tier: null };
+}
+
+async function enrichAccountsWithPlaces(accounts, onProgress) {
+  var TTL_MS = 180 * 24 * 60 * 60 * 1000;
+  for (var i = 0; i < accounts.length; i++) {
+    var acct = accounts[i];
+    var rawName = acct.adv || acct.name || acct.acct || '';
+    if (!rawName) continue;
+    var cacheKey = normalizeName(rawName);
+    if (!cacheKey) continue;
+    if (onProgress) onProgress(i + 1, accounts.length);
+    // 1. Check Firestore cache
+    try {
+      var doc = await db.collection('places_enrichment').doc(cacheKey).get();
+      if (doc.exists) {
+        var cached = doc.data();
+        var expires = cached.expiresAt && cached.expiresAt.toDate ? cached.expiresAt.toDate() : null;
+        if (expires && new Date() < expires && cached._places) {
+          acct._places = cached._places;
+          acct._placesCategory = cached.detectedCategory || null;
+          acct._placesTier = cached.detectedTier || null;
+          acct._website = (cached._places && cached._places.websiteUri) || null;
+          continue;
+        }
+      }
+    } catch(e) {
+      console.warn('[IGI] Cache read failed for', rawName, e.message);
+    }
+    // 2. Cache miss — call Google Places Text Search
+    var searchBody = { textQuery: rawName, maxResultCount: 1 };
+    if (state.geoCenter && state.geoCenter.lat) {
+      searchBody.locationBias = { circle: { center: { latitude: state.geoCenter.lat, longitude: state.geoCenter.lng }, radius: 80000 } };
+    }
+    try {
+      var resp = await fetch('https://places.googleapis.com/v1/places:searchText', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Goog-Api-Key': GOOGLE_PLACES_KEY,
+          'X-Goog-FieldMask': 'places.id,places.displayName,places.types,places.primaryType,places.userRatingCount,places.rating,places.websiteUri,places.businessStatus,places.nationalPhoneNumber,places.regularOpeningHours'
+        },
+        body: JSON.stringify(searchBody)
+      });
+      if (!resp.ok) continue;
+      var data = await resp.json();
+      var place = data.places && data.places[0];
+      if (!place) continue;
+      var detected = detectCategoryFromPlace(place);
+      var placesData = {
+        id: place.id || '',
+        rating: place.rating || null,
+        userRatingCount: place.userRatingCount || 0,
+        websiteUri: place.websiteUri || '',
+        businessStatus: place.businessStatus || 'OPERATIONAL',
+        nationalPhoneNumber: place.nationalPhoneNumber || null,
+        regularOpeningHours: place.regularOpeningHours || null
+      };
+      acct._places = placesData;
+      acct._placesCategory = detected.category;
+      acct._placesTier = detected.tier;
+      acct._website = placesData.websiteUri || null;
+      var now = new Date();
+      db.collection('places_enrichment').doc(cacheKey).set({
+        businessName: rawName,
+        cacheKey: cacheKey,
+        placeId: place.id || '',
+        _places: placesData,
+        primaryType: place.primaryType || '',
+        detectedCategory: detected.category,
+        detectedTier: detected.tier,
+        cachedAt: firebase.firestore.Timestamp.fromDate(now),
+        expiresAt: firebase.firestore.Timestamp.fromDate(new Date(now.getTime() + TTL_MS))
+      }).catch(function(e) { console.warn('[IGI] Enrichment cache write failed:', e.message); });
+    } catch(e) {
+      console.warn('[IGI] Places enrichment failed for', rawName, ':', e.message);
+    }
+  }
+  return accounts;
+}
+
+function placesTierBadge(tier) {
+  if (!tier) return '';
+  var color = tier === 'High Priority' ? 'var(--green)' : tier === 'Core' ? 'var(--teal)' : 'var(--yellow)';
+  var bg = tier === 'High Priority' ? 'rgba(52,211,153,.12)' : tier === 'Core' ? 'rgba(0,188,212,.12)' : 'rgba(251,191,36,.12)';
+  var border = tier === 'High Priority' ? 'rgba(52,211,153,.3)' : tier === 'Core' ? 'rgba(0,188,212,.3)' : 'rgba(251,191,36,.3)';
+  return '<span style="display:inline-block;margin-left:6px;padding:1px 7px;border-radius:3px;font-size:.62rem;font-weight:700;'
+    + 'background:' + bg + ';color:' + color + ';border:1px solid ' + border + ';">' + tier + '</span>';
+}
 
 // ─── IGI SCORE ENGINE - REBUILD ───────────────────────────────────────────────
 var NATIONAL_CHAINS = [
@@ -2822,7 +2961,46 @@ function _buildLaneBody(section, a) {
       + '</div></div>'
     : '';
 
-  return statGrid + tpSection + '<div style="padding:0 24px 24px;">' + _buildScoreBreakdown(a) + '</div>';
+  var placesProfile = '';
+  if (a._places) {
+    var gp = a._places;
+    var website = a._website || gp.websiteUri || null;
+    var phone = gp.nationalPhoneNumber || null;
+    var rating = gp.rating || null;
+    var reviewCount = gp.userRatingCount || 0;
+    var bStatus = gp.businessStatus || null;
+    var profileRows = [];
+    if (phone) profileRows.push(_profileRow('Phone',
+      '<a href="tel:' + phone.replace(/\s/g,'') + '" style="font-size:.88rem;font-weight:700;color:var(--teal);text-decoration:none;">' + phone + '</a>'));
+    if (rating) {
+      var fullStars = Math.floor(rating);
+      profileRows.push(_profileRow('Rating',
+        '<span style="color:var(--yellow);font-size:.85rem;">' + '\u2605'.repeat(fullStars) + '<span style="color:var(--surface3);">' + '\u2605'.repeat(5 - fullStars) + '</span></span>'
+        + ' <span style="font-size:.82rem;color:#fff;font-weight:700;">' + rating.toFixed(1) + '</span>'
+        + ' <span style="font-size:.72rem;color:var(--dim);">(' + reviewCount.toLocaleString() + ' reviews)</span>'));
+    }
+    if (bStatus) {
+      var isOp = bStatus === 'OPERATIONAL';
+      var statusLabel = isOp ? 'Operational' : bStatus.replace(/_/g,' ').toLowerCase().replace(/^\w/, function(c){return c.toUpperCase();});
+      profileRows.push(_profileRow('Status',
+        '<span style="font-size:.82rem;font-weight:600;color:' + (isOp ? 'var(--green)' : 'var(--red)') + ';">' + statusLabel + '</span>'));
+    }
+    if (website) {
+      var cleanUrl = website.split('?')[0].split('#')[0];
+      var displayUrl = cleanUrl.replace(/^https?:\/\/(www\.)?/,'').replace(/\/$/,'');
+      profileRows.push(_profileRow('Website',
+        '<a href="' + cleanUrl + '" target="_blank" rel="noopener" style="font-size:.82rem;color:var(--teal);text-decoration:none;font-weight:600;">' + displayUrl + ' \u2192</a>'));
+    }
+    if (profileRows.length) {
+      placesProfile = '<div style="padding:18px 24px 0;">'
+        + '<div style="font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.09em;color:var(--teal);margin-bottom:10px;">Business Profile</div>'
+        + '<div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:2px 14px;">'
+        + profileRows.join('')
+        + '</div></div>';
+    }
+  }
+
+  return statGrid + tpSection + placesProfile + '<div style="padding:0 24px 24px;">' + _buildScoreBreakdown(a) + '</div>';
 }
 
 function _cpStatCard(label, value, sub, valueColor) {
