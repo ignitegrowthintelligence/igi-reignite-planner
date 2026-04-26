@@ -693,6 +693,24 @@ async function loadPlanFromFirestore(planId) {
   document.getElementById('marketInput').value = data.name || '';
   document.getElementById('marketLabel').textContent = data.name || 'IGNITE GROWTH INTELLIGENCE';
 
+  // Re-score before rendering
+  if (state.close && state.close.length) {
+    state.close.forEach(function(d) { d.cat = d._placesCategory || ''; d.score = computeScore(d, 'Close Now'); });
+    state.close.sort(function(a,b){ return b.score - a.score; });
+  }
+  if (state.protect && state.protect.length) {
+    state.protect.forEach(function(c) { c.cat = c._placesCategory || ''; c.score = computeScore(c, 'Protect & Expand'); });
+    state.protect.sort(function(a,b){ return b.score - a.score; });
+  }
+  if (state.reclaimAll && state.reclaimAll.length) {
+    state.reclaimAll.forEach(function(c) {
+      c.cat = c._placesCategory || '';
+      c.score = computeScore(c, 'Reclaim');
+      c.bucket = c.score >= 65 ? 'Reclaim Now' : c.score >= 45 ? 'Reapproach Later' : 'Low Priority';
+    });
+    state.reclaimAll.sort(function(a,b){ return b.score - a.score; });
+  }
+
   // Re-render uploaded tabs
   if (state.close && state.close.length && state.closeMeta) {
     var m = state.closeMeta;
@@ -975,26 +993,24 @@ function parseClose(rows, fname) {
       var notes=String(r[3]||'').trim(), type=String(r[4]||'').trim();
       var conf=String(r[6]||'').trim(), daysIn=cleanNum(r[8]);
       var apr=cleanNum(r[10]), may=cleanNum(r[11]), jun=cleanNum(r[12]);
-      var confScore=conf==='95%'?40:conf==='75%'?30:conf==='50%'?18:8;
-      var confDetail='Confidence at '+conf+' - '+(conf==='95%'?'near-certain close':conf==='75%'?'strong likelihood':conf==='50%'?'coin flip - needs attention':'low confidence');
-      var revScore=rev>=100000?30:rev>=50000?24:rev>=25000?18:rev>=10000?12:6;
-      var revDetail=fmt(rev)+' deal size - '+(rev>=100000?'major account':rev>=50000?'strong deal':rev>=25000?'mid-size deal':rev>=10000?'small deal':'micro deal');
-      var freshScore=daysIn<=30?20:daysIn<=60?14:daysIn<=90?8:2;
-      var freshDetail=daysIn+' days in pipeline - '+(daysIn<=30?'fresh and active':daysIn<=60?'normal pace':daysIn<=90?'getting stale - follow up':'stale deal, needs urgent action');
-      var ignScore=(type||'').toUpperCase().includes('IGNITE')?10:0;
-      var ignDetail=ignScore>0?'Ignite product involved - higher conversion likelihood':'Broadcast-only deal';
-      var score=Math.min(100,confScore+revScore+freshScore+ignScore);
-      var _sd={name:acct,sub:'Close Now · '+fmt(rev),description:'Scored on confidence level, deal size, time in pipeline, and product involvement.',total:score,
-        components:[
-          {label:'Confidence Level',score:confScore,max:40,detail:confDetail},
-          {label:'Deal Size',score:revScore,max:30,detail:revDetail},
-          {label:'Pipeline Freshness',score:freshScore,max:20,detail:freshDetail},
-          {label:'Ignite Involvement',score:ignScore,max:10,detail:ignDetail}
-        ]};
-      deals.push({name:acct,acct:acct,rev:rev,closing:closing,notes:notes,type:type,conf:conf,daysIn:daysIn,apr:apr,may:may,jun:jun,score:score,isIgnite:ignScore>0,_scoreData:_sd});
+      deals.push({
+        name: acct,
+        acct: acct,
+        rev: rev,
+        closing: closing,
+        notes: notes,
+        type: type,
+        conf: conf,
+        daysIn: daysIn,
+        apr: apr,
+        may: may,
+        jun: jun,
+        isIgnite: (type||'').toUpperCase().includes('IGNITE'),
+        _tags: {},
+        score: 0
+      });
     }
   }
-  deals.sort(function(a,b){return b.score-a.score;});
   updateSummaryCards([
     {label:'Budget',value:fmt(budget),sub:'Total goal'},
     {label:'Booked',value:fmt(booked),sub:budget?pct(booked/budget*100)+' of budget':''},
@@ -1007,6 +1023,11 @@ function parseClose(rows, fname) {
     var el = document.getElementById('close-enrich-status');
     if (el) el.textContent = 'Enriching accounts with business data\u2026 ' + cur + ' of ' + total;
   }).then(function(enriched) {
+    enriched.forEach(function(d) {
+      d.cat = d._placesCategory || '';
+      d.score = computeScore(d, 'Close Now');
+    });
+    enriched.sort(function(a, b) { return b.score - a.score; });
     state.close = enriched;
     state.closeMeta = { budget: budget, booked: booked, pitched: pitched, fname: fname };
     renderClose(enriched, budget, booked, pitched, fname);
@@ -1114,53 +1135,17 @@ function parseRevenueReport(rows, fname) {
       var traj = c.rev26 > c.rev25 * 1.10 ? 1 : c.rev26 < c.rev25 * 0.90 ? -1 : 0;
       c.trend = traj;
       c.rev = c.rev26;
-      var valScore = c.rev26 >= 250000 ? 35 : c.rev26 >= 100000 ? 28 : c.rev26 >= 50000 ? 20 : c.rev26 >= 25000 ? 12 : 6;
-      var valDetail = fmt(c.rev26) + ' current revenue - ' + (c.rev26 >= 250000 ? 'premium account' : c.rev26 >= 100000 ? 'high-value client' : c.rev26 >= 50000 ? 'mid-tier client' : 'smaller account');
-      var growScore = traj === 1 ? 35 : traj === 0 ? 20 : 5;
-      var growDetail = traj === 1 ? 'Growing \u25b2 - up more than 10% YoY, expand opportunity' : traj === 0 ? 'Flat \u2192 - revenue stable within 10%' : 'Declining \u25bc - down more than 10% YoY, protect urgently';
-      var ignScore = 10;
-      var ignDetail = 'Upload Ignite Revenue file to score Ignite mix';
-      var stabScore = (c.rev24 > 0 && c.rev25 > 0 && c.rev26 > 0) ? 10 : (c.rev25 > 0 && c.rev26 > 0) ? 8 : (c.rev26 > 0) ? 5 : 2;
-      var stabDetail = stabScore === 10 ? 'Active in 2024, 2025, and 2026 - long-term stable relationship'
-        : stabScore === 8 ? 'Active in 2025 and 2026 - solid 2-year relationship'
-        : 'New or returning client - monitor closely';
-      c.score = Math.min(100, valScore + growScore + ignScore + stabScore);
-      c._scoreComponents = { valScore: valScore, valDetail: valDetail, growScore: growScore, growDetail: growDetail, ignScore: ignScore, ignDetail: ignDetail, stabScore: stabScore, stabDetail: stabDetail };
+      c.score = 0;
       protectClients.push(c);
 
     } else if (c.rev25 > 0 || c.rev24 > 0) {
       var peakSpend = Math.max(c.rev24, c.rev25);
       c.rev = peakSpend;
-      var histScore = peakSpend >= 100000 ? 35 : peakSpend >= 50000 ? 26 : peakSpend >= 25000 ? 18 : peakSpend >= 10000 ? 10 : 5;
-      var histDetail = 'Peak spend of ' + fmt(peakSpend) + ' - ' + (peakSpend >= 100000 ? 'major former account' : peakSpend >= 50000 ? 'high-value lapsed client' : peakSpend >= 25000 ? 'mid-tier former client' : 'smaller former account');
-      var recScore = c.rev25 > 0 ? 35 : c.rev24 > 0 ? 22 : 10;
-      var recDetail = c.rev25 > 0 ? 'Spent in 2025 - very recent departure, highly reclaimable' : 'Last active in 2024 - still warm, priority outreach';
-      var rIgnScore = 0;
-      var rIgnDetail = 'Upload Ignite Revenue file to check Ignite history';
-      var stabScore2 = c.rev24 > 0 && c.rev25 > 0 ? 10 : 5;
-      var stabDetail2 = stabScore2 === 10 ? 'Spent in both 2024 and 2025 - consistent advertiser before leaving' : 'Spent in one year only - sporadic buyer';
-      var rScore = Math.min(100, histScore + recScore + rIgnScore + stabScore2);
-      var _sd = {
-        name: c.adv, sub: 'Reclaim \u00b7 Peak ' + fmt(peakSpend),
-        description: 'Scored on peak historical spend, how recently they left, whether they were an Ignite buyer, and spending consistency.',
-        total: rScore,
-        components: [
-          { label: 'Historical Spend', score: histScore, max: 35, detail: histDetail },
-          { label: 'Recency of Departure', score: recScore, max: 35, detail: recDetail },
-          { label: 'Ignite History', score: rIgnScore, max: 20, detail: rIgnDetail },
-          { label: 'Spend Consistency', score: stabScore2, max: 10, detail: stabDetail2 }
-        ]
-      };
-      c.score = rScore;
-      c._scoreData = _sd;
-      c.bucket = rScore >= 60 ? 'Reclaim Now' : rScore >= 40 ? 'Reapproach Later' : 'Low Priority';
       c.isIgnite = false;
+      c.score = 0;
       reclaimClients.push(c);
     }
   });
-
-  protectClients.sort(function(a, b) { return b.score - a.score; });
-  reclaimClients.sort(function(a, b) { return b.score - a.score; });
 
   var protectContent = document.getElementById('protect-content');
   var reclaimContent = document.getElementById('reclaim-content');
@@ -1175,6 +1160,19 @@ function parseRevenueReport(rows, fname) {
     var el = document.getElementById('protect-enrich-status');
     if (el) el.textContent = 'Enriching accounts\u2026 ' + cur + ' of ' + total;
   }).then(function() {
+    protectClients.forEach(function(c) {
+      c.cat = c._placesCategory || '';
+      c.score = computeScore(c, 'Protect & Expand');
+    });
+    protectClients.sort(function(a, b) { return b.score - a.score; });
+
+    reclaimClients.forEach(function(c) {
+      c.cat = c._placesCategory || '';
+      c.score = computeScore(c, 'Reclaim');
+      c.bucket = c.score >= 65 ? 'Reclaim Now' : c.score >= 45 ? 'Reapproach Later' : 'Low Priority';
+    });
+    reclaimClients.sort(function(a, b) { return b.score - a.score; });
+
     state.protect = protectClients;
     state.reclaimAll = reclaimClients;
     state.reclaimIgnite = [];
@@ -1219,29 +1217,11 @@ function parseIgniteReport(rows, fname) {
   }
   state.protectIgnite = ignMap;
 
-  if (state.reclaimAll && state.reclaimAll.length) {
-    state.reclaimAll.forEach(function(c) {
-      var ign = ignMap[c.adv];
-      if (ign && (ign.ign24 + ign.ign25) > 0) {
-        c.isIgnite = true;
-        var ignScore = 20;
-        var ignDetail = 'Former Ignite buyer - already understands digital value, warm lead';
-        if (c._scoreData && c._scoreData.components) {
-          c._scoreData.components[2].score = ignScore;
-          c._scoreData.components[2].detail = ignDetail;
-          var newTotal = c._scoreData.components.reduce(function(s, comp) { return s + comp.score; }, 0);
-          c.score = Math.min(100, newTotal);
-          c._scoreData.total = c.score;
-          c.bucket = c.score >= 60 ? 'Reclaim Now' : c.score >= 40 ? 'Reapproach Later' : 'Low Priority';
-        }
-      }
-    });
-    state.reclaimAll.sort(function(a, b) { return b.score - a.score; });
-    renderReclaim();
-  }
-
   if (state.protect && state.protect.length) {
     renderProtect(state.protect, fname);
+  }
+  if (state.reclaimAll && state.reclaimAll.length) {
+    renderReclaim();
   }
 }
 
@@ -1271,30 +1251,15 @@ function renderProtect(clients, extraNote) {
       var ign=hasIgnite&&state.protectIgnite[c.adv]?state.protectIgnite[c.adv]:null;
       var ign26=ign?ign.ign26:null, bcast26=ign?Math.max(0,c.rev26-ign.ign26):null;
       var ti=c.trend===1?"<span style=\"color:var(--green);\">▲</span>":c.trend===-1?"<span style=\"color:var(--red);\">▼</span>":"<span style=\"color:var(--dim);\">→</span>";
-      var act=c.score>=7?"<span class=\"badge-now\">PROTECT</span>":c.trend===1?"<span class=\"badge-ignite\">EXPAND</span>":"<span style=\"font-size:.68rem;color:var(--dim);\">Monitor</span>";
-      var sc=c._scoreComponents||{};
-      var ign2=hasIgnite&&state.protectIgnite[c.adv]?state.protectIgnite[c.adv]:null;
-      var ignPct=ign2&&c.rev26>0?Math.round(ign2.ign26/c.rev26*100):null;
-      var ignScoreLive=ignPct!=null?(ignPct>=50?20:ignPct>=25?12:6):(sc.ignScore||10);
-      var ignDetailLive=ignPct!=null?(ignPct+'% Ignite mix - '+(ignPct>=50?'strong digital investment':ignPct>=25?'mixed portfolio':'heavy broadcast dependency')):(sc.ignDetail||'Upload Ignite file');
-      var liveScore=Math.min(100,(sc.valScore||0)+(sc.growScore||0)+ignScoreLive+(sc.stabScore||0));
-      var _sd={name:c.adv,sub:'Protect & Expand · '+fmt(c.rev26),description:'Scored on current revenue size, year-over-year growth, Ignite product investment, and relationship stability.',total:liveScore,
-        components:[
-          {label:'Client Value',score:sc.valScore||0,max:35,detail:sc.valDetail||''},
-          {label:'Growth Trajectory',score:sc.growScore||0,max:35,detail:sc.growDetail||''},
-          {label:'Ignite Investment',score:ignScoreLive,max:20,detail:ignDetailLive},
-          {label:'Relationship Stability',score:sc.stabScore||0,max:10,detail:sc.stabDetail||''}
-        ]};
-      c.score=liveScore;
       return "<tr>"+makeCheckbox("protect",c)
         +"<td><strong style=\"color:#fff;\">"+c.adv+"</strong>"+placesTierBadge(c._placesTier)+"</td>"
         +"<td class=\"hide-mobile\" style=\"color:var(--dim);font-size:.78rem;\">"+c.ae+"</td>"
-        +"<td class=\"text-right\">"+scoreBadge(liveScore,_sd)+"</td>"
+        +"<td class=\"text-right\">"+scoreBadge(c.score,c._scoreData)+"</td>"
         +"<td class=\"text-right hide-mobile\" style=\"color:var(--dim);\">"+fmt(c.rev24||0)+"</td>"
         +"<td class=\"text-right\" style=\"color:var(--dim);\">"+fmt(c.rev25)+"</td>"
         +"<td class=\"text-right\" style=\"color:#fff;font-weight:600;\">"+fmt(c.rev26)+"</td>"
         +(hasIgnite?"<td class=\"text-right hide-mobile\" style=\"color:var(--teal);\">"+( ign26!=null?fmt(ign26):"-")+"</td><td class=\"text-right hide-mobile\" style=\"color:var(--orange);\">"+( bcast26!=null?fmt(bcast26):"-")+"</td>":"")
-        +"<td class=\"text-right hide-mobile\">"+ti+"</td><td class=\"hide-mobile\">"+act+"</td></tr>";
+        +"<td class=\"text-right hide-mobile\">"+ti+"</td></tr>";
     }).join("")+"</tbody></table></div>";
 }
 
@@ -1366,7 +1331,6 @@ function renderReclaim() {
     +(hasIgnite?'<th class="text-right hide-mobile" style="color:var(--teal);font-size:.65rem;">IGN 2024</th>':'')
     +(hasIgnite?'<th class="text-right hide-mobile" style="color:var(--teal);font-size:.65rem;">IGN 2025</th>':'')
     +(hasIgnite?'<th class="text-right" style="color:var(--teal);font-size:.65rem;">IGN 2026</th>':'')
-    +'<th class="text-left hide-mobile">Source</th>'
     +'</tr></thead><tbody>'
     +combined.map(function(c) {
       var bucket = c.bucket==='Reclaim Now'
@@ -1396,7 +1360,6 @@ function renderReclaim() {
         +(hasIgnite?revCell(c.ignRev24,'var(--teal)'):'')
         +(hasIgnite?revCell(c.ignRev25,'var(--teal)'):'')
         +(hasIgnite?revCellVisible(c.ignRev26,'var(--teal)'):'')
-        +'<td class="hide-mobile">'+sourceBadge+'</td>'
         +'</tr>';
     }).join('')
     +'</tbody></table></div>';
@@ -1684,6 +1647,12 @@ function scoreCompetitors(prospect) {
  var cat = prospect.cat || '';
  var allProspects = (state.rebuild && state.rebuild.prospects) ? state.rebuild.prospects : [];
 
+ // Non-rebuild accounts don't have a discovery prospect pool to compare against.
+ // Return a neutral mid-range score rather than defaulting to minimum.
+ if (!prospect._rebuildId) {
+   return { score: 8, detail: 'Market opportunity — no discovery data available for this account. Neutral score applied.' };
+ }
+
  // All businesses in same category, excluding this prospect
  var sameCategory = allProspects.filter(function(p) {
  return p !== prospect && (p.cat || '') === cat;
@@ -1790,7 +1759,7 @@ function getConcentrationBonus(rev){
   return {score:score,detail:detail};
 }
 
-function computeScore(prospect) {
+function computeScore(prospect, tabLabel) {
  var cat = prospect.cat || '';
 
  var scale = scoreBusinessScale(prospect);
@@ -1805,7 +1774,7 @@ function computeScore(prospect) {
 
  prospect._scoreData = {
  name: prospect.name,
- sub: 'Rebuild · ' + (cat || 'Unknown Category'),
+ sub: (tabLabel || 'Rebuild') + ' · ' + (cat || 'Unknown Category'),
  description: 'IGI Score built from 4 components: Business Scale (Google Places signals), Category & Vertical fit, Local Ownership type, and Competitors based on formidable businesses in the same category.',
  total: total,
  components: [
