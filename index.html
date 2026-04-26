@@ -557,12 +557,53 @@ function loadPlanLocal() {
   try { var d=JSON.parse(localStorage.getItem('reignite_plan')||'{}'); Object.keys(plan).forEach(function(s){if(d[s])plan[s]=d[s];}); updatePlanFab(); } catch(e){}
 }
 // ─── FIRESTORE PLAN FUNCTIONS ──────────────────────────────────────────────────────
+function _stripHeavyFields(arr) {
+  if (!arr || !arr.length) return arr;
+  return arr.map(function(item) {
+    var copy = Object.assign({}, item);
+    if (copy._places) {
+      copy._places = Object.assign({}, copy._places);
+      delete copy._places.regularOpeningHours;
+    }
+    return copy;
+  });
+}
+
 function _currentPlanSnapshot() {
-  return JSON.stringify({ market: document.getElementById('marketInput').value||'', plan: plan });
+  return JSON.stringify({
+    market: document.getElementById('marketInput').value || '',
+    plan: plan,
+    uploadedData: {
+      close: state.close || [],
+      closeMeta: state.closeMeta || null,
+      protect: state.protect || [],
+      protectIgnite: state.protectIgnite || {},
+      protectMeta: state.protectMeta || null,
+      reclaimAll: state.reclaimAll || [],
+      reclaimIgnite: state.reclaimIgnite || [],
+      reclaimMeta: state.reclaimMeta || null
+    }
+  });
 }
 
 async function savePlanToFirestore(name) {
-  var data = { name: name, createdAt: firebase.firestore.FieldValue.serverTimestamp(), updatedAt: firebase.firestore.FieldValue.serverTimestamp(), data: JSON.parse(JSON.stringify(plan)) };
+  var uploadedData = {
+    close: _stripHeavyFields(state.close || []),
+    closeMeta: state.closeMeta || null,
+    protect: _stripHeavyFields(state.protect || []),
+    protectIgnite: state.protectIgnite || {},
+    protectMeta: state.protectMeta || null,
+    reclaimAll: _stripHeavyFields(state.reclaimAll || []),
+    reclaimIgnite: _stripHeavyFields(state.reclaimIgnite || []),
+    reclaimMeta: state.reclaimMeta || null
+  };
+  var data = {
+    name: name,
+    createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+    updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+    data: JSON.parse(JSON.stringify(plan)),
+    uploadedData: JSON.parse(JSON.stringify(uploadedData))
+  };
   var ref = await db.collection('plans').add(data);
   state.loadedPlanId = ref.id;
   state.loadedPlanName = name;
@@ -575,22 +616,85 @@ async function savePlanToFirestore(name) {
 
 async function updatePlanInFirestore() {
   if (!state.loadedPlanId) return;
-  await db.collection('plans').doc(state.loadedPlanId).update({ updatedAt: firebase.firestore.FieldValue.serverTimestamp(), data: JSON.parse(JSON.stringify(plan)) });
+  var uploadedData = {
+    close: _stripHeavyFields(state.close || []),
+    closeMeta: state.closeMeta || null,
+    protect: _stripHeavyFields(state.protect || []),
+    protectIgnite: state.protectIgnite || {},
+    protectMeta: state.protectMeta || null,
+    reclaimAll: _stripHeavyFields(state.reclaimAll || []),
+    reclaimIgnite: _stripHeavyFields(state.reclaimIgnite || []),
+    reclaimMeta: state.reclaimMeta || null
+  };
+  await db.collection('plans').doc(state.loadedPlanId).update({
+    updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+    data: JSON.parse(JSON.stringify(plan)),
+    uploadedData: JSON.parse(JSON.stringify(uploadedData))
+  });
   state.lastSavedData = _currentPlanSnapshot();
   var msg = document.getElementById('planUpdatedMsg');
-  if (msg) { msg.style.display='inline'; msg.style.opacity='1'; setTimeout(function(){ msg.style.opacity='0'; setTimeout(function(){ msg.style.display='none'; msg.style.opacity='1'; },400); },2000); }
+  if (msg) {
+    msg.style.display = 'inline'; msg.style.opacity = '1';
+    setTimeout(function() {
+      msg.style.opacity = '0';
+      setTimeout(function() { msg.style.display = 'none'; msg.style.opacity = '1'; }, 400);
+    }, 2000);
+  }
 }
 
 async function loadPlanFromFirestore(planId) {
   var snap = await db.collection('plans').doc(planId).get();
   if (!snap.exists) { console.warn('Plan not found:', planId); return null; }
   var data = snap.data();
-  Object.keys(plan).forEach(function(s){ plan[s] = (data.data && data.data[s]) ? data.data[s] : []; });
+
+  // Restore plan (checked accounts)
+  Object.keys(plan).forEach(function(s) {
+    plan[s] = (data.data && data.data[s]) ? data.data[s] : [];
+  });
+
+  // Restore uploaded tab state
+  var ud = data.uploadedData || {};
+
+  if (ud.close && ud.close.length) {
+    state.close = ud.close;
+    state.closeMeta = ud.closeMeta || null;
+  }
+  if (ud.protect && ud.protect.length) {
+    state.protect = ud.protect;
+    state.protectMeta = ud.protectMeta || null;
+  }
+  if (ud.protectIgnite && Object.keys(ud.protectIgnite).length) {
+    state.protectIgnite = ud.protectIgnite;
+  }
+  if (ud.reclaimAll && ud.reclaimAll.length) {
+    state.reclaimAll = ud.reclaimAll;
+  }
+  if (ud.reclaimIgnite && ud.reclaimIgnite.length) {
+    state.reclaimIgnite = ud.reclaimIgnite;
+  }
+  if (ud.reclaimMeta) {
+    state.reclaimMeta = ud.reclaimMeta;
+  }
+
+  // Restore identity
   state.loadedPlanId = planId;
   state.loadedPlanName = data.name || '';
   state.lastSavedData = _currentPlanSnapshot();
   document.getElementById('marketInput').value = data.name || '';
   document.getElementById('marketLabel').textContent = data.name || 'IGNITE GROWTH INTELLIGENCE';
+
+  // Re-render uploaded tabs
+  if (state.close && state.close.length && state.closeMeta) {
+    var m = state.closeMeta;
+    renderClose(state.close, m.budget || 0, m.booked || 0, m.pitched || 0, m.fname || 'Restored');
+  }
+  if (state.protect && state.protect.length) {
+    renderProtect(state.protect, (state.protectMeta && state.protectMeta.fname) || 'Restored');
+  }
+  if ((state.reclaimAll && state.reclaimAll.length) || (state.reclaimIgnite && state.reclaimIgnite.length)) {
+    renderReclaim();
+  }
+
   savePlanLocal();
   updatePlanFab();
   syncUpdatePlanBtn();
@@ -892,6 +996,7 @@ function parseClose(rows, fname) {
     if (el) el.textContent = 'Enriching accounts with business data\u2026 ' + cur + ' of ' + total;
   }).then(function(enriched) {
     state.close = enriched;
+    state.closeMeta = { budget: budget, booked: booked, pitched: pitched, fname: fname };
     renderClose(enriched, budget, booked, pitched, fname);
   });
   return;
@@ -959,6 +1064,7 @@ function parseProtect(rows, fname) {
     if (el) el.textContent = 'Enriching accounts\u2026 ' + cur + ' of ' + total;
   }).then(function(enriched) {
     state.protect = enriched;
+    state.protectMeta = { fname: fname };
     renderProtect(enriched, fname);
   });
   return;
@@ -1082,6 +1188,9 @@ function parseReclaim(rows, type, fname) {
   }).then(function(enriched) {
     if (type === 'ignite') state.reclaimIgnite = enriched;
     else state.reclaimAll = enriched;
+    state.reclaimMeta = state.reclaimMeta || {};
+    if (type === 'ignite') state.reclaimMeta.fnameIgnite = fname;
+    else state.reclaimMeta.fnameAll = fname;
     renderReclaim();
   });
   return;
