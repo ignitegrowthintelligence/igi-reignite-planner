@@ -1645,7 +1645,7 @@ function scoreLocalOwnership(prospect) {
 
 function scoreCompetitors(prospect) {
  var cat = prospect.cat || '';
- var allProspects = (state.rebuild && state.rebuild._merged) ? state.rebuild._merged : [];
+ var allProspects = (state.rebuild && state.rebuild.prospects) ? state.rebuild.prospects : [];
 
  // Non-rebuild accounts don't have a discovery prospect pool to compare against.
  // Return a neutral mid-range score rather than defaulting to minimum.
@@ -2396,7 +2396,6 @@ function _openProspectPage(cpid) {
 
   // For Rebuild: run normal Firestore discovery cache check
   if (entry.section === 'rebuild') {
-    _checkDiscoveryCacheForPage(entry.acct, page);
     return;
   }
 
@@ -2405,7 +2404,6 @@ function _openProspectPage(cpid) {
   db.collection('clientProfiles').doc(key).get().then(function(doc) {
     if (doc.exists && doc.data().domain) {
       entry.acct._discDomain = doc.data().domain;
-      _checkDiscoveryCacheForPage(entry.acct, page);
     } else {
       _showWebsitePopup(entry.acct, page, key);
     }
@@ -2432,7 +2430,6 @@ window.addEventListener('popstate', function(e) {
       page.style.display = 'block';
       page.scrollTop = 0;
       window._activeProspectAcct = entry.acct;
-      _checkDiscoveryCacheForPage(entry.acct, page);
     }
   } else {
     _closeProspectPage();
@@ -2495,32 +2492,7 @@ function _buildProspectPageHTML(section, acct) {
   var body = section === 'rebuild' ? _buildRebuildBody(acct) : _buildLaneBody(section, acct);
 
   return header + body + '</div>';
-}
-
-function _checkDiscoveryCacheForPage(acct, pageEl) {
-  if (!acct || !acct._activeContainerId) return;
-  var cid = acct._activeContainerId;
-  var placeId = acct._places && acct._places.id;
-  if (!placeId) return;
-  var bulletsEl = document.getElementById(cid + '-bullets');
-  var btnWrapEl = document.getElementById(cid + '-btn-wrap');
-  var linkEl    = document.getElementById(cid + '-link');
-  if (!bulletsEl) return;
-  db.collection('discoveryIntel').doc(placeId).get().then(function(doc) {
-    if (doc.exists) {
-      var cached = doc.data();
-      _renderDiscoveryBullets(cached.report, bulletsEl, btnWrapEl, linkEl);
-      if (cached.reportUrl) _setDiscoveryReportLink(cached.reportUrl, cid);
-      _showRegenerateButton(acct, cid, cached.generatedAt);
-    } else {
-      _showGenerateIntelButton(acct._discDomain, cid);
-    }
-  }).catch(function() {
-    _showGenerateIntelButton(acct._discDomain, cid);
-  });
-}
-
-function _profileKey(acct) {
+}function _profileKey(acct) {
   return (acct.name || acct.acct || acct.adv || 'unknown')
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, '-')
@@ -2620,7 +2592,6 @@ function _submitWebsitePopup(acct, pageEl, profileKey) {
   if (discBtn) {
     discBtn.click();
   } else {
-    _checkDiscoveryCacheForPage(acct, pageEl);
   }
 }
 
@@ -2798,371 +2769,48 @@ function _buildRebuildBody(a) {
     var containerId = 'disc-' + Math.random().toString(36).slice(2, 8);
     a._activeContainerId = containerId;
 
-    discoverySection =
-     '<div style="padding:18px 24px 0;">'
-     + '<div style="font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.09em;color:var(--teal);margin-bottom:10px;">Discovery Intelligence</div>'
-
-     // Bullets container
+    var discoverySection = website
+     ? '<div style="padding:18px 24px 0;">'
+     + '<div style="font-size:.65rem;font-weight:700;text-transform:uppercase;'
+     + 'letter-spacing:.09em;color:var(--teal);margin-bottom:10px;">Discovery Intelligence</div>'
      + '<div id="' + containerId + '-bullets" style="display:flex;flex-direction:column;gap:8px;margin-bottom:10px;"></div>'
-
-     // Progress bar — hidden until job starts
      + '<div id="' + containerId + '-progress" style="display:none;margin-bottom:10px;">'
      + '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:5px;">'
-     + '<span id="' + containerId + '-progress-label" style="font-size:.68rem;color:var(--dim);">Generating report…</span>'
+     + '<span id="' + containerId + '-progress-label" style="font-size:.68rem;color:var(--dim);">Generating intel...</span>'
      + '<span id="' + containerId + '-progress-pct" style="font-size:.68rem;color:var(--teal);font-weight:700;">0%</span>'
      + '</div>'
      + '<div style="height:4px;background:var(--surface2);border-radius:2px;overflow:hidden;">'
-     + '<div id="' + containerId + '-progress-bar" style="height:100%;width:0%;background:linear-gradient(90deg,var(--teal),rgba(0,188,212,.5));border-radius:2px;transition:width .8s ease;"></div>'
-     + '</div>'
-     + '</div>'
-
-     // Generate Intel button
+     + '<div id="' + containerId + '-progress-bar" style="height:100%;width:0%;'
+     + 'background:linear-gradient(90deg,var(--teal),rgba(0,188,212,.5));'
+     + 'border-radius:2px;transition:width .8s ease;"></div>'
+     + '</div></div>'
      + '<div id="' + containerId + '-btn-wrap">'
      + '<button id="' + containerId + '-btn" '
-     + 'onclick="generateDiscoveryIntel(\'' + encodeURIComponent(domain) + '\',\'' + containerId + '\')" '
-     + 'style="width:100%;display:flex;align-items:center;justify-content:center;gap:8px;padding:12px 16px;'
+     + 'style="width:100%;display:flex;align-items:center;justify-content:center;'
+     + 'gap:8px;padding:12px 16px;'
      + 'background:linear-gradient(135deg,rgba(0,188,212,.15),rgba(0,188,212,.06));'
-     + 'border:1px solid var(--teal-border);border-radius:8px;color:var(--teal);font-size:.82rem;font-weight:700;cursor:pointer;transition:all .15s;" '
-     + 'onmouseover="this.style.background=\'rgba(0,188,212,.22)\'" '
-     + 'onmouseout="this.style.background=\'linear-gradient(135deg,rgba(0,188,212,.15),rgba(0,188,212,.06))\'">'
-     + '🔍 Generate Intel'
+     + 'border:1px solid var(--teal-border);border-radius:8px;color:var(--teal);'
+     + 'font-size:.82rem;font-weight:700;cursor:pointer;" disabled>'
+     + 'Generate Intel (coming soon)'
      + '</button>'
      + '</div>'
-
-     // View Full Discovery Report link — hidden until job completes
-     + '<div id="' + containerId + '-link" style="display:none;margin-top:10px;">'
-     + '<a href="https://ignite.edwinlovett.com/research/?company=' + encodeURIComponent(domain) + '" target="_blank" rel="noopener" '
-     + 'style="display:flex;align-items:center;justify-content:space-between;padding:12px 16px;background:var(--surface2);border:1px solid var(--teal-border);border-radius:8px;text-decoration:none;transition:background .15s;" '
-     + 'onmouseover="this.style.background=\'rgba(0,188,212,.1)\'" onmouseout="this.style.background=\'var(--surface2)\'">'
-     + '<div>'
-     + '<div style="font-size:.82rem;font-weight:700;color:var(--teal);">View Full Discovery Report</div>'
-     + '<div style="font-size:.68rem;color:var(--dim);margin-top:2px;">Market research · Competitors · Ad intelligence · ' + domain + '</div>'
+     + '<div id="' + containerId + '-link" style="display:none;margin-top:10px;"></div>'
      + '</div>'
-     + '<div style="font-size:1rem;color:var(--teal);">→</div>'
-     + '</a></div>'
+     : '';
 
-     + '</div>';
-  }
-
-  var scoreBreakdownHtml = website
+    var scoreBreakdownHtml = website
     ? '<div id="score-breakdown-' + (containerId||'') + '" style="padding:0 24px 24px;">' + _buildScoreBreakdownWithFlash(a, containerId||'') + '</div>'
     : '<div style="padding:0 24px 24px;">' + _buildScoreBreakdown(a) + '</div>';
   return profileSection + discoverySection + scoreBreakdownHtml;
 }
 
-function _showGenerateIntelButton(domain, containerId) {
-  var btnWrapEl = document.getElementById(containerId + '-btn-wrap');
-  if (!btnWrapEl) return;
-  btnWrapEl.innerHTML =
-    '<button id="' + containerId + '-btn" '
-    + 'onclick="generateDiscoveryIntel(\'' + encodeURIComponent(domain) + '\',\'' + containerId + '\')" '
-    + 'style="width:100%;display:flex;align-items:center;justify-content:center;gap:8px;padding:12px 16px;'
-    + 'background:linear-gradient(135deg,rgba(0,188,212,.15),rgba(0,188,212,.06));'
-    + 'border:1px solid var(--teal-border);border-radius:8px;color:var(--teal);font-size:.82rem;font-weight:700;cursor:pointer;transition:all .15s;" '
-    + 'onmouseover="this.style.background=\'rgba(0,188,212,.22)\'" '
-    + 'onmouseout="this.style.background=\'linear-gradient(135deg,rgba(0,188,212,.15),rgba(0,188,212,.06))\'" >'
-    + '🔍 Generate Intel'
-    + '</button>';
-  btnWrapEl.style.display = 'block';
-}
-
-function _setDiscoveryReportLink(url, containerId) {
-  var linkEl = document.getElementById(containerId + '-link');
-  var anchor = document.getElementById(containerId + '-report-link');
-  if (anchor && url) {
-    anchor.href = url;
-    anchor.removeAttribute('disabled');
+function generateDiscoveryIntel(encodedDomain, containerId) {
+  // Placeholder — new intelligence system coming soon
+  var btnEl = document.getElementById(containerId + '-btn');
+  if (btnEl) {
+    btnEl.disabled = true;
+    btnEl.textContent = 'Generate Intel (coming soon)';
   }
-  if (linkEl) linkEl.style.display = 'block';
-}
-
-function _showRegenerateButton(prospect, containerId, generatedAt) {
-  var ageLabel = 'Generated today';
-  if (generatedAt) {
-    var ms = Date.now() - new Date(generatedAt).getTime();
-    var days = Math.floor(ms / 86400000);
-    if (days === 1) ageLabel = 'Generated yesterday';
-    else if (days >= 2 && days < 7) ageLabel = 'Generated ' + days + ' days ago';
-    else if (days >= 7) ageLabel = 'Generated ' + new Date(generatedAt).toLocaleDateString('en-US', {month:'short', day:'numeric'});
-  }
-  var discSection = document.getElementById(containerId + '-discovery-section');
-  if (!discSection) return;
-  // Remove any existing regen wrap to avoid duplicates
-  var existing = document.getElementById(containerId + '-regen-wrap');
-  if (existing) existing.remove();
-  var wrap = document.createElement('div');
-  wrap.id = containerId + '-regen-wrap';
-  wrap.style.cssText = 'margin-top:14px; display:flex; align-items:center; gap:12px;';
-  wrap.innerHTML =
-    '<span style="font-size:11px; color:var(--dim);">' + ageLabel + '</span>' +
-    '<button style="font-size:11px; padding:4px 12px; border-radius:6px;' +
-    ' border:1px solid var(--teal-border); color:var(--teal);' +
-    ' background:transparent; cursor:pointer; font-weight:600;">' +
-    '↺ Regenerate Intel' +
-    '</button>';
-  var regenBtn = wrap.querySelector('button');
-  regenBtn.addEventListener('click', function() {
-    wrap.remove();
-    generateDiscoveryIntel(encodeURIComponent(prospect._discDomain), containerId);
-  });
-  discSection.appendChild(wrap);
-}
-
-async function generateDiscoveryIntel(encodedDomain, containerId) {
- var domain = decodeURIComponent(encodedDomain);
- var bulletsEl = document.getElementById(containerId + '-bullets');
- var btnWrapEl = document.getElementById(containerId + '-btn-wrap');
- var btnEl = document.getElementById(containerId + '-btn');
- var linkEl = document.getElementById(containerId + '-link');
- var progressEl = document.getElementById(containerId + '-progress');
- var progressBar = document.getElementById(containerId + '-progress-bar');
- var progressPct = document.getElementById(containerId + '-progress-pct');
- var progressLbl = document.getElementById(containerId + '-progress-label');
-
- var apiBase = 'https://ignite.edwinlovett.com';
- var jobApiUrl = apiBase + '/research/research-job-api.php';
- var cacheUrl = apiBase + '/research/?company=' + encodeURIComponent(domain) + '&format=json';
-
- // Disable button
- if (btnEl) btnEl.disabled = true;
-
- // Step 1: POST to job API — returns cached report immediately or enqueues a job
- var jobData;
- try {
- var postResp = await fetch(jobApiUrl, {
- method: 'POST',
- headers: { 'Content-Type': 'application/json' },
- body: JSON.stringify({ domain: domain })
- });
- jobData = await postResp.json();
- } catch(e) {
- console.error('[IGI] Discovery POST failed:', e);
- _showDiscoveryError(bulletsEl, btnWrapEl, btnEl, 'Unable to reach Discovery.AI. Check your connection and try again.');
- return;
- }
-
- console.log('[IGI] Discovery POST response:', jobData);
-
- // Step 2: Cached — render bullets immediately
- // Handle both {status:'complete', report:{...}} and {status:'complete', result:{report:{...}}}
- var cachedReport = null;
- if (jobData.status === 'complete') {
- cachedReport = (jobData.report) || (jobData.result && jobData.result.report) || null;
- }
- if (cachedReport) {
- _renderDiscoveryBullets(cachedReport, bulletsEl, btnWrapEl, linkEl);
- return;
- }
-
- // Step 3: Job enqueued — validate we have a jobId and pollUrl
- if (!jobData.jobId || !jobData.pollUrl) {
- console.error('[IGI] Unexpected response, missing jobId or pollUrl:', jobData);
- _showDiscoveryError(bulletsEl, btnWrapEl, btnEl, 'Unexpected response from Discovery.AI. Try again.');
- return;
- }
-
- // Show progress bar, hide button
- if (btnWrapEl) btnWrapEl.style.display = 'none';
- if (progressEl) progressEl.style.display = 'block';
-
- // Animated progress bar — estimate 90s
- var startTime = Date.now();
- var estimatedMs = 90000;
- var progressInterval = setInterval(function() {
- var elapsed = Date.now() - startTime;
- var pct = Math.min(90, Math.round((elapsed / estimatedMs) * 90));
- if (progressBar) progressBar.style.width = pct + '%';
- if (progressPct) progressPct.textContent = pct + '%';
- if (progressLbl) progressLbl.textContent = 'Generating report... ' + Math.round(elapsed / 1000) + 's';
- }, 1000);
-
- // Ensure poll URL is absolute — prepend apiBase if it starts with /
- var rawPollUrl = jobData.pollUrl;
- var pollUrl = (rawPollUrl.startsWith('http')) ? rawPollUrl : apiBase + rawPollUrl;
-
- // Step 4: Poll job status every 2.5s, max 5 minutes (120 attempts)
- var maxAttempts = 120;
- var attempt = 0;
-
- var poll = async function() {
- attempt++;
- try {
- var pollResp = await fetch(pollUrl);
- var pollData = await pollResp.json();
- console.log('[IGI] Poll attempt ' + attempt + ':', pollData.status);
-
- if (pollData.status === 'complete') {
- clearInterval(progressInterval);
- if (progressBar) progressBar.style.width = '100%';
- if (progressPct) progressPct.textContent = '100%';
- if (progressLbl) progressLbl.textContent = 'Report ready!';
-
- setTimeout(async function() {
- if (progressEl) progressEl.style.display = 'none';
- try {
- var cacheResp = await fetch(cacheUrl);
- var cacheData = await cacheResp.json();
- // Handle both {success:true, report:{...}} and {report:{...}}
- var finalReport = (cacheData.report) || null;
- if (finalReport) {
- _renderDiscoveryBullets(finalReport, bulletsEl, btnWrapEl, linkEl);
- } else {
- if (bulletsEl) bulletsEl.innerHTML = _discInfoHtml('Report generated! Click "View Full Discovery Report" to read it.');
- if (btnWrapEl) btnWrapEl.style.display = 'none';
- if (linkEl) linkEl.style.display = 'block';
- }
- } catch(e) {
- console.error('[IGI] Cache fetch failed:', e);
- if (bulletsEl) bulletsEl.innerHTML = _discInfoHtml('Report generated! Click "View Full Discovery Report" to read it.');
- if (btnWrapEl) btnWrapEl.style.display = 'none';
- if (linkEl) linkEl.style.display = 'block';
- }
- }, 600);
- return;
- }
-
- if (pollData.status === 'failed') {
- clearInterval(progressInterval);
- if (progressEl) progressEl.style.display = 'none';
- _showDiscoveryError(bulletsEl, btnWrapEl, btnEl,
- 'Report generation failed' + (pollData.error ? ': ' + pollData.error : '') + '. Try again.');
- return;
- }
-
- } catch(e) {
- console.warn('[IGI] Poll error (attempt ' + attempt + '):', e);
- // Transient error — keep trying
- }
-
- if (attempt >= maxAttempts) {
- clearInterval(progressInterval);
- if (progressEl) progressEl.style.display = 'none';
- if (bulletsEl) bulletsEl.innerHTML = _discInfoHtml('Still generating. Reopen this card in a moment to check again.');
- if (btnWrapEl) { btnWrapEl.style.display = 'block'; }
- if (btnEl) { btnEl.disabled = false; btnEl.textContent = 'Generate Intel'; }
- if (linkEl) linkEl.style.display = 'block';
- return;
- }
-
- setTimeout(poll, 2500);
- };
-
- setTimeout(poll, 2500);
-}
-
-function _renderDiscoveryBullets(report, bulletsEl, btnWrapEl, linkEl) {
- var bullets = _extractDiscoveryBullets(report);
- if (bulletsEl) {
- bulletsEl.innerHTML = bullets.length > 0
- ? bullets.map(function(b) {
- return '<div style="display:flex;gap:10px;align-items:flex-start;padding:10px 14px;'
- + 'background:var(--surface2);border:1px solid var(--border);border-radius:8px;">'
- + '<div style="color:var(--teal);font-size:.85rem;flex-shrink:0;margin-top:1px;">→</div>'
- + '<div style="font-size:.8rem;color:var(--text);line-height:1.55;">' + b + '</div>'
- + '</div>';
- }).join('')
- : _discInfoHtml('Report loaded. Click "View Full Discovery Report" for the full breakdown.');
- }
- if (btnWrapEl) btnWrapEl.style.display = 'none';
- if (linkEl) linkEl.style.display = 'block';
- // Populate Business Profile from intel report for non-Places accounts
- if (window._activeProspectAcct) {
-   var _prospectPage = document.getElementById('igi-prospect-page');
-   if (_prospectPage && _prospectPage.style.display !== 'none') {
-     _populateProfileFromReport(report, window._activeProspectAcct, _prospectPage);
-   }
- }
-}
-
-function _showDiscoveryError(bulletsEl, btnWrapEl, btnEl, msg) {
- if (bulletsEl) {
- bulletsEl.innerHTML =
- '<div style="padding:12px 14px;background:var(--surface2);border:1px solid rgba(248,113,113,.2);'
- + 'border-radius:8px;font-size:.78rem;color:var(--dim);">' + msg + '</div>';
- }
- if (btnWrapEl) btnWrapEl.style.display = 'block';
- if (btnEl) { btnEl.disabled = false; btnEl.innerHTML = '🔍 Generate Intel'; }
-}
-
-function _discInfoHtml(msg) {
- return '<div style="padding:12px 14px;background:var(--surface2);border:1px solid var(--border);'
- + 'border-radius:8px;font-size:.78rem;color:var(--dim);line-height:1.5;">' + msg + '</div>';
-}
-
-function _extractDiscoveryBullets(report) {
- var bullets = [];
-
- // 1. Marketing goal
- if (report.marketingObjective && report.marketingObjective.primaryGoal) {
- bullets.push('Marketing goal: ' + report.marketingObjective.primaryGoal);
- } else if (report.marketingInsights && report.marketingInsights.summary) {
- bullets.push('Marketing focus: ' + report.marketingInsights.summary);
- }
-
- // 2. Ad platforms / current marketing activity
- var adLine = null;
- if (report.currentMarketing) {
- var platforms = report.currentMarketing.adPlatforms;
- if (platforms && platforms.length > 0) {
- adLine = 'Currently running ads on ' + platforms.join(' and ') + ' — active digital advertiser.';
- } else if (report.currentMarketing.detectedAds && report.currentMarketing.detectedAds.length > 0) {
- var names = [];
- report.currentMarketing.detectedAds.forEach(function(ad) {
- var p = ad.platform || ad.source;
- if (p && names.indexOf(p) < 0) names.push(p);
- });
- adLine = names.length > 0
- ? 'Currently running ads on ' + names.join(' and ') + ' — active digital advertiser.'
- : 'No active ad campaigns detected — potential opening for Ignite.';
- } else {
- adLine = 'No active ad campaigns detected — potential opening for Ignite.';
- }
- } else if (report.adLibrary) {
- if (report.adLibrary.length > 0) {
- var legacyPlatforms = [];
- report.adLibrary.forEach(function(ad) {
- if (ad.platform && legacyPlatforms.indexOf(ad.platform) < 0) legacyPlatforms.push(ad.platform);
- });
- adLine = 'Currently running ads on ' + legacyPlatforms.join(' and ') + ' — active digital advertiser.';
- } else {
- adLine = 'No active ad campaigns detected — potential opening for Ignite.';
- }
- }
- if (adLine) bullets.push(adLine);
-
- // 3. Competitors
- var competitors = report.competitors || report.competitorAnalysis;
- if (competitors && competitors.length > 0) {
- var top = competitors[0];
- var cnt = competitors.length;
- var topName = top.name || top.company || '';
- var topPos = top.positioning || top.marketPosition || '';
- bullets.push(cnt + ' competitor' + (cnt !== 1 ? 's' : '') + ' identified. Strongest: '
- + topName + (topPos ? ' — ' + topPos : '') + '.');
- }
-
- // 4. Target audience
- if (report.targetAudience && report.targetAudience.demographics) {
- bullets.push('Target audience: ' + report.targetAudience.demographics);
- } else if (report.messagingIdeas && report.messagingIdeas.themes && report.messagingIdeas.themes.length > 0) {
- bullets.push('Key messaging theme: ' + report.messagingIdeas.themes[0]);
- } else if (report.marketResearch && report.marketResearch.trends && report.marketResearch.trends.length > 0) {
- bullets.push('Market trend: ' + report.marketResearch.trends[0]);
- }
-
- // 5. Top campaign recommendation / seller angle
- if (report.marketingObjective && report.marketingObjective.campaignRecommendations
- && report.marketingObjective.campaignRecommendations.length > 0) {
- bullets.push('Seller angle: ' + report.marketingObjective.campaignRecommendations[0]);
- } else if (report.messagingIdeas && report.messagingIdeas.themes
- && report.messagingIdeas.themes.length > 1) {
- bullets.push('Messaging angle: ' + report.messagingIdeas.themes[1]);
- } else if (report.marketingInsights && report.marketingInsights.recommendations
- && report.marketingInsights.recommendations.length > 0) {
- bullets.push('Seller angle: ' + report.marketingInsights.recommendations[0]);
- }
-
- return bullets.slice(0, 5);
 }
 
 function _buildLaneBody(section, a) {
@@ -3306,4 +2954,146 @@ function _buildLaneBody(section, a) {
     }
     if (profileRows.length) {
       placesProfile = '<div style="padding:18px 24px 0;">'
-        + '<div style="font-size:.65rem;font-weight:700;text-transform:uppe
+        + '<div style="font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.09em;color:var(--teal);margin-bottom:10px;">Business Profile</div>'
+        + '<div class="prospect-profile-rows" style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:2px 14px;">'
+        + profileRows.join('')
+        + '</div></div>';
+    }
+  }
+
+  return statGrid + tpSection + placesProfile + '<div style="padding:0 24px 24px;">' + _buildScoreBreakdown(a) + '</div>';
+}
+
+function _cpStatCard(label, value, sub, valueColor) {
+  return '<div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:12px 14px;">'
+    + '<div style="font-size:.62rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--dim);margin-bottom:4px;">' + label + '</div>'
+    + '<div style="font-size:1rem;font-weight:800;color:' + (valueColor || '#fff') + ';margin-bottom:2px;">' + (value || '-') + '</div>'
+    + '<div style="font-size:.68rem;color:var(--dim);">' + (sub || '') + '</div>'
+    + '</div>';
+}
+
+function _buildScoreBreakdownContent(a) {
+  var sd = a._scoreData || null;
+  if (!sd || !sd.components || !sd.components.length) return '';
+  return sd.components.map(function(c) {
+      var pct = c.max > 0 ? Math.round((c.score / c.max) * 100) : 0;
+      var barColor = pct >= 70 ? 'var(--green)' : pct >= 40 ? 'var(--yellow)' : 'var(--red)';
+      return '<div style="margin-bottom:14px;">'
+        + '<div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:4px;">'
+        + '<div style="font-size:.78rem;font-weight:600;color:var(--text);">' + c.label + '</div>'
+        + '<div style="font-size:.78rem;font-weight:800;color:' + barColor + ';">' + c.score
+        + '<span style="color:var(--dim);font-weight:400;font-size:.68rem;">/' + c.max + '</span></div>'
+        + '</div>'
+        + '<div style="background:var(--surface2);border-radius:4px;height:6px;overflow:hidden;margin-bottom:4px;">'
+        + '<div style="height:100%;width:' + pct + '%;background:' + barColor + ';border-radius:4px;"></div>'
+        + '</div>'
+        + '<div style="font-size:.67rem;color:var(--dim);line-height:1.4;">' + c.detail + '</div>'
+        + '</div>';
+    }).join('');
+}
+
+function _buildScoreBreakdown(a) {
+  var sd = a._scoreData || null;
+  if (!sd || !sd.components || !sd.components.length) return '';
+  return '<div style="margin-top:24px;padding-top:18px;border-top:1px solid var(--border);">'
+    + '<div style="font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--teal);margin-bottom:14px;">IGI Score Breakdown</div>'
+    + _buildScoreBreakdownContent(a)
+    + '</div>';
+}
+
+function _buildScoreBreakdownWithFlash(a, containerId) {
+  var sd = a._scoreData || null;
+  if (!sd || !sd.components || !sd.components.length) return '';
+  return '<div style="margin-top:24px;padding-top:18px;border-top:1px solid var(--border);">'
+    + '<div style="font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--teal);margin-bottom:14px;">IGI Score Breakdown</div>'
+    + sd.components.map(function(c) {
+        var pct = c.max > 0 ? Math.round((c.score / c.max) * 100) : 0;
+        var barColor = pct >= 70 ? 'var(--green)' : pct >= 40 ? 'var(--yellow)' : 'var(--red)';
+        var isOpp = c.label === 'Competitors';
+        return '<div style="margin-bottom:14px;">'
+          + '<div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:4px;">'
+          + '<div style="font-size:.78rem;font-weight:600;color:var(--text);">' + c.label + '</div>'
+          + '<div style="display:flex;align-items:center;gap:8px;">'
+          + (isOpp ? '<span id="opp-flash-' + containerId + '" style="font-size:.65rem;color:var(--teal);font-weight:600;opacity:0;transition:opacity 1s;">✓ Score updated</span>' : '')
+          + '<div style="font-size:.78rem;font-weight:800;color:' + barColor + ';">' + c.score
+          + '<span style="color:var(--dim);font-weight:400;font-size:.68rem;">/' + c.max + '</span></div>'
+          + '</div>'
+          + '</div>'
+          + '<div style="background:var(--surface2);border-radius:4px;height:6px;overflow:hidden;margin-bottom:4px;">'
+          + '<div style="height:100%;width:' + pct + '%;background:' + barColor + ';border-radius:4px;"></div>'
+          + '</div>'
+          + '<div ' + (isOpp ? 'id="opp-detail-' + containerId + '"' : '') + ' style="font-size:.67rem;color:var(--dim);line-height:1.4;">' + c.detail + '</div>'
+          + '</div>';
+      }).join('')
+    + '</div>';
+}
+
+// ─── INIT ─────────────────────────────────────────────────────────────────────
+loadPlanLocal();
+buildCategoryFilters();
+syncUpdatePlanBtn();
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Escape') {
+    var cp = document.getElementById('callPrepOverlay');
+    if (cp && cp.style.display !== 'none') { closeCallPrep(); return; }
+    var o = document.getElementById('igiModalOverlay');
+    if (o && o.style.display !== 'none') closeModal();
+  }
+});
+updateSummaryCards([
+  {label:'Upload Files',value:'↑',sub:'Start by uploading a file in any tab'},
+  {label:'IGI Score',value:'Auto',sub:'Powered by Ignite Growth Intelligence'},
+  {label:'Geography',value:'ZIP+Radius',sub:'Rebuild tab - filter by distance'},
+  {label:'Market',value:'Enter name',sub:'Top-right corner'}
+]);
+checkSharedMode().then(function(isShared) {
+  if (!isShared) {
+    // Normal mode
+    loadAllPlans();
+  }
+});
+</script>
+
+<!-- IGI Score Backdrop -->
+<div id="igiBackdrop" onclick="closeScorePanel()" style="display:none;position:fixed;inset:0;z-index:1500;background:rgba(0,0,0,.55);"></div>
+
+<!-- IGI Score Panel -->
+<div id="igiScorePanel" style="position:fixed;top:0;right:0;bottom:0;width:min(400px,100%);background:var(--surface);border-left:1px solid var(--teal-border);z-index:1600;transform:translateX(100%);transition:transform .35s cubic-bezier(.4,0,.2,1);display:flex;flex-direction:column;overflow:hidden;">
+  <div style="padding:20px;border-bottom:1px solid var(--border);flex-shrink:0;position:relative;">
+    <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;">
+      <div style="flex:1;">
+        <div style="font-size:.6rem;font-weight:700;text-transform:uppercase;letter-spacing:.12em;color:var(--teal);margin-bottom:6px;">IGI Score Breakdown</div>
+        <div id="igiPanelName" style="font-weight:800;font-size:1.05rem;color:#fff;line-height:1.3;"></div>
+        <div id="igiPanelSub" style="font-size:.72rem;color:var(--dim);margin-top:3px;"></div>
+      </div>
+      <div style="text-align:center;flex-shrink:0;background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:10px 14px;">
+        <div id="igiPanelScore" style="font-size:2.6rem;font-weight:900;line-height:1;"></div>
+        <div style="font-size:.58rem;color:var(--dim);letter-spacing:.1em;text-transform:uppercase;margin-top:3px;">IGI Score</div>
+      </div>
+    </div>
+    <button onclick="closeScorePanel()" style="position:absolute;top:14px;right:14px;background:var(--surface2);border:1px solid var(--border);color:var(--dim);border-radius:6px;padding:5px 9px;cursor:pointer;font-size:.8rem;">✕</button>
+  </div>
+  <div id="igiPanelDesc" style="padding:12px 20px;background:var(--surface2);border-bottom:1px solid var(--border);font-size:.72rem;color:var(--dim);flex-shrink:0;line-height:1.5;"></div>
+  <div id="igiPanelComponents" style="flex:1;overflow-y:auto;padding:18px 20px;"></div>
+  <div style="padding:12px 20px;border-top:1px solid var(--border);flex-shrink:0;text-align:center;">
+    <div style="font-size:.62rem;color:var(--dim);letter-spacing:.04em;">Powered by <span style="color:var(--teal);font-weight:700;">Ignite Growth Intelligence</span> &middot; IGI Score</div>
+  </div>
+</div>
+
+<div id="igi-prospect-page"
+ style="display:none; position:fixed; top:0; left:0; right:0; bottom:0;
+ overflow-y:auto; background:var(--bg); z-index:50;">
+</div>
+
+<!-- Call Prep Card Modal -->
+<div id="callPrepOverlay" onclick="if(event.target===this)closeCallPrep()" style="display:none;position:fixed;inset:0;z-index:2100;background:rgba(0,0,0,.72);align-items:center;justify-content:center;opacity:0;transition:opacity .18s;padding:16px;">
+  <div id="callPrepBox" style="background:var(--surface);border:1px solid var(--teal-border);border-radius:14px;width:min(720px,100%);max-height:90vh;overflow-y:auto;box-shadow:0 28px 70px rgba(0,0,0,.7);transform:scale(.95);transition:transform .18s;"></div>
+</div>
+
+<!-- Plan Management Modal -->
+<div id="igiModalOverlay" onclick="if(event.target===this)closeModal()" style="display:none;position:fixed;inset:0;z-index:2000;background:rgba(0,0,0,.65);align-items:center;justify-content:center;opacity:0;transition:opacity .18s;">
+  <div id="igiModalBox" style="background:var(--surface);border:1px solid var(--teal-border);border-radius:12px;padding:28px 28px 24px;width:min(440px,92vw);box-shadow:0 24px 60px rgba(0,0,0,.6);transform:scale(.95);transition:transform .18s;"></div>
+</div>
+
+</body>
+</html>
