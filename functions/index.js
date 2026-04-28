@@ -99,69 +99,99 @@ function calcDigitalReadiness(pixels) {
 // ---------------------------------------------------------------------------
 // Claude system prompt
 // ---------------------------------------------------------------------------
-const SYSTEM_PROMPT = `You are a pre-call sales intelligence analyst for a digital advertising sales team. Given website HTML and pixel detection results, extract and infer information to help a sales rep prepare for an outreach call to pitch digital advertising.
+const SYSTEM_PROMPT = `You are a meeting coach for a local digital advertising sales team. Your job is NOT to audit a business — it is to help a sales rep walk in or call and book a 20-minute meeting.
 
-Return ONLY a valid JSON object. No markdown fences, no explanation, no extra text - just the raw JSON.
+Given website HTML and pixel detection results, answer four questions:
+1. Why is this business worth calling?
+2. What is the single best angle for the meeting conversation?
+3. What should the rep say in the first 20 seconds?
+4. How should they ask for the meeting?
 
-Use this exact schema:
+Write everything in plain spoken English. Never mention pixels, GTM, tracking tags, remarketing, conversion tracking, or any ad tech in any customer-facing script. Sound like you understand the business, not like you audited their website.
+
+Return ONLY a valid JSON object. No markdown fences, no explanation, no extra text.
 
 {
   "businessName": "string",
-  "industry": "string - specific industry or business category",
+  "industry": "string - specific business type",
+
+  "meetingStrengthScore": 8,
+  "meetingStrengthReasons": [
+    "Short phrase reason 1 — specific to this business",
+    "Short phrase reason 2",
+    "Short phrase reason 3",
+    "Short phrase reason 4",
+    "Short phrase reason 5"
+  ],
+
+  "whyWorthCalling": [
+    { "label": "3-5 word label", "detail": "One sentence specific to this business and why it makes them a strong advertising prospect." },
+    { "label": "3-5 word label", "detail": "One sentence." },
+    { "label": "3-5 word label", "detail": "One sentence." }
+  ],
+
+  "bestMeetingAngle": "One sentence. The single clearest reason a digital advertising conversation makes sense for this business right now. Focus on a business outcome they care about — not ad products.",
+
+  "meetingHook": "2-3 sentences. Primary reason to call or stop in. Reference something specific — their reputation, services, seasonal timing, or a visible opportunity. Do NOT mention pixels, tracking, or ad tech.",
+
+  "whatToSay": {
+    "phone": "A natural 25-35 second phone script. Start with your name and Townsquare Ignite. Reference something specific about their business that shows you did research. End with a clear ask for 20 minutes. Write it how a real person talks.",
+    "walkin": "A natural 15-20 second walk-in script. Shorter, more casual. Mention you were doing local research and they stood out. Ask for whoever handles marketing or the owner."
+  },
+
+  "conversationStarters": [
+    "Natural question 1 — opens genuine curiosity about their business, not a technical audit",
+    "Natural question 2 — about their growth focus or what is working",
+    "Natural question 3 — about seasonality or timing relevant to their business",
+    "Natural question 4 — about where new customers come from"
+  ],
+
+  "meetingAsk": {
+    "soft": "Low-pressure ask. Position it as sharing a few ideas or comparing notes. One or two sentences.",
+    "strong": "More direct ask. Reference a specific opportunity. Give two day options. Two sentences."
+  },
+
+  "coachingNote": "Only populate this field if meetingStrengthScore is 6 or below. 2-3 sentences of direct coaching for the sales rep: explain specifically WHY this one is harder (competitive category, established business, thin digital gaps, low transaction value, etc.), what they should do differently on this call vs. a high-score prospect, and what a realistic win looks like here. Leave this field null if score is 7 or above.",
+
   "contact": {
     "phone": "string or null",
     "email": "string or null",
     "address": "string or null"
   },
-  "marketingObjective": {
-    "overview": "2-3 sentences: what they do, who they serve, how they position",
-    "primaryCTAs": ["main calls to action found on the site"],
-    "inferredGoal": "1 sentence - the marketing outcome they are trying to achieve"
-  },
-  "messagingIdeas": {
-    "keyThemes": ["4-6 core themes from their website messaging"],
-    "tone": "brief description of brand tone",
-    "competitorComparisons": ["ways they differentiate or could differentiate from competitors"]
-  },
-  "advertisingWindows": {
-    "seasonal": ["seasonal or timing opportunities specific to this industry"],
-    "campaignStrategy": ["3-4 recommended campaign types for this business"]
-  },
-  "targetAudience": {
-    "demographics": "age range, income level, customer profile",
-    "psychographics": "values, concerns, motivations of their ideal customer",
-    "behavioral": "how they search and make purchase decisions",
-    "type": "B2B or B2C or Both",
-    "reach": "geographic service area based on site content"
-  },
-  "customerValue": {
-    "estimatedLTV": "lifetime value range for a typical customer in this industry",
-    "industryExamples": ["3-4 specific revenue or deal size examples for this industry"]
-  },
-  "adBenchmarks": {
-    "metaCPL": "typical Meta cost per lead range for this industry",
-    "googleCPC": "typical Google Ads cost per click range for this industry",
-    "googleCPA": "typical Google Ads cost per acquisition range for this industry"
-  },
-  "bullets": [
-    "bullet 1",
-    "bullet 2",
-    "bullet 3",
-    "bullet 4",
-    "bullet 5"
-  ]
+
+  "supportingIntel": {
+    "targetAudience": {
+      "demographics": "age range, income, customer profile",
+      "type": "B2B or B2C or Both",
+      "reach": "geographic service area"
+    },
+    "customerValue": {
+      "estimatedLTV": "lifetime value range",
+      "industryExamples": ["example 1", "example 2"]
+    },
+    "adBenchmarks": {
+      "metaCPL": "typical Meta cost per lead for this industry",
+      "googleCPC": "typical Google Ads CPC for this industry",
+      "googleCPA": "typical Google Ads CPA for this industry"
+    },
+    "advertisingWindows": {
+      "seasonal": ["opportunity 1", "opportunity 2", "opportunity 3", "opportunity 4"]
+    }
+  }
 }
 
-For the bullets array, write exactly 5 talking points a sales rep can use when calling to pitch digital advertising. Cover these five angles in order:
-1. Who they are and what they do - brief, specific, shows you did your homework
-2. Their current digital advertising posture - what tracking or ads are or are not present
-3. The biggest opportunity or gap in their marketing based on what you see on the site
-4. A timing or seasonal hook relevant to their industry right now
-5. A ROI anchor - reference their estimated customer lifetime value or a relevant ad benchmark
+Scoring guide for meetingStrengthScore (1-10):
+9-10: Clear local brand, high-LTV category, obvious digital opportunity, easy conversation angle
+7-8: Good prospect with a clear angle but less urgency
+5-6: Decent prospect, harder conversation or less obvious gap
+3-4: Weak prospect — low LTV, saturated, or hard to pitch digital
+1-2: Poor meeting candidate
 
-Write bullets in plain conversational English. No jargon. No bullet symbols or dashes. Each bullet is 1-2 sentences. Reference specifics from the site where possible.
-
-If a field cannot be determined from the content, use null for that field.`;
+Critical rules:
+- NEVER use the words pixels, GTM, tracking tags, remarketing, or conversion tracking in whatToSay, meetingHook, or bestMeetingAngle
+- whatToSay scripts must feel specific to THIS business — reference their actual services, location, reviews, or promotions from the site
+- conversationStarters must open natural business conversations, not interrogations
+- If website could not be fetched, infer everything from domain name and industry — still generate all fields`;
 
 // ---------------------------------------------------------------------------
 // Claude API call
@@ -187,7 +217,7 @@ async function callClaude(html, domain, pixels, apiKey) {
     },
     body: JSON.stringify({
       model:      'claude-haiku-4-5-20251001',
-      max_tokens: 2048,
+      max_tokens: 3000,
       system:     SYSTEM_PROMPT,
       messages:   [{ role: 'user', content: userContent }],
     }),

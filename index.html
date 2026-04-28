@@ -2801,7 +2801,7 @@ function generateDiscoveryIntel(domain, containerId) {
     if (msgIdx < messages.length && pct > msgIdx * 18) { if (progLabel) progLabel.textContent = messages[msgIdx]; msgIdx++; }
   }, 600);
 
-  var profileKey = 'intel-' + domain.toLowerCase().replace(/[^a-z0-9]/g,'-').replace(/-+/g,'-').slice(0,60);
+  var profileKey = 'v2-intel-' + domain.toLowerCase().replace(/[^a-z0-9]/g,'-').replace(/-+/g,'-').slice(0,60);
 
   fetch(INTEL_URL, {
     method: 'POST',
@@ -2820,19 +2820,22 @@ function generateDiscoveryIntel(domain, containerId) {
     setTimeout(function() {
       if (progEl) progEl.style.display = 'none';
 
-      var d  = result.data || {};
-      var dr = d.digitalReadiness || {};
-      var mo = d.marketingObjective || {};
-      var mi = d.messagingIdeas || {};
-      var aw = d.advertisingWindows || {};
-      var ta = d.targetAudience || {};
-      var cv = d.customerValue || {};
-      var ab = d.adBenchmarks || {};
-      var bullets = d.bullets || [];
-
-      var drScore = dr.score !== undefined ? dr.score : 0;
-      var drLabel = dr.label || 'No tracking detected';
-      var drColor = drScore >= 8 ? 'var(--green)' : drScore >= 4 ? 'var(--yellow)' : 'var(--red)';
+      var d        = result.data || {};
+      var dr       = d.digitalReadiness || {};
+      var si       = d.supportingIntel || {};
+      var cv       = si.customerValue || {};
+      var ab       = si.adBenchmarks || {};
+      var ta       = si.targetAudience || {};
+      var aw       = si.advertisingWindows || {};
+      var mScore   = d.meetingStrengthScore || 0;
+      var mReasons = d.meetingStrengthReasons || [];
+      var worth    = d.whyWorthCalling || [];
+      var angle    = d.bestMeetingAngle || '';
+      var hook     = d.meetingHook || '';
+      var wts      = d.whatToSay || {};
+      var starters = d.conversationStarters || [];
+      var mAsk     = d.meetingAsk || {};
+      var mColor   = mScore >= 8 ? 'var(--green)' : mScore >= 5 ? 'var(--yellow)' : 'var(--red)';
 
       function _sec(emoji, title) {
         return '<div style="font-size:1.05rem;font-weight:700;color:var(--teal);'
@@ -2842,136 +2845,215 @@ function generateDiscoveryIntel(domain, containerId) {
 
       var html = '';
 
-      // ── Talking Points (TOP) ────────────────────────────────
-      if (bullets.length) {
-        html += _sec('⚡', 'Talking Points');
-        // 2-column grid for bullets on wider screens
-        html += '<div style="display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-bottom:4px;">'
-          + bullets.map(function(b, i) {
-            return '<div style="display:flex;gap:10px;align-items:flex-start;padding:11px 14px;'
-              + 'background:var(--surface2);border:1px solid var(--border);border-radius:8px;">'
-              + '<div style="color:var(--teal);font-size:.82rem;font-weight:800;flex-shrink:0;min-width:16px;">' + (i + 1) + '</div>'
-              + '<div style="font-size:.79rem;color:var(--text);line-height:1.55;">' + b + '</div>'
-              + '</div>';
-          }).join('') + '</div>';
+      // ── Meeting Strength ──────────────────────────────────────
+      html += '<div style="display:flex;align-items:center;justify-content:space-between;'
+        + 'background:linear-gradient(135deg,rgba(0,229,199,.1),rgba(0,229,199,.04));'
+        + 'border:1px solid rgba(0,229,199,.3);border-radius:10px;padding:14px 18px;margin-bottom:6px;">'
+        + '<div style="flex:1;">'
+        + '<div style="font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--dim);margin-bottom:6px;">Meeting Strength</div>'
+        + '<div style="display:flex;flex-wrap:wrap;gap:5px;">'
+        + mReasons.slice(0, 5).map(function(r) {
+            return '<div style="font-size:.67rem;padding:2px 9px;background:rgba(0,229,199,.1);'
+              + 'border:1px solid rgba(0,229,199,.22);border-radius:12px;color:var(--teal);">' + r + '</div>';
+          }).join('')
+        + '</div></div>'
+        + '<div style="text-align:center;margin-left:20px;flex-shrink:0;">'
+        + '<div style="font-size:2.6rem;font-weight:900;color:' + mColor + ';line-height:1;">' + mScore + '</div>'
+        + '<div style="font-size:.6rem;color:var(--dim);">/10</div>'
+        + '</div></div>';
+
+      // ── Why Worth Calling ─────────────────────────────────────
+      if (worth.length) {
+        html += _sec('✅', "Why They're Worth Calling");
+        html += '<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;">'
+          + worth.map(function(w) {
+              return '<div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:12px 14px;">'
+                + '<div style="font-size:.8rem;font-weight:700;color:var(--green);margin-bottom:5px;">✓ ' + (w.label || '') + '</div>'
+                + '<div style="font-size:.74rem;color:var(--dim);line-height:1.5;">' + (w.detail || '') + '</div>'
+                + '</div>';
+            }).join('') + '</div>';
       }
 
-      // ── 2-column body ───────────────────────────────────────
-      var leftCol  = '';
-      var rightCol = '';
+      // ── Best Meeting Angle ────────────────────────────────────
+      if (angle) {
+        html += _sec('\u{1F3AF}', 'Best Meeting Angle');
+        html += '<div style="background:linear-gradient(135deg,rgba(0,188,212,.12),rgba(0,188,212,.04));'
+          + 'border:1px solid rgba(0,188,212,.35);border-radius:10px;padding:16px 18px;">'
+          + '<div style="font-size:.92rem;color:#fff;font-weight:500;line-height:1.6;font-style:italic;">'
+          + '“' + angle + '”</div></div>';
+        if (hook) {
+          html += '<div style="font-size:.77rem;color:var(--dim);margin-top:9px;line-height:1.6;padding:0 2px;">' + hook + '</div>';
+        }
+      }
 
-      // LEFT: Pixel Analysis
-      rightCol += _sec('🎯', 'Pixel Analysis');
-      rightCol += '<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:5px;margin-bottom:7px;">';
+      // ── What To Say ───────────────────────────────────────────
+      if (wts.phone || wts.walkin) {
+        html += _sec('\u{1F4AC}', 'What To Say');
+        html += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">';
+        if (wts.phone) {
+          html += '<div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:14px 16px;">'
+            + '<div style="font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--teal);margin-bottom:10px;">\u{1F4DE} Phone</div>'
+            + '<div style="font-size:.79rem;color:var(--text);line-height:1.7;">' + wts.phone + '</div>'
+            + '</div>';
+        }
+        if (wts.walkin) {
+          html += '<div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:14px 16px;">'
+            + '<div style="font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--teal);margin-bottom:10px;">\u{1F6AA} Walk-In</div>'
+            + '<div style="font-size:.79rem;color:var(--text);line-height:1.7;">' + wts.walkin + '</div>'
+            + '</div>';
+        }
+        html += '</div>';
+      }
+
+      // ── Conversation Starters ─────────────────────────────────
+      if (starters.length) {
+        html += _sec('\u{1F4AC}', 'Conversation Starters');
+        html += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">'
+          + starters.map(function(q) {
+              return '<div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;'
+                + 'padding:11px 13px;font-size:.78rem;color:var(--text);line-height:1.55;">'
+                + '<span style="color:var(--teal);font-weight:700;margin-right:6px;">?</span>' + q + '</div>';
+            }).join('') + '</div>';
+      }
+
+      // ── Meeting Ask ───────────────────────────────────────────
+      if (mAsk.soft || mAsk.strong) {
+        html += _sec('\u{1F4C5}', 'Meeting Ask');
+        html += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">';
+        if (mAsk.soft) {
+          html += '<div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:14px 16px;">'
+            + '<div style="font-size:.63rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--dim);margin-bottom:8px;">Soft Ask</div>'
+            + '<div style="font-size:.8rem;color:var(--text);line-height:1.65;font-style:italic;">' + mAsk.soft + '</div>'
+            + '</div>';
+        }
+        if (mAsk.strong) {
+          html += '<div style="background:var(--surface2);border:1px solid rgba(0,229,199,.3);border-radius:8px;padding:14px 16px;">'
+            + '<div style="font-size:.63rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--teal);margin-bottom:8px;">Stronger Ask</div>'
+            + '<div style="font-size:.8rem;color:var(--text);line-height:1.65;font-style:italic;">' + mAsk.strong + '</div>'
+            + '</div>';
+        }
+        html += '</div>';
+      }
+
+      // ── Coaching Note (low-score only) ───────────────────────
+      if (d.coachingNote && mScore <= 6) {
+        html += '<div style="display:flex;gap:12px;align-items:flex-start;'
+          + 'background:rgba(251,191,36,.07);border:1px solid rgba(251,191,36,.3);'
+          + 'border-radius:10px;padding:14px 16px;margin-top:18px;">'
+          + '<div style="font-size:1.1rem;flex-shrink:0;margin-top:1px;">⚠️</div>'
+          + '<div>'
+          + '<div style="font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;'
+          + 'color:rgba(251,191,36,.9);margin-bottom:6px;">Coaching Note</div>'
+          + '<div style="font-size:.8rem;color:var(--text);line-height:1.65;">' + d.coachingNote + '</div>'
+          + '</div></div>';
+      }
+
+      // ── Supporting Intelligence (collapsed) ───────────────────
+      var supId   = 'sup-' + containerId;
+      var supHtml = '';
+      var drScore = dr.score !== undefined ? dr.score : 0;
+      var drLabel = dr.label || '';
+      var drColor = drScore >= 8 ? 'var(--green)' : drScore >= 4 ? 'var(--yellow)' : 'var(--red)';
+
+      supHtml += '<div style="font-size:.82rem;font-weight:700;color:var(--teal);margin:0 0 8px;">\u{1F3AF} Pixel Analysis</div>';
+      supHtml += '<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:5px;margin-bottom:8px;">';
       var pboxes = [
-        { label: 'GTM',        detected: dr.gtm             },
-        { label: 'Analytics',  detected: dr.googleAnalytics },
-        { label: 'Google Ads', detected: dr.googleAds       },
-        { label: 'Remarketing',detected: dr.remarketing     }
+        { label: 'GTM',         detected: dr.gtm             },
+        { label: 'Analytics',   detected: dr.googleAnalytics },
+        { label: 'Google Ads',  detected: dr.googleAds       },
+        { label: 'Remarketing', detected: dr.remarketing     }
       ];
       for (var pi = 0; pi < pboxes.length; pi++) {
         var pb = pboxes[pi];
-        rightCol += '<div style="background:var(--surface2);border:1px solid var(--border);border-radius:7px;'
-          + 'padding:8px 4px;text-align:center;">'
-          + '<div style="font-size:1rem;font-weight:900;color:' + (pb.detected ? 'var(--green)' : '#3a3a3a') + ';">'
-          + (pb.detected ? '✓' : '✕') + '</div>'
-          + '<div style="font-size:.58rem;color:var(--dim);margin-top:2px;line-height:1.3;">' + pb.label + '</div>'
+        supHtml += '<div style="background:var(--surface);border:1px solid var(--border);border-radius:7px;padding:8px 4px;text-align:center;">'
+          + '<div style="font-size:1rem;font-weight:900;color:' + (pb.detected ? 'var(--green)' : '#3a3a3a') + ';">' + (pb.detected ? '✓' : '✕') + '</div>'
+          + '<div style="font-size:.58rem;color:var(--dim);margin-top:2px;">' + pb.label + '</div>'
           + '</div>';
       }
-      rightCol += '</div>';
-      rightCol += '<div style="display:flex;align-items:center;justify-content:space-between;'
-        + 'background:var(--surface2);border:1px solid var(--border);border-radius:8px;'
-        + 'padding:8px 12px;margin-bottom:4px;">'
-        + '<div style="font-size:.76rem;color:var(--text);">' + drLabel + '</div>'
-        + '<div style="font-size:1.4rem;font-weight:900;color:' + drColor + ';line-height:1;">'
-        + drScore + '<span style="font-size:.58rem;color:var(--dim);font-weight:400;">/10</span></div>'
-        + '</div>';
-
-      // RIGHT: Ad Benchmarks + Customer Value
+      supHtml += '</div>';
+      if (drLabel) {
+        supHtml += '<div style="display:flex;justify-content:space-between;align-items:center;'
+          + 'background:var(--surface);border:1px solid var(--border);border-radius:7px;padding:7px 12px;margin-bottom:14px;">'
+          + '<div style="font-size:.74rem;color:var(--text);">' + drLabel + '</div>'
+          + '<div style="font-size:1.1rem;font-weight:900;color:' + drColor + ';">' + drScore + '<span style="font-size:.55rem;color:var(--dim);font-weight:400;">/10</span></div>'
+          + '</div>';
+      }
+      var benchHtml = '';
+      var ltvHtml   = '';
       if (ab.metaCPL || ab.googleCPC) {
-        rightCol += _sec('📈', 'Ad Benchmarks');
         var bmRows = [];
         if (ab.metaCPL)   bmRows.push(['Meta CPL',   ab.metaCPL]);
         if (ab.googleCPC) bmRows.push(['Google CPC', ab.googleCPC]);
         if (ab.googleCPA) bmRows.push(['Google CPA', ab.googleCPA]);
-        rightCol += '<div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;overflow:hidden;">'
+        benchHtml = '<div>'
+          + '<div style="font-size:.82rem;font-weight:700;color:var(--teal);margin-bottom:8px;">\u{1F4C8} Ad Benchmarks</div>'
+          + '<div style="background:var(--surface);border:1px solid var(--border);border-radius:8px;overflow:hidden;">'
           + bmRows.map(function(r, i) {
-            return '<div style="display:flex;justify-content:space-between;align-items:center;'
-              + 'padding:7px 12px;' + (i < bmRows.length - 1 ? 'border-bottom:1px solid var(--border);' : '') + '">'
-              + '<div style="font-size:.67rem;color:var(--dim);flex-shrink:0;">' + r[0] + '</div>'
-              + '<div style="font-size:.71rem;color:var(--text);font-weight:600;text-align:right;max-width:65%;line-height:1.35;">' + r[1] + '</div>'
-              + '</div>';
-          }).join('') + '</div>';
+              return '<div style="display:flex;justify-content:space-between;align-items:center;'
+                + 'padding:7px 12px;' + (i < bmRows.length - 1 ? 'border-bottom:1px solid var(--border);' : '') + '">'
+                + '<div style="font-size:.66rem;color:var(--dim);">' + r[0] + '</div>'
+                + '<div style="font-size:.71rem;color:var(--text);font-weight:600;">' + r[1] + '</div>'
+                + '</div>';
+            }).join('') + '</div></div>';
       }
       if (cv.estimatedLTV) {
-        rightCol += _sec('📦', 'Customer Value');
-        rightCol += '<div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:10px 12px;">'
-          + '<div style="font-size:.59rem;text-transform:uppercase;letter-spacing:.07em;color:var(--dim);margin-bottom:3px;">Est. Lifetime Value</div>'
+        ltvHtml = '<div>'
+          + '<div style="font-size:.82rem;font-weight:700;color:var(--teal);margin-bottom:8px;">\u{1F4E6} Customer Value</div>'
+          + '<div style="background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:10px 14px;">'
+          + '<div style="font-size:.6rem;text-transform:uppercase;letter-spacing:.07em;color:var(--dim);margin-bottom:3px;">Est. LTV</div>'
           + '<div style="font-size:.88rem;color:var(--green);font-weight:700;">' + cv.estimatedLTV + '</div>'
-          + '</div>';
-        if (cv.industryExamples && cv.industryExamples.length) {
-          rightCol += cv.industryExamples.slice(0, 2).map(function(ex) {
-            return '<div style="font-size:.68rem;color:var(--dim);padding:4px 0 4px 10px;'
-              + 'border-left:2px solid rgba(0,229,199,.25);margin-top:5px;line-height:1.4;">' + ex + '</div>';
-          }).join('');
-        }
+          + (cv.industryExamples && cv.industryExamples.length
+              ? cv.industryExamples.slice(0, 2).map(function(ex) {
+                  return '<div style="font-size:.68rem;color:var(--dim);padding:3px 0 3px 8px;border-left:2px solid rgba(0,229,199,.25);margin-top:6px;line-height:1.4;">' + ex + '</div>';
+                }).join('') : '')
+          + '</div></div>';
       }
-
-      // LEFT: Marketing Objective
-      if (mo.overview) {
-        leftCol += _sec('🎯', 'Marketing Objective');
-        leftCol += '<div style="font-size:.76rem;color:var(--text);line-height:1.58;'
-          + 'background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:11px 14px;">'
-          + mo.overview + '</div>';
-        if (mo.inferredGoal) {
-          leftCol += '<div style="font-size:.7rem;color:var(--dim);margin-top:5px;padding-left:2px;line-height:1.45;">'
-            + '→ ' + mo.inferredGoal + '</div>';
-        }
+      if (benchHtml || ltvHtml) {
+        supHtml += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px;">'
+          + (benchHtml || '<div></div>') + (ltvHtml || '<div></div>') + '</div>';
       }
-
-      // LEFT: Messaging Themes
-      if (mi.keyThemes && mi.keyThemes.length) {
-        leftCol += _sec('💎', 'Messaging Themes');
-        leftCol += '<div style="display:flex;flex-wrap:wrap;gap:5px;">'
-          + mi.keyThemes.map(function(t) {
-            return '<div style="font-size:.66rem;padding:3px 9px;background:rgba(0,229,199,.1);'
-              + 'border:1px solid rgba(0,229,199,.25);border-radius:20px;color:var(--teal);">' + t + '</div>';
-          }).join('') + '</div>';
-        if (mi.tone) {
-          leftCol += '<div style="font-size:.69rem;color:var(--dim);margin-top:6px;">Tone: ' + mi.tone + '</div>';
-        }
-      }
-
-      // LEFT: Advertising Windows
-      if (aw.seasonal && aw.seasonal.length) {
-        leftCol += _sec('📅', 'Advertising Windows');
-        leftCol += aw.seasonal.slice(0, 4).map(function(s) {
-          return '<div style="font-size:.74rem;color:var(--text);padding:5px 0 5px 10px;'
-            + 'border-left:2px solid rgba(0,229,199,.35);margin-bottom:5px;line-height:1.45;">' + s + '</div>';
-        }).join('');
-      }
-
-      // LEFT: Target Audience
+      var audHtml = '';
+      var winHtml = '';
       if (ta.demographics || ta.type) {
-        leftCol += _sec('👥', 'Target Audience');
         var taRows = [];
-        if (ta.type)         taRows.push(['Type',      ta.type]);
-        if (ta.demographics) taRows.push(['Who',       ta.demographics]);
+        if (ta.type)         taRows.push(['Type', ta.type]);
+        if (ta.demographics) taRows.push(['Who',  ta.demographics]);
         if (ta.reach)        taRows.push(['Geography', ta.reach]);
-        leftCol += taRows.map(function(r) {
-          return '<div style="display:flex;gap:8px;margin-bottom:6px;">'
-            + '<div style="font-size:.6rem;font-weight:700;color:var(--dim);text-transform:uppercase;'
-            + 'letter-spacing:.05em;min-width:72px;padding-top:2px;flex-shrink:0;">' + r[0] + '</div>'
-            + '<div style="font-size:.74rem;color:var(--text);line-height:1.48;flex:1;">' + r[1] + '</div>'
-            + '</div>';
-        }).join('');
+        audHtml = '<div>'
+          + '<div style="font-size:.82rem;font-weight:700;color:var(--teal);margin-bottom:8px;">\u{1F465} Target Audience</div>'
+          + taRows.map(function(r) {
+              return '<div style="display:flex;gap:8px;margin-bottom:5px;">'
+                + '<div style="font-size:.59rem;font-weight:700;color:var(--dim);text-transform:uppercase;min-width:72px;padding-top:2px;flex-shrink:0;">' + r[0] + '</div>'
+                + '<div style="font-size:.73rem;color:var(--text);line-height:1.45;">' + r[1] + '</div>'
+                + '</div>';
+            }).join('') + '</div>';
+      }
+      if (aw.seasonal && aw.seasonal.length) {
+        winHtml = '<div>'
+          + '<div style="font-size:.82rem;font-weight:700;color:var(--teal);margin-bottom:8px;">\u{1F4C5} Ad Windows</div>'
+          + aw.seasonal.slice(0, 4).map(function(s) {
+              return '<div style="font-size:.73rem;color:var(--text);padding:4px 0 4px 9px;'
+                + 'border-left:2px solid rgba(0,229,199,.3);margin-bottom:5px;line-height:1.4;">' + s + '</div>';
+            }).join('') + '</div>';
+      }
+      if (audHtml || winHtml) {
+        supHtml += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">'
+          + (audHtml || '<div></div>') + (winHtml || '<div></div>') + '</div>';
       }
 
-      // assemble 2-col grid
-      html += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;align-items:start;">'
-        + '<div>' + leftCol + '</div>'
-        + '<div>' + rightCol + '</div>'
-        + '</div>';
+      html += '<div style="margin-top:18px;border:1px solid var(--border);border-radius:10px;overflow:hidden;">'
+        + '<button onclick="(function(){var el=document.getElementById(\'' + supId + '\');'
+        + 'var ic=document.getElementById(\'' + supId + '-ic\');'
+        + 'var open=el.style.display!==\'none\';'
+        + 'el.style.display=open?\'none\':\'block\';'
+        + 'ic.textContent=open?\'&#9660;\':\'&#9650;\';})()" '
+        + 'style="width:100%;display:flex;align-items:center;justify-content:space-between;padding:11px 16px;'
+        + 'background:var(--surface2);border:none;cursor:pointer;text-align:left;">'
+        + '<span style="font-size:.82rem;font-weight:600;color:var(--dim);">Supporting Intelligence</span>'
+        + '<span id="' + supId + '-ic" style="font-size:.72rem;color:var(--dim);">&#9660;</span>'
+        + '</button>'
+        + '<div id="' + supId + '" style="display:none;padding:16px;border-top:1px solid var(--border);">'
+        + supHtml + '</div></div>';
 
       if (bulletsEl) bulletsEl.innerHTML = html;
 
