@@ -2380,44 +2380,127 @@ function registerCallPrep(section, acct) {
 }
 
 function openCallPrep(cpid) {
+  _openProspectPage(cpid);
+}
+
+function _openProspectPage(cpid) {
   var entry = _callPrepReg[cpid];
   if (!entry) return;
-  var box = document.getElementById('callPrepBox');
-  box.innerHTML = buildCallPrepHTML(entry.section, entry.acct);
-  var overlay = document.getElementById('callPrepOverlay');
-  overlay.style.display = 'flex';
-  requestAnimationFrame(function() {
-    overlay.style.opacity = '1';
-    box.style.transform = 'scale(1)';
-  });
-  // Firestore Discovery cache check — runs after HTML is in DOM
-  if (entry.section === 'rebuild') {
-    var acct = entry.acct;
-    var placeId = acct._places && acct._places.id;
-    var cid = acct._activeContainerId;
-    if (cid) {
-      var discContainer = document.getElementById(cid + '-discovery-section');
-      if (placeId && discContainer) {
-        db.collection('discoveryIntel').doc(placeId).get().then(function(doc) {
-          if (doc.exists) {
-            var cached = doc.data();
-            var bulletsEl  = document.getElementById(cid + '-bullets');
-            var btnWrapEl  = document.getElementById(cid + '-btn-wrap');
-            var linkEl     = document.getElementById(cid + '-link');
-            _renderDiscoveryBullets(cached.report, bulletsEl, btnWrapEl, linkEl);
-            if (cached.reportUrl) _setDiscoveryReportLink(cached.reportUrl, cid);
-            _showRegenerateButton(acct, cid, cached.generatedAt);
-          } else {
-            _showGenerateIntelButton(acct._discDomain, cid);
-          }
-        }).catch(function() {
-          _showGenerateIntelButton(acct._discDomain, cid);
-        });
-      } else {
-        if (cid) _showGenerateIntelButton(acct._discDomain, cid);
-      }
+
+  var page = document.getElementById('igi-prospect-page');
+  page.innerHTML = _buildProspectPageHTML(entry.section, entry.acct);
+  page.style.display = 'block';
+  page.scrollTop = 0;
+
+  // Update hash so back button works
+  history.pushState({ cpid: cpid }, '', '#/prospect/' + cpid);
+
+  // Run Firestore discovery cache check
+  _checkDiscoveryCacheForPage(entry.acct, page);
+}
+
+function _closeProspectPage() {
+  var page = document.getElementById('igi-prospect-page');
+  page.style.display = 'none';
+  page.innerHTML = '';
+}
+
+// Handle browser back/forward buttons
+window.addEventListener('popstate', function(e) {
+  if (location.hash.startsWith('#/prospect/')) {
+    var cpid = location.hash.replace('#/prospect/', '');
+    var entry = _callPrepReg[cpid];
+    if (entry) {
+      var page = document.getElementById('igi-prospect-page');
+      page.innerHTML = _buildProspectPageHTML(entry.section, entry.acct);
+      page.style.display = 'block';
+      page.scrollTop = 0;
+      _checkDiscoveryCacheForPage(entry.acct, page);
     }
+  } else {
+    _closeProspectPage();
   }
+});
+
+function _buildProspectPageHTML(section, acct) {
+  var sectionColors = {
+    close:   'var(--red)',
+    protect: 'var(--green)',
+    reclaim: 'var(--yellow)',
+    rebuild: 'var(--teal)'
+  };
+  var sectionLabels = {
+    close:   'Close Now',
+    protect: 'Protect & Expand',
+    reclaim: 'Reclaim',
+    rebuild: 'Rebuild'
+  };
+  var color = sectionColors[section] || 'var(--teal)';
+  var label = sectionLabels[section] || section;
+  var score = Math.round(acct.score || 0);
+  var scoreColor = score >= 80 ? 'var(--green)' : score >= 60 ? 'var(--yellow)' : 'var(--red)';
+
+  var header =
+    // Sticky nav bar
+    '<div style="position:sticky;top:0;z-index:10;background:var(--surface);'
+    + 'border-bottom:1px solid var(--border);padding:12px 20px;'
+    + 'display:flex;align-items:center;gap:14px;">'
+    + '<button onclick="history.back()" '
+    + 'style="background:var(--surface2);border:1px solid var(--border);'
+    + 'color:var(--dim);border-radius:6px;padding:6px 14px;cursor:pointer;font-size:.8rem;">'
+    + 'Back to Plan'
+    + '</button>'
+    + '<div style="font-size:.6rem;font-weight:700;text-transform:uppercase;'
+    + 'letter-spacing:.12em;color:' + color + ';">' + label + '</div>'
+    + '</div>'
+
+    // Page content
+    + '<div style="max-width:680px;margin:0 auto;padding:24px 20px 48px;">'
+
+    // Business name + IGI score
+    + '<div style="display:flex;align-items:flex-start;justify-content:space-between;'
+    + 'gap:16px;margin-bottom:6px;">'
+    + '<div style="font-weight:900;font-size:1.4rem;color:#fff;line-height:1.25;flex:1;">'
+    + (acct.name || acct.acct || acct.adv || '') + '</div>'
+    + '<div style="text-align:center;flex-shrink:0;background:var(--surface2);'
+    + 'border:1px solid var(--border);border-radius:10px;padding:10px 18px;">'
+    + '<div style="font-size:2.2rem;font-weight:900;line-height:1;color:' + scoreColor + ';">'
+    + score + '</div>'
+    + '<div style="font-size:.55rem;color:var(--dim);letter-spacing:.1em;'
+    + 'text-transform:uppercase;margin-top:2px;">IGI Score</div>'
+    + '</div></div>'
+
+    // Category
+    + '<div style="font-size:.75rem;color:var(--dim);margin-bottom:24px;">'
+    + (acct.cat || acct.type || '') + '</div>';
+
+  // Body content — use existing builders unchanged
+  var body = section === 'rebuild' ? _buildRebuildBody(acct) : _buildLaneBody(section, acct);
+
+  return header + body + '</div>';
+}
+
+function _checkDiscoveryCacheForPage(acct, pageEl) {
+  if (!acct || !acct._activeContainerId) return;
+  var cid = acct._activeContainerId;
+  var placeId = acct._places && acct._places.id;
+  if (!placeId) return;
+  var bulletsEl = document.getElementById(cid + '-bullets');
+  var btnWrapEl = document.getElementById(cid + '-btn-wrap');
+  var linkEl    = document.getElementById(cid + '-link');
+  if (!bulletsEl) return;
+  db.collection('discoveryIntel').doc(placeId).get().then(function(doc) {
+    if (doc.exists) {
+      var cached = doc.data();
+      _renderDiscoveryBullets(cached.report, bulletsEl, btnWrapEl, linkEl);
+      if (cached.reportUrl) _setDiscoveryReportLink(cached.reportUrl, cid);
+      _showRegenerateButton(acct, cid, cached.generatedAt);
+    } else {
+      _showGenerateIntelButton(acct._discDomain, cid);
+    }
+  }).catch(function() {
+    _showGenerateIntelButton(acct._discDomain, cid);
+  });
 }
 
 function closeCallPrep() {
@@ -2559,6 +2642,7 @@ function _buildRebuildBody(a) {
     a._discDomain = domain;
 
     var containerId = 'disc-' + Math.random().toString(36).slice(2, 8);
+    a._activeContainerId = containerId;
 
     discoverySection =
      '<div style="padding:18px 24px 0;">'
@@ -3185,6 +3269,11 @@ checkSharedMode().then(function(isShared) {
   <div style="padding:12px 20px;border-top:1px solid var(--border);flex-shrink:0;text-align:center;">
     <div style="font-size:.62rem;color:var(--dim);letter-spacing:.04em;">Powered by <span style="color:var(--teal);font-weight:700;">Ignite Growth Intelligence</span> &middot; IGI Score</div>
   </div>
+</div>
+
+<div id="igi-prospect-page"
+ style="display:none; position:fixed; top:0; left:0; right:0; bottom:0;
+ overflow-y:auto; background:var(--bg); z-index:50;">
 </div>
 
 <!-- Call Prep Card Modal -->
