@@ -2755,8 +2755,9 @@ function _buildRebuildBody(a) {
      + 'gap:8px;padding:12px 16px;'
      + 'background:linear-gradient(135deg,rgba(0,188,212,.15),rgba(0,188,212,.06));'
      + 'border:1px solid var(--teal-border);border-radius:8px;color:var(--teal);'
-     + 'font-size:.82rem;font-weight:700;cursor:pointer;" disabled>'
-     + 'Generate Intel (coming soon)'
+     + 'font-size:.82rem;font-weight:700;cursor:pointer;"'
+     + ' onclick="generateDiscoveryIntel(\'' + domain.replace(/\\/g,'\\\\').replace(/'/g,"\\'") + '\',\'' + containerId + '\')">'
+     + '⚡ Generate Intel'
      + '</button>'
      + '</div>'
      + '<div id="' + containerId + '-link" style="display:none;margin-top:10px;"></div>'
@@ -2769,13 +2770,109 @@ function _buildRebuildBody(a) {
   return profileSection + discoverySection + scoreBreakdownHtml;
 }
 
-function generateDiscoveryIntel(encodedDomain, containerId) {
-  // Placeholder — new intelligence system coming soon
-  var btnEl = document.getElementById(containerId + '-btn');
-  if (btnEl) {
-    btnEl.disabled = true;
-    btnEl.textContent = 'Generate Intel (coming soon)';
+function generateDiscoveryIntel(domain, containerId) {
+  var INTEL_URL = 'https://generate-prospect-intel-922690493850.us-central1.run.app';
+
+  if (!domain) {
+    var btnEl = document.getElementById(containerId + '-btn');
+    if (btnEl) { btnEl.textContent = 'Enter website first'; setTimeout(function(){ btnEl.textContent = '⚡ Generate Intel'; }, 2000); }
+    return;
   }
+
+  var btnWrap   = document.getElementById(containerId + '-btn-wrap');
+  var progEl    = document.getElementById(containerId + '-progress');
+  var progBar   = document.getElementById(containerId + '-progress-bar');
+  var progLabel = document.getElementById(containerId + '-progress-label');
+  var progPct   = document.getElementById(containerId + '-progress-pct');
+  var bulletsEl = document.getElementById(containerId + '-bullets');
+  var linkEl    = document.getElementById(containerId + '-link');
+
+  if (btnWrap) btnWrap.style.display = 'none';
+  if (progEl)  progEl.style.display  = 'block';
+
+  var pct = 0;
+  var messages = ['Fetching website…','Detecting tracking pixels…','Analyzing business…','Generating intelligence…','Building talking points…'];
+  var msgIdx = 0;
+  var timer = setInterval(function() {
+    pct = Math.min(pct + Math.random() * 7 + 2, 88);
+    if (progBar)   progBar.style.width = pct + '%';
+    if (progPct)   progPct.textContent = Math.round(pct) + '%';
+    if (msgIdx < messages.length && pct > msgIdx * 18) { if (progLabel) progLabel.textContent = messages[msgIdx]; msgIdx++; }
+  }, 600);
+
+  var profileKey = 'intel-' + domain.toLowerCase().replace(/[^a-z0-9]/g,'-').replace(/-+/g,'-').slice(0,60);
+
+  fetch(INTEL_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ domain: domain, profileKey: profileKey })
+  })
+  .then(function(r) { return r.json(); })
+  .then(function(result) {
+    clearInterval(timer);
+    if (result.error) throw new Error(result.error);
+
+    if (progBar)   progBar.style.width   = '100%';
+    if (progPct)   progPct.textContent   = '100%';
+    if (progLabel) progLabel.textContent = 'Intelligence ready ✓';
+
+    setTimeout(function() {
+      if (progEl) progEl.style.display = 'none';
+
+      var d  = result.data || {};
+      var dr = d.digitalReadiness || {};
+      var drScore = dr.score !== undefined ? dr.score : 0;
+      var drLabel = dr.label || 'No data';
+      var drColor = drScore >= 8 ? 'var(--green)' : drScore >= 4 ? 'var(--yellow)' : 'var(--red)';
+
+      var drBadge = '<div style="display:flex;align-items:center;justify-content:space-between;'
+        + 'background:var(--surface2);border:1px solid var(--border);border-radius:8px;'
+        + 'padding:10px 14px;margin-bottom:8px;">'
+        + '<div><div style="font-size:.6rem;font-weight:700;text-transform:uppercase;'
+        + 'letter-spacing:.08em;color:var(--dim);margin-bottom:2px;">Digital Readiness</div>'
+        + '<div style="font-size:.8rem;color:var(--text);">' + drLabel + '</div></div>'
+        + '<div style="font-size:1.6rem;font-weight:900;color:' + drColor + ';line-height:1;">'
+        + drScore + '<span style="font-size:.65rem;color:var(--dim);font-weight:400;">/10</span></div>'
+        + '</div>';
+
+      var bullets = d.bullets || [];
+      var bulletsHTML = drBadge + bullets.map(function(b, i) {
+        return '<div style="display:flex;gap:10px;align-items:flex-start;padding:10px 14px;'
+          + 'background:var(--surface2);border:1px solid var(--border);border-radius:8px;">'
+          + '<div style="color:var(--teal);font-size:.8rem;font-weight:700;'
+          + 'flex-shrink:0;margin-top:1px;min-width:16px;">' + (i + 1) + '</div>'
+          + '<div style="font-size:.8rem;color:var(--text);line-height:1.55;">' + b + '</div>'
+          + '</div>';
+      }).join('');
+
+      if (bulletsEl) bulletsEl.innerHTML = bulletsHTML;
+
+      if (linkEl) {
+        linkEl.style.display = 'block';
+        linkEl.innerHTML = '<a href="https://ignite.edwinlovett.com/research/?q='
+          + encodeURIComponent(domain) + '" target="_blank" rel="noopener" '
+          + 'style="display:flex;align-items:center;justify-content:space-between;'
+          + 'padding:10px 14px;background:var(--teal-dim);border:1px solid var(--teal-border);'
+          + 'border-radius:8px;text-decoration:none;margin-top:4px;">'
+          + '<span style="font-size:.78rem;color:var(--teal);font-weight:600;">'
+          + 'View Full Discovery Report →</span></a>';
+      }
+    }, 400);
+  })
+  .catch(function(err) {
+    clearInterval(timer);
+    if (progBar)   { progBar.style.background = 'var(--red)'; progBar.style.width = '100%'; }
+    if (progLabel) progLabel.textContent = 'Failed — ' + (err.message || 'try again');
+    if (progPct)   progPct.textContent = '✕';
+    setTimeout(function() {
+      if (progEl)  progEl.style.display = 'none';
+      if (btnWrap) {
+        btnWrap.style.display = 'block';
+        var btn = document.getElementById(containerId + '-btn');
+        if (btn) btn.textContent = '↺ Retry';
+      }
+    }, 2000);
+  });
 }
 
 function _buildLaneBody(section, a) {
@@ -2926,7 +3023,33 @@ function _buildLaneBody(section, a) {
     }
   }
 
-  return statGrid + tpSection + placesProfile + '<div style="padding:0 24px 24px;">' + _buildScoreBreakdown(a) + '</div>';
+  var laneDiscId = 'disc-' + Math.random().toString(36).slice(2, 8);
+  var laneDiscSection = '<div style="padding:18px 24px 0;">'
+    + '<div style="font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.09em;color:var(--teal);margin-bottom:10px;">Discovery Intelligence</div>'
+    + '<div id="' + laneDiscId + '-bullets" style="display:flex;flex-direction:column;gap:8px;margin-bottom:10px;"></div>'
+    + '<div id="' + laneDiscId + '-progress" style="display:none;margin-bottom:10px;">'
+    + '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:5px;">'
+    + '<span id="' + laneDiscId + '-progress-label" style="font-size:.68rem;color:var(--dim);">Generating intel...</span>'
+    + '<span id="' + laneDiscId + '-progress-pct" style="font-size:.68rem;color:var(--teal);font-weight:700;">0%</span>'
+    + '</div>'
+    + '<div style="height:4px;background:var(--surface2);border-radius:2px;overflow:hidden;">'
+    + '<div id="' + laneDiscId + '-progress-bar" style="height:100%;width:0%;background:linear-gradient(90deg,var(--teal),rgba(0,188,212,.5));border-radius:2px;transition:width .8s ease;"></div>'
+    + '</div></div>'
+    + '<div id="' + laneDiscId + '-btn-wrap">'
+    + '<button id="' + laneDiscId + '-btn" '
+    + 'style="width:100%;display:flex;align-items:center;justify-content:center;'
+    + 'gap:8px;padding:12px 16px;'
+    + 'background:linear-gradient(135deg,rgba(0,188,212,.15),rgba(0,188,212,.06));'
+    + 'border:1px solid var(--teal-border);border-radius:8px;color:var(--teal);'
+    + 'font-size:.82rem;font-weight:700;cursor:pointer;"'
+    + ' onclick="generateDiscoveryIntel(window._activeProspectAcct&&window._activeProspectAcct._discDomain,\'' + laneDiscId + '\')">'
+    + '⚡ Generate Intel'
+    + '</button>'
+    + '</div>'
+    + '<div id="' + laneDiscId + '-link" style="display:none;margin-top:10px;"></div>'
+    + '</div>';
+
+  return statGrid + tpSection + placesProfile + laneDiscSection + '<div style="padding:0 24px 24px;">' + _buildScoreBreakdown(a) + '</div>';
 }
 
 function _cpStatCard(label, value, sub, valueColor) {
