@@ -2822,39 +2822,157 @@ function generateDiscoveryIntel(domain, containerId) {
 
       var d  = result.data || {};
       var dr = d.digitalReadiness || {};
+      var mo = d.marketingObjective || {};
+      var mi = d.messagingIdeas || {};
+      var aw = d.advertisingWindows || {};
+      var ta = d.targetAudience || {};
+      var cv = d.customerValue || {};
+      var ab = d.adBenchmarks || {};
+      var bullets = d.bullets || [];
+
       var drScore = dr.score !== undefined ? dr.score : 0;
-      var drLabel = dr.label || 'No data';
+      var drLabel = dr.label || 'No tracking detected';
       var drColor = drScore >= 8 ? 'var(--green)' : drScore >= 4 ? 'var(--yellow)' : 'var(--red)';
 
-      var drBadge = '<div style="display:flex;align-items:center;justify-content:space-between;'
+      function _sec(emoji, title) {
+        return '<div style="font-size:.6rem;font-weight:700;text-transform:uppercase;'
+          + 'letter-spacing:.09em;color:var(--teal);margin:14px 0 7px;padding-bottom:5px;'
+          + 'border-bottom:1px solid rgba(0,229,199,.18);">' + emoji + ' ' + title + '</div>';
+      }
+
+      var html = '';
+
+      // ── Pixel Analysis ──────────────────────────────────────
+      html += _sec('🎯', 'Pixel Analysis');
+      html += '<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:5px;margin-bottom:7px;">';
+      var pboxes = [
+        { label: 'GTM',        detected: dr.gtm,             id: dr.gtmId },
+        { label: 'Analytics',  detected: dr.googleAnalytics, id: dr.gaId  },
+        { label: 'Google Ads', detected: dr.googleAds,       id: dr.adsId },
+        { label: 'Remarketing',detected: dr.remarketing,     id: null     }
+      ];
+      for (var pi = 0; pi < pboxes.length; pi++) {
+        var pb = pboxes[pi];
+        html += '<div style="background:var(--surface2);border:1px solid var(--border);border-radius:7px;'
+          + 'padding:7px 4px;text-align:center;">'
+          + '<div style="font-size:.95rem;font-weight:900;color:' + (pb.detected ? 'var(--green)' : '#444') + ';">'
+          + (pb.detected ? '✓' : '✕') + '</div>'
+          + '<div style="font-size:.57rem;color:var(--dim);margin-top:2px;line-height:1.3;">' + pb.label + '</div>'
+          + '</div>';
+      }
+      html += '</div>';
+      html += '<div style="display:flex;align-items:center;justify-content:space-between;'
         + 'background:var(--surface2);border:1px solid var(--border);border-radius:8px;'
-        + 'padding:10px 14px;margin-bottom:8px;">'
-        + '<div><div style="font-size:.6rem;font-weight:700;text-transform:uppercase;'
-        + 'letter-spacing:.08em;color:var(--dim);margin-bottom:2px;">Digital Readiness</div>'
-        + '<div style="font-size:.8rem;color:var(--text);">' + drLabel + '</div></div>'
-        + '<div style="font-size:1.6rem;font-weight:900;color:' + drColor + ';line-height:1;">'
-        + drScore + '<span style="font-size:.65rem;color:var(--dim);font-weight:400;">/10</span></div>'
+        + 'padding:8px 12px;">'
+        + '<div style="font-size:.75rem;color:var(--text);">' + drLabel + '</div>'
+        + '<div style="font-size:1.35rem;font-weight:900;color:' + drColor + ';line-height:1;">'
+        + drScore + '<span style="font-size:.57rem;color:var(--dim);font-weight:400;">/10</span></div>'
         + '</div>';
 
-      var bullets = d.bullets || [];
-      var bulletsHTML = drBadge + bullets.map(function(b, i) {
-        return '<div style="display:flex;gap:10px;align-items:flex-start;padding:10px 14px;'
-          + 'background:var(--surface2);border:1px solid var(--border);border-radius:8px;">'
-          + '<div style="color:var(--teal);font-size:.8rem;font-weight:700;'
-          + 'flex-shrink:0;margin-top:1px;min-width:16px;">' + (i + 1) + '</div>'
-          + '<div style="font-size:.8rem;color:var(--text);line-height:1.55;">' + b + '</div>'
-          + '</div>';
-      }).join('');
+      // ── Marketing Objective ──────────────────────────────────
+      if (mo.overview) {
+        html += _sec('🎯', 'Marketing Objective');
+        html += '<div style="font-size:.76rem;color:var(--text);line-height:1.58;'
+          + 'background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:10px 12px;">'
+          + mo.overview + '</div>';
+        if (mo.inferredGoal) {
+          html += '<div style="font-size:.7rem;color:var(--dim);margin-top:5px;padding-left:2px;line-height:1.45;">'
+            + '→ ' + mo.inferredGoal + '</div>';
+        }
+      }
 
-      if (bulletsEl) bulletsEl.innerHTML = bulletsHTML;
+      // ── Messaging Themes ────────────────────────────────────
+      if (mi.keyThemes && mi.keyThemes.length) {
+        html += _sec('💎', 'Messaging Themes');
+        html += '<div style="display:flex;flex-wrap:wrap;gap:5px;">'
+          + mi.keyThemes.map(function(t) {
+            return '<div style="font-size:.65rem;padding:3px 9px;background:rgba(0,229,199,.1);'
+              + 'border:1px solid rgba(0,229,199,.25);border-radius:20px;color:var(--teal);">' + t + '</div>';
+          }).join('') + '</div>';
+        if (mi.tone) {
+          html += '<div style="font-size:.69rem;color:var(--dim);margin-top:6px;">Tone: ' + mi.tone + '</div>';
+        }
+      }
+
+      // ── Advertising Windows ─────────────────────────────────
+      if (aw.seasonal && aw.seasonal.length) {
+        html += _sec('📅', 'Advertising Windows');
+        html += aw.seasonal.slice(0, 4).map(function(s) {
+          return '<div style="font-size:.73rem;color:var(--text);padding:5px 0 5px 10px;'
+            + 'border-left:2px solid rgba(0,229,199,.35);margin-bottom:5px;line-height:1.45;">' + s + '</div>';
+        }).join('');
+      }
+
+      // ── Target Audience ─────────────────────────────────────
+      if (ta.demographics || ta.type) {
+        html += _sec('👥', 'Target Audience');
+        var taRows = [];
+        if (ta.type)         taRows.push(['Type',        ta.type]);
+        if (ta.demographics) taRows.push(['Who',         ta.demographics]);
+        if (ta.reach)        taRows.push(['Geography',   ta.reach]);
+        html += taRows.map(function(r) {
+          return '<div style="display:flex;gap:8px;margin-bottom:6px;">'
+            + '<div style="font-size:.59rem;font-weight:700;color:var(--dim);text-transform:uppercase;'
+            + 'letter-spacing:.05em;min-width:70px;padding-top:2px;flex-shrink:0;">' + r[0] + '</div>'
+            + '<div style="font-size:.73rem;color:var(--text);line-height:1.48;flex:1;">' + r[1] + '</div>'
+            + '</div>';
+        }).join('');
+      }
+
+      // ── Ad Benchmarks ───────────────────────────────────────
+      if (ab.metaCPL || ab.googleCPC) {
+        html += _sec('📈', 'Ad Benchmarks');
+        var bmRows = [];
+        if (ab.metaCPL)   bmRows.push(['Meta CPL',   ab.metaCPL]);
+        if (ab.googleCPC) bmRows.push(['Google CPC', ab.googleCPC]);
+        if (ab.googleCPA) bmRows.push(['Google CPA', ab.googleCPA]);
+        html += '<div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;overflow:hidden;">'
+          + bmRows.map(function(r, i) {
+            return '<div style="display:flex;justify-content:space-between;align-items:center;'
+              + 'padding:7px 12px;' + (i < bmRows.length - 1 ? 'border-bottom:1px solid var(--border);' : '') + '">'
+              + '<div style="font-size:.66rem;color:var(--dim);flex-shrink:0;">' + r[0] + '</div>'
+              + '<div style="font-size:.7rem;color:var(--text);font-weight:600;text-align:right;'
+              + 'max-width:68%;line-height:1.35;">' + r[1] + '</div>'
+              + '</div>';
+          }).join('') + '</div>';
+      }
+
+      // ── Customer Value ──────────────────────────────────────
+      if (cv.estimatedLTV) {
+        html += _sec('📦', 'Customer Value');
+        html += '<div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:10px 12px;">'
+          + '<div style="font-size:.59rem;text-transform:uppercase;letter-spacing:.07em;color:var(--dim);margin-bottom:3px;">Est. Lifetime Value</div>'
+          + '<div style="font-size:.85rem;color:var(--green);font-weight:700;">' + cv.estimatedLTV + '</div>'
+          + '</div>';
+        if (cv.industryExamples && cv.industryExamples.length) {
+          html += cv.industryExamples.slice(0, 2).map(function(ex) {
+            return '<div style="font-size:.68rem;color:var(--dim);padding:4px 0 4px 10px;'
+              + 'border-left:2px solid rgba(0,229,199,.25);margin-top:5px;line-height:1.4;">' + ex + '</div>';
+          }).join('');
+        }
+      }
+
+      // ── Talking Points ──────────────────────────────────────
+      if (bullets.length) {
+        html += _sec('⚡', 'Talking Points');
+        html += bullets.map(function(b, i) {
+          return '<div style="display:flex;gap:10px;align-items:flex-start;padding:9px 12px;'
+            + 'background:var(--surface2);border:1px solid var(--border);border-radius:8px;margin-bottom:5px;">'
+            + '<div style="color:var(--teal);font-size:.78rem;font-weight:800;flex-shrink:0;min-width:14px;">' + (i + 1) + '</div>'
+            + '<div style="font-size:.77rem;color:var(--text);line-height:1.55;">' + b + '</div>'
+            + '</div>';
+        }).join('');
+      }
+
+      if (bulletsEl) bulletsEl.innerHTML = html;
 
       if (linkEl) {
         linkEl.style.display = 'block';
         linkEl.innerHTML = '<a href="https://ignite.edwinlovett.com/research/?q='
           + encodeURIComponent(domain) + '" target="_blank" rel="noopener" '
           + 'style="display:flex;align-items:center;justify-content:space-between;'
-          + 'padding:10px 14px;background:var(--teal-dim);border:1px solid var(--teal-border);'
-          + 'border-radius:8px;text-decoration:none;margin-top:4px;">'
+          + 'padding:10px 14px;background:rgba(0,229,199,.08);border:1px solid rgba(0,229,199,.25);'
+          + 'border-radius:8px;text-decoration:none;margin-top:6px;">'
           + '<span style="font-size:.78rem;color:var(--teal);font-weight:600;">'
           + 'View Full Discovery Report →</span></a>';
       }
@@ -3185,4 +3303,4 @@ checkSharedMode().then(function(isShared) {
 </div>
 
 </body>
-</html>
+</html
