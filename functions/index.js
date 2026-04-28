@@ -196,8 +196,9 @@ Critical rules:
 // ---------------------------------------------------------------------------
 // Claude API call
 // ---------------------------------------------------------------------------
-async function callClaude(html, domain, pixels, apiKey) {
+async function callClaude(html, domain, pixels, apiKey, businessName) {
   const userContent =
+    'Business name: ' + (businessName || '(extract from website)') + '\n' +
     'Domain: ' + domain + '\n\n' +
     'Pixel detection results:\n' +
     '- Google Tag Manager: '  + (pixels.gtm             ? 'YES (' + pixels.gtmId + ')' : 'NOT DETECTED') + '\n' +
@@ -245,7 +246,7 @@ async function callClaude(html, domain, pixels, apiKey) {
 // POST /  –  main handler
 // ---------------------------------------------------------------------------
 app.post('/', async (req, res) => {
-  const { domain, profileKey } = req.body || {};
+  const { domain, profileKey, businessName } = req.body || {};
 
   if (!domain || !profileKey) {
     return res.status(400).json({ error: 'domain and profileKey are required' });
@@ -273,7 +274,7 @@ app.post('/', async (req, res) => {
     if (!apiKey) throw new Error('ANTHROPIC_API_KEY secret not configured');
     console.log('[IGI] API key present, length:', apiKey.length, '| prefix:', apiKey.slice(0, 10));
 
-    const intel = await callClaude(html, domain, pixels, apiKey);
+    const intel = await callClaude(html, domain, pixels, apiKey, businessName);
 
     // Attach computed fields
     intel.digitalReadiness = Object.assign({}, pixels, dr);
