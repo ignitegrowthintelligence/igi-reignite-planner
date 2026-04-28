@@ -2391,18 +2391,34 @@ function _openProspectPage(cpid) {
   page.innerHTML = _buildProspectPageHTML(entry.section, entry.acct);
   page.style.display = 'block';
   page.scrollTop = 0;
-
-  // Update hash so back button works
   history.pushState({ cpid: cpid }, '', '#/prospect/' + cpid);
+  window._activeProspectAcct = entry.acct;
 
-  // Run Firestore discovery cache check
-  _checkDiscoveryCacheForPage(entry.acct, page);
+  // For Rebuild: run normal Firestore discovery cache check
+  if (entry.section === 'rebuild') {
+    _checkDiscoveryCacheForPage(entry.acct, page);
+    return;
+  }
+
+  // For all other sections: check if domain is already stored
+  var key = _profileKey(entry.acct);
+  db.collection('clientProfiles').doc(key).get().then(function(doc) {
+    if (doc.exists && doc.data().domain) {
+      entry.acct._discDomain = doc.data().domain;
+      _checkDiscoveryCacheForPage(entry.acct, page);
+    } else {
+      _showWebsitePopup(entry.acct, page, key);
+    }
+  }).catch(function() {
+    _showWebsitePopup(entry.acct, page, key);
+  });
 }
 
 function _closeProspectPage() {
   var page = document.getElementById('igi-prospect-page');
   page.style.display = 'none';
   page.innerHTML = '';
+  window._activeProspectAcct = null;
 }
 
 // Handle browser back/forward buttons
@@ -2415,6 +2431,7 @@ window.addEventListener('popstate', function(e) {
       page.innerHTML = _buildProspectPageHTML(entry.section, entry.acct);
       page.style.display = 'block';
       page.scrollTop = 0;
+      window._activeProspectAcct = entry.acct;
       _checkDiscoveryCacheForPage(entry.acct, page);
     }
   } else {
@@ -2455,7 +2472,7 @@ function _buildProspectPageHTML(section, acct) {
     + '</div>'
 
     // Page content
-    + '<div style="max-width:680px;margin:0 auto;padding:24px 20px 48px;">'
+    + '<div class="prospect-page-content" style="max-width:680px;margin:0 auto;padding:24px 20px 48px;">'
 
     // Business name + IGI score
     + '<div style="display:flex;align-items:flex-start;justify-content:space-between;'
@@ -2501,6 +2518,143 @@ function _checkDiscoveryCacheForPage(acct, pageEl) {
   }).catch(function() {
     _showGenerateIntelButton(acct._discDomain, cid);
   });
+}
+
+function _profileKey(acct) {
+  return (acct.name || acct.acct || acct.adv || 'unknown')
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '')
+    .slice(0, 60);
+}
+
+function _showWebsitePopup(acct, pageEl, profileKey) {
+  var content = pageEl.querySelector('.prospect-page-content');
+  if (content) content.style.filter = 'blur(4px)';
+
+  var popup = document.createElement('div');
+  popup.id = 'website-popup';
+  popup.style.cssText =
+    'position:fixed;top:0;left:0;right:0;bottom:0;'
+    + 'display:flex;align-items:center;justify-content:center;'
+    + 'background:rgba(0,0,0,.55);z-index:200;padding:20px;';
+
+  var name = acct.name || acct.acct || acct.adv || 'this client';
+
+  popup.innerHTML =
+    '<div style="background:var(--surface);border:1px solid var(--border);'
+    + 'border-radius:12px;padding:28px 24px;max-width:420px;width:100%;">'
+    + '<div style="font-size:.6rem;font-weight:700;text-transform:uppercase;'
+    + 'letter-spacing:.1em;color:var(--teal);margin-bottom:10px;">Discovery Intelligence</div>'
+    + '<div style="font-size:1rem;font-weight:800;color:#fff;margin-bottom:6px;">' + name + '</div>'
+    + '<div style="font-size:.82rem;color:var(--dim);margin-bottom:20px;line-height:1.5;">'
+    + 'Enter the website to generate pre-call intelligence for this account.'
+    + '</div>'
+    + '<input id="website-popup-input" type="text" placeholder="example.com" '
+    + 'style="width:100%;padding:10px 14px;background:var(--surface2);'
+    + 'border:1px solid var(--border);border-radius:8px;color:#fff;'
+    + 'font-size:.88rem;box-sizing:border-box;margin-bottom:14px;outline:none;" />'
+    + '<button id="website-popup-btn" '
+    + 'style="width:100%;padding:12px;background:linear-gradient(135deg,rgba(0,188,212,.2),rgba(0,188,212,.08));'
+    + 'border:1px solid var(--teal-border);border-radius:8px;color:var(--teal);'
+    + 'font-size:.85rem;font-weight:700;cursor:pointer;margin-bottom:10px;">'
+    + 'Generate Intel'
+    + '</button>'
+    + '<div style="text-align:center;">'
+    + '<a href="#" id="website-popup-skip" '
+    + 'style="font-size:.75rem;color:var(--dim);text-decoration:none;">'
+    + 'Skip for now'
+    + '</a></div>'
+    + '</div>';
+
+  pageEl.appendChild(popup);
+
+  var input = document.getElementById('website-popup-input');
+  if (input) setTimeout(function() { input.focus(); }, 100);
+
+  var btn = document.getElementById('website-popup-btn');
+  btn.addEventListener('click', function() {
+    _submitWebsitePopup(acct, pageEl, profileKey);
+  });
+
+  input.addEventListener('keydown', function(e) {
+    if (e.key === 'Enter') _submitWebsitePopup(acct, pageEl, profileKey);
+  });
+
+  var skip = document.getElementById('website-popup-skip');
+  skip.addEventListener('click', function(e) {
+    e.preventDefault();
+    popup.remove();
+    if (content) content.style.filter = '';
+  });
+}
+
+function _submitWebsitePopup(acct, pageEl, profileKey) {
+  var input = document.getElementById('website-popup-input');
+  if (!input) return;
+
+  var raw = input.value.trim();
+  if (!raw) {
+    input.style.borderColor = 'var(--red)';
+    return;
+  }
+
+  var domain = raw.replace(/^https?:\/\//i, '').replace(/^www\./i, '').split('/')[0].split('?')[0];
+  acct._discDomain = domain;
+
+  db.collection('clientProfiles').doc(profileKey).set({
+    domain: domain,
+    businessName: acct.name || acct.acct || acct.adv || '',
+    section: acct._section || '',
+    savedAt: new Date().toISOString()
+  }).catch(function(err) {
+    console.warn('[IGI] clientProfiles save failed:', err);
+  });
+
+  var popup = document.getElementById('website-popup');
+  if (popup) popup.remove();
+  var content = pageEl.querySelector('.prospect-page-content');
+  if (content) content.style.filter = '';
+
+  var discBtn = pageEl.querySelector('[id$="-btn"]');
+  if (discBtn) {
+    discBtn.click();
+  } else {
+    _checkDiscoveryCacheForPage(acct, pageEl);
+  }
+}
+
+function _populateProfileFromReport(report, acct, pageEl) {
+  if (acct._places && acct._places.id) return;
+
+  var info = report.companyInfo || {};
+  var profileContainer = pageEl ? pageEl.querySelector('.prospect-profile-rows') : null;
+  if (!profileContainer) return;
+
+  var rows = [];
+  var phone   = info.phone || info.phoneNumber || null;
+  var email   = info.email || null;
+  var address = info.address || info.location || null;
+  var website = info.website || info.domain || acct._discDomain || null;
+
+  if (phone) rows.push(_profileRow('Phone',
+    '<a href="tel:' + phone.replace(/\s/g,'') + '" '
+    + 'style="font-size:.88rem;font-weight:700;color:var(--teal);text-decoration:none;">'
+    + phone + '</a>'));
+  if (email) rows.push(_profileRow('Email',
+    '<a href="mailto:' + email + '" '
+    + 'style="font-size:.82rem;color:var(--teal);text-decoration:none;">'
+    + email + '</a>'));
+  if (address) rows.push(_profileRow('Address',
+    '<div style="font-size:.82rem;color:var(--text);line-height:1.4;">' + address + '</div>'));
+  if (website) rows.push(_profileRow('Website',
+    '<a href="https://' + website + '" target="_blank" rel="noopener" '
+    + 'style="font-size:.82rem;color:var(--teal);text-decoration:none;font-weight:600;">'
+    + website + ' →</a>'));
+
+  if (rows.length > 0) {
+    profileContainer.innerHTML = rows.join('');
+  }
 }
 
 function closeCallPrep() {
@@ -2911,6 +3065,13 @@ function _renderDiscoveryBullets(report, bulletsEl, btnWrapEl, linkEl) {
  }
  if (btnWrapEl) btnWrapEl.style.display = 'none';
  if (linkEl) linkEl.style.display = 'block';
+ // Populate Business Profile from intel report for non-Places accounts
+ if (window._activeProspectAcct) {
+   var _prospectPage = document.getElementById('igi-prospect-page');
+   if (_prospectPage && _prospectPage.style.display !== 'none') {
+     _populateProfileFromReport(report, window._activeProspectAcct, _prospectPage);
+   }
+ }
 }
 
 function _showDiscoveryError(bulletsEl, btnWrapEl, btnEl, msg) {
@@ -3146,7 +3307,7 @@ function _buildLaneBody(section, a) {
     if (profileRows.length) {
       placesProfile = '<div style="padding:18px 24px 0;">'
         + '<div style="font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.09em;color:var(--teal);margin-bottom:10px;">Business Profile</div>'
-        + '<div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:2px 14px;">'
+        + '<div class="prospect-profile-rows" style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:2px 14px;">'
         + profileRows.join('')
         + '</div></div>';
     }
