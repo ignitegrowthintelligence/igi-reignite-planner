@@ -1645,7 +1645,7 @@ function scoreLocalOwnership(prospect) {
 
 function scoreCompetitors(prospect) {
  var cat = prospect.cat || '';
- var allProspects = (state.rebuild && state.rebuild.prospects) ? state.rebuild.prospects : [];
+ var allProspects = (state.rebuild && state.rebuild._merged) ? state.rebuild._merged : [];
 
  // Non-rebuild accounts don't have a discovery prospect pool to compare against.
  // Return a neutral mid-range score rather than defaulting to minimum.
@@ -2593,42 +2593,7 @@ function _submitWebsitePopup(acct, pageEl, profileKey) {
     discBtn.click();
   } else {
   }
-}
-
-function _populateProfileFromReport(report, acct, pageEl) {
-  if (acct._places && acct._places.id) return;
-
-  var info = report.companyInfo || {};
-  var profileContainer = pageEl ? pageEl.querySelector('.prospect-profile-rows') : null;
-  if (!profileContainer) return;
-
-  var rows = [];
-  var phone   = info.phone || info.phoneNumber || null;
-  var email   = info.email || null;
-  var address = info.address || info.location || null;
-  var website = info.website || info.domain || acct._discDomain || null;
-
-  if (phone) rows.push(_profileRow('Phone',
-    '<a href="tel:' + phone.replace(/\s/g,'') + '" '
-    + 'style="font-size:.88rem;font-weight:700;color:var(--teal);text-decoration:none;">'
-    + phone + '</a>'));
-  if (email) rows.push(_profileRow('Email',
-    '<a href="mailto:' + email + '" '
-    + 'style="font-size:.82rem;color:var(--teal);text-decoration:none;">'
-    + email + '</a>'));
-  if (address) rows.push(_profileRow('Address',
-    '<div style="font-size:.82rem;color:var(--text);line-height:1.4;">' + address + '</div>'));
-  if (website) rows.push(_profileRow('Website',
-    '<a href="https://' + website + '" target="_blank" rel="noopener" '
-    + 'style="font-size:.82rem;color:var(--teal);text-decoration:none;font-weight:600;">'
-    + website + ' →</a>'));
-
-  if (rows.length > 0) {
-    profileContainer.innerHTML = rows.join('');
-  }
-}
-
-function closeCallPrep() {
+}function closeCallPrep() {
   var overlay = document.getElementById('callPrepOverlay');
   overlay.style.opacity = '0';
   overlay.querySelector('#callPrepBox').style.transform = 'scale(.95)';
