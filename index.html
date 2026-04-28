@@ -2763,8 +2763,9 @@ function _buildRebuildBody(a) {
      + '<div id="' + containerId + '-link" style="display:none;margin-top:10px;"></div>'
      + '</div>'
      : '';
+  }
 
-    var scoreBreakdownHtml = website
+  var scoreBreakdownHtml = website
     ? '<div id="score-breakdown-' + (containerId||'') + '" style="padding:0 24px 24px;">' + _buildScoreBreakdownWithFlash(a, containerId||'') + '</div>'
     : '<div style="padding:0 24px 24px;">' + _buildScoreBreakdown(a) + '</div>';
   return profileSection + discoverySection + scoreBreakdownHtml;
