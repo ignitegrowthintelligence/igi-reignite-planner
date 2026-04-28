@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8"/>
@@ -2556,36 +2556,54 @@ function _buildRebuildBody(a) {
         return url.replace(/^https?:\/\//,'').replace(/^www\./,'').split('/')[0].split('?')[0];
       }
     })(website);
-    var containerId = 'disc-' + Math.random().toString(36).slice(2, 8);
-    window._rebuildProspects[containerId] = a;
-    // Store active containerId and domain on prospect so openCallPrep and score wiring can target panel elements
-    a._activeContainerId = containerId;
     a._discDomain = domain;
+
+    var containerId = 'disc-' + Math.random().toString(36).slice(2, 8);
+
     discoverySection =
-      '<div id="' + containerId + '-discovery-section" style="padding:18px 24px 0;">'
-      + '<div style="font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.09em;color:var(--teal);margin-bottom:10px;">Discovery Intelligence</div>'
-      + '<div id="' + containerId + '-bullets" style="display:flex;flex-direction:column;gap:8px;margin-bottom:10px;"></div>'
-      + '<div id="' + containerId + '-progress" style="display:none;margin-bottom:10px;">'
-      + '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:5px;">'
-      + '<span id="' + containerId + '-progress-label" style="font-size:.68rem;color:var(--dim);">Generating report…</span>'
-      + '<span id="' + containerId + '-progress-pct" style="font-size:.68rem;color:var(--teal);font-weight:700;">0%</span>'
-      + '</div>'
-      + '<div style="height:4px;background:var(--surface2);border-radius:2px;overflow:hidden;">'
-      + '<div id="' + containerId + '-progress-bar" style="height:100%;width:0%;background:linear-gradient(90deg,var(--teal),rgba(0,188,212,.5));border-radius:2px;transition:width .8s ease;"></div>'
-      + '</div>'
-      + '</div>'
-      + '<div id="' + containerId + '-btn-wrap" style="display:none;"></div>'
-      + '<div id="' + containerId + '-link" style="display:none;margin-top:10px;">'
-      + '<a id="' + containerId + '-report-link" href="#" target="_blank" rel="noopener" class="disc-report-link" '
-      + 'style="display:flex;align-items:center;justify-content:space-between;padding:12px 16px;background:var(--surface2);border:1px solid var(--teal-border);border-radius:8px;text-decoration:none;transition:background .15s;" '
-      + 'onmouseover="this.style.background=\'rgba(0,188,212,.1)\'" onmouseout="this.style.background=\'var(--surface2)\'" >'
-      + '<div>'
-      + '<div style="font-size:.82rem;font-weight:700;color:var(--teal);">View Full Discovery Report</div>'
-      + '<div style="font-size:.68rem;color:var(--dim);margin-top:2px;">Market research · Competitors · Ad intelligence · ' + domain + '</div>'
-      + '</div>'
-      + '<div style="font-size:1rem;color:var(--teal);">→</div>'
-      + '</a></div>'
-      + '</div>';
+     '<div style="padding:18px 24px 0;">'
+     + '<div style="font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.09em;color:var(--teal);margin-bottom:10px;">Discovery Intelligence</div>'
+
+     // Bullets container
+     + '<div id="' + containerId + '-bullets" style="display:flex;flex-direction:column;gap:8px;margin-bottom:10px;"></div>'
+
+     // Progress bar — hidden until job starts
+     + '<div id="' + containerId + '-progress" style="display:none;margin-bottom:10px;">'
+     + '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:5px;">'
+     + '<span id="' + containerId + '-progress-label" style="font-size:.68rem;color:var(--dim);">Generating report…</span>'
+     + '<span id="' + containerId + '-progress-pct" style="font-size:.68rem;color:var(--teal);font-weight:700;">0%</span>'
+     + '</div>'
+     + '<div style="height:4px;background:var(--surface2);border-radius:2px;overflow:hidden;">'
+     + '<div id="' + containerId + '-progress-bar" style="height:100%;width:0%;background:linear-gradient(90deg,var(--teal),rgba(0,188,212,.5));border-radius:2px;transition:width .8s ease;"></div>'
+     + '</div>'
+     + '</div>'
+
+     // Generate Intel button
+     + '<div id="' + containerId + '-btn-wrap">'
+     + '<button id="' + containerId + '-btn" '
+     + 'onclick="generateDiscoveryIntel(\'' + encodeURIComponent(domain) + '\',\'' + containerId + '\')" '
+     + 'style="width:100%;display:flex;align-items:center;justify-content:center;gap:8px;padding:12px 16px;'
+     + 'background:linear-gradient(135deg,rgba(0,188,212,.15),rgba(0,188,212,.06));'
+     + 'border:1px solid var(--teal-border);border-radius:8px;color:var(--teal);font-size:.82rem;font-weight:700;cursor:pointer;transition:all .15s;" '
+     + 'onmouseover="this.style.background='rgba(0,188,212,.22)'" '
+     + 'onmouseout="this.style.background='linear-gradient(135deg,rgba(0,188,212,.15),rgba(0,188,212,.06))'">'
+     + '🔍 Generate Intel'
+     + '</button>'
+     + '</div>'
+
+     // View Full Discovery Report link — hidden until job completes
+     + '<div id="' + containerId + '-link" style="display:none;margin-top:10px;">'
+     + '<a href="https://ignite.edwinlovett.com/research/?company=' + encodeURIComponent(domain) + '" target="_blank" rel="noopener" '
+     + 'style="display:flex;align-items:center;justify-content:space-between;padding:12px 16px;background:var(--surface2);border:1px solid var(--teal-border);border-radius:8px;text-decoration:none;transition:background .15s;" '
+     + 'onmouseover="this.style.background='rgba(0,188,212,.1)'" onmouseout="this.style.background='var(--surface2)'">'
+     + '<div>'
+     + '<div style="font-size:.82rem;font-weight:700;color:var(--teal);">View Full Discovery Report</div>'
+     + '<div style="font-size:.68rem;color:var(--dim);margin-top:2px;">Market research · Competitors · Ad intelligence · ' + domain + '</div>'
+     + '</div>'
+     + '<div style="font-size:1rem;color:var(--teal);">→</div>'
+     + '</a></div>'
+
+     + '</div>';
   }
 
   var scoreBreakdownHtml = website
@@ -2653,385 +2671,253 @@ function _showRegenerateButton(prospect, containerId, generatedAt) {
 }
 
 async function generateDiscoveryIntel(encodedDomain, containerId) {
-  var domain = decodeURIComponent(encodedDomain);
-  var bulletsEl   = document.getElementById(containerId + '-bullets');
-  var btnWrapEl   = document.getElementById(containerId + '-btn-wrap');
-  var btnEl       = document.getElementById(containerId + '-btn');
-  var linkEl      = document.getElementById(containerId + '-link');
-  var progressEl  = document.getElementById(containerId + '-progress');
-  var progressBar = document.getElementById(containerId + '-progress-bar');
-  var progressPct = document.getElementById(containerId + '-progress-pct');
-  var progressLbl = document.getElementById(containerId + '-progress-label');
-  var prospect    = window._rebuildProspects && window._rebuildProspects[containerId];
+ var domain = decodeURIComponent(encodedDomain);
+ var bulletsEl = document.getElementById(containerId + '-bullets');
+ var btnWrapEl = document.getElementById(containerId + '-btn-wrap');
+ var btnEl = document.getElementById(containerId + '-btn');
+ var linkEl = document.getElementById(containerId + '-link');
+ var progressEl = document.getElementById(containerId + '-progress');
+ var progressBar = document.getElementById(containerId + '-progress-bar');
+ var progressPct = document.getElementById(containerId + '-progress-pct');
+ var progressLbl = document.getElementById(containerId + '-progress-label');
 
-  var jobApiUrl = 'https://ignite.edwinlovett.com/research/research-job-api.php';
-  var reportUrl = 'https://ignite.edwinlovett.com/research/?company=' + encodeURIComponent(domain) + '&format=json';
-  var cacheUrl  = reportUrl;
+ var apiBase = 'https://ignite.edwinlovett.com';
+ var jobApiUrl = apiBase + '/research/research-job-api.php';
+ var cacheUrl = apiBase + '/research/?company=' + encodeURIComponent(domain) + '&format=json';
 
-  // Disable button and show progress immediately
-  if (btnEl) btnEl.disabled = true;
-  if (btnWrapEl) btnWrapEl.style.display = 'none';
-  if (progressEl) progressEl.style.display = 'block';
-  if (progressLbl) progressLbl.textContent = 'Connecting to Discovery AI...';
-  if (progressPct) progressPct.textContent = '0%';
+ // Disable button
+ if (btnEl) btnEl.disabled = true;
 
-  // Start progress animation immediately
-  var startTime = Date.now();
-  var estimatedMs = 90000;
-  var progressInterval = setInterval(function() {
-    var elapsed = Date.now() - startTime;
-    var pct = Math.min(90, Math.round((elapsed / estimatedMs) * 90));
-    if (progressBar) progressBar.style.width = pct + '%';
-    if (progressPct) progressPct.textContent = pct + '%';
-    if (progressLbl) progressLbl.textContent = 'Generating report... ' + Math.round(elapsed / 1000) + 's';
-  }, 1000);
+ // Step 1: POST to job API — returns cached report immediately or enqueues a job
+ var jobData;
+ try {
+ var postResp = await fetch(jobApiUrl, {
+ method: 'POST',
+ headers: { 'Content-Type': 'application/json' },
+ body: JSON.stringify({ domain: domain })
+ });
+ jobData = await postResp.json();
+ } catch(e) {
+ console.error('[IGI] Discovery POST failed:', e);
+ _showDiscoveryError(bulletsEl, btnWrapEl, btnEl, 'Unable to reach Discovery.AI. Check your connection and try again.');
+ return;
+ }
 
-  // Step 1: POST to job API - returns cached report or enqueues a job
-  var jobData;
-  try {
-    var postResp = await fetch(jobApiUrl, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ domain: domain })
-    });
-    jobData = await postResp.json();
-  } catch(e) {
-    clearInterval(progressInterval);
-    if (progressEl) progressEl.style.display = 'none';
-    _showDiscoveryError(bulletsEl, btnWrapEl, btnEl, 'Unable to reach Discovery.AI. Check your connection and try again.', domain, containerId);
-    return;
-  }
+ console.log('[IGI] Discovery POST response:', jobData);
 
-  // Step 2: Cached — stop interval and show completion immediately
-  if (jobData.status === 'complete' && jobData.result && jobData.result.report) {
-    clearInterval(progressInterval);
-    if (progressBar) progressBar.style.width = '100%';
-    if (progressPct) progressPct.textContent = '100%';
-    if (progressLbl) progressLbl.textContent = 'Report ready!';
-    setTimeout(function() {
-      if (progressEl) progressEl.style.display = 'none';
-      var report = jobData.result.report;
-      _renderDiscoveryBullets(report, bulletsEl, btnWrapEl, linkEl);
-      _setDiscoveryReportLink(reportUrl, containerId);
-      if (prospect) {
-        _applyDiscoveryToScore(report, prospect, containerId);
-        _showRegenerateButton(prospect, containerId, new Date().toISOString());
-        var placeId = prospect._places && prospect._places.id;
-        if (placeId) {
-          db.collection('discoveryIntel').doc(placeId).set({
-            report: report,
-            reportUrl: reportUrl,
-            domain: domain,
-            generatedAt: new Date().toISOString(),
-            businessName: prospect.name || ''
-          }).catch(function(err) { console.warn('[IGI] Discovery Intel save failed:', err); });
-        }
-      }
-    }, 400);
-    return;
-  }
+ // Step 2: Cached — render bullets immediately
+ // Handle both {status:'complete', report:{...}} and {status:'complete', result:{report:{...}}}
+ var cachedReport = null;
+ if (jobData.status === 'complete') {
+ cachedReport = (jobData.report) || (jobData.result && jobData.result.report) || null;
+ }
+ if (cachedReport) {
+ _renderDiscoveryBullets(cachedReport, bulletsEl, btnWrapEl, linkEl);
+ return;
+ }
 
-  // Step 3: Job enqueued - validate we have a jobId/pollUrl
-  if (!jobData.jobId || !jobData.pollUrl) {
-    clearInterval(progressInterval);
-    if (progressEl) progressEl.style.display = 'none';
-    _showDiscoveryError(bulletsEl, btnWrapEl, btnEl, 'Unexpected response from Discovery.AI. Try again.', domain, containerId);
-    return;
-  }
+ // Step 3: Job enqueued — validate we have a jobId and pollUrl
+ if (!jobData.jobId || !jobData.pollUrl) {
+ console.error('[IGI] Unexpected response, missing jobId or pollUrl:', jobData);
+ _showDiscoveryError(bulletsEl, btnWrapEl, btnEl, 'Unexpected response from Discovery.AI. Try again.');
+ return;
+ }
 
-  // Step 4: Poll job status every 2.5s, max 72 attempts (~3 min)
-  var pollUrl = jobData.pollUrl;
-  var maxAttempts = 72;
-  var attempt = 0;
+ // Show progress bar, hide button
+ if (btnWrapEl) btnWrapEl.style.display = 'none';
+ if (progressEl) progressEl.style.display = 'block';
 
-  var poll = async function() {
-    attempt++;
-    try {
-      var pollResp = await fetch(pollUrl);
-      var pollData = await pollResp.json();
+ // Animated progress bar — estimate 90s
+ var startTime = Date.now();
+ var estimatedMs = 90000;
+ var progressInterval = setInterval(function() {
+ var elapsed = Date.now() - startTime;
+ var pct = Math.min(90, Math.round((elapsed / estimatedMs) * 90));
+ if (progressBar) progressBar.style.width = pct + '%';
+ if (progressPct) progressPct.textContent = pct + '%';
+ if (progressLbl) progressLbl.textContent = 'Generating report... ' + Math.round(elapsed / 1000) + 's';
+ }, 1000);
 
-      if (pollData.status === 'complete') {
-        clearInterval(progressInterval);
-        if (progressBar) progressBar.style.width = '100%';
-        if (progressPct) progressPct.textContent = '100%';
-        if (progressLbl) progressLbl.textContent = 'Report ready!';
-        setTimeout(async function() {
-          if (progressEl) progressEl.style.display = 'none';
-          try {
-            var cacheResp = await fetch(cacheUrl);
-            var cacheData = await cacheResp.json();
-            if (cacheData.success && cacheData.report) {
-              var report = cacheData.report;
-              _renderDiscoveryBullets(report, bulletsEl, btnWrapEl, linkEl);
-              _setDiscoveryReportLink(reportUrl, containerId);
-              if (prospect) {
-                _applyDiscoveryToScore(report, prospect, containerId);
-                _showRegenerateButton(prospect, containerId, new Date().toISOString());
-                var placeId = prospect._places && prospect._places.id;
-                if (placeId) {
-                  db.collection('discoveryIntel').doc(placeId).set({
-                    report: report,
-                    reportUrl: reportUrl,
-                    domain: domain,
-                    generatedAt: new Date().toISOString(),
-                    businessName: prospect.name || ''
-                  }).catch(function(err) { console.warn('[IGI] Discovery Intel save failed:', err); });
-                }
-              }
-            } else {
-              if (bulletsEl) bulletsEl.innerHTML = _discInfoHtml('Report generated! Click "View Full Discovery Report" to read it.');
-              _setDiscoveryReportLink(reportUrl, containerId);
-            }
-          } catch(e) {
-            if (bulletsEl) bulletsEl.innerHTML = _discInfoHtml('Report generated! Click "View Full Discovery Report" to read it.');
-            _setDiscoveryReportLink(reportUrl, containerId);
-          }
-        }, 600);
-        return;
-      }
+ // Ensure poll URL is absolute — prepend apiBase if it starts with /
+ var rawPollUrl = jobData.pollUrl;
+ var pollUrl = (rawPollUrl.startsWith('http')) ? rawPollUrl : apiBase + rawPollUrl;
 
-      if (pollData.status === 'failed') {
-        clearInterval(progressInterval);
-        if (progressEl) progressEl.style.display = 'none';
-        _showDiscoveryError(bulletsEl, btnWrapEl, btnEl,
-          'Report generation failed' + (pollData.error ? ': ' + pollData.error : '') + '. Try again.', domain, containerId);
-        return;
-      }
+ // Step 4: Poll job status every 2.5s, max 5 minutes (120 attempts)
+ var maxAttempts = 120;
+ var attempt = 0;
 
-    } catch(e) { /* transient poll error - keep trying */ }
+ var poll = async function() {
+ attempt++;
+ try {
+ var pollResp = await fetch(pollUrl);
+ var pollData = await pollResp.json();
+ console.log('[IGI] Poll attempt ' + attempt + ':', pollData.status);
 
-    if (attempt >= maxAttempts) {
-      clearInterval(progressInterval);
-      if (progressEl) progressEl.style.display = 'none';
-      if (bulletsEl) bulletsEl.innerHTML = _discInfoHtml('Still generating — reopen this card in a moment to check again.');
-      if (btnEl) { btnEl.disabled = false; btnEl.innerHTML = '🔍 Generate Intel'; if (btnWrapEl) btnWrapEl.style.display = 'block'; }
-      else _showGenerateIntelButton(domain, containerId);
-      return;
-    }
-    setTimeout(poll, 2500);
-  };
+ if (pollData.status === 'complete') {
+ clearInterval(progressInterval);
+ if (progressBar) progressBar.style.width = '100%';
+ if (progressPct) progressPct.textContent = '100%';
+ if (progressLbl) progressLbl.textContent = 'Report ready!';
 
-  setTimeout(poll, 2500);
-}
+ setTimeout(async function() {
+ if (progressEl) progressEl.style.display = 'none';
+ try {
+ var cacheResp = await fetch(cacheUrl);
+ var cacheData = await cacheResp.json();
+ // Handle both {success:true, report:{...}} and {report:{...}}
+ var finalReport = (cacheData.report) || null;
+ if (finalReport) {
+ _renderDiscoveryBullets(finalReport, bulletsEl, btnWrapEl, linkEl);
+ } else {
+ if (bulletsEl) bulletsEl.innerHTML = _discInfoHtml('Report generated! Click "View Full Discovery Report" to read it.');
+ if (btnWrapEl) btnWrapEl.style.display = 'none';
+ if (linkEl) linkEl.style.display = 'block';
+ }
+ } catch(e) {
+ console.error('[IGI] Cache fetch failed:', e);
+ if (bulletsEl) bulletsEl.innerHTML = _discInfoHtml('Report generated! Click "View Full Discovery Report" to read it.');
+ if (btnWrapEl) btnWrapEl.style.display = 'none';
+ if (linkEl) linkEl.style.display = 'block';
+ }
+ }, 600);
+ return;
+ }
 
-function _applyDiscoveryToScore(report, prospect, containerId) {
-  // Extract ad platforms
-  var adPlatforms = (report.currentMarketing && report.currentMarketing.adPlatforms) || [];
-  var detectedAds = (report.currentMarketing && report.currentMarketing.detectedAds) || [];
-  var pixels = (report.pixelAnalysis && report.pixelAnalysis.pixels) || [];
+ if (pollData.status === 'failed') {
+ clearInterval(progressInterval);
+ if (progressEl) progressEl.style.display = 'none';
+ _showDiscoveryError(bulletsEl, btnWrapEl, btnEl,
+ 'Report generation failed' + (pollData.error ? ': ' + pollData.error : '') + '. Try again.');
+ return;
+ }
 
-  // Build combined deduplicated platform list
-  var combined = adPlatforms.slice();
-  detectedAds.forEach(function(ad) {
-    var p = ad.platform || ad.source;
-    if (p && combined.indexOf(p) < 0) combined.push(p);
-  });
+ } catch(e) {
+ console.warn('[IGI] Poll error (attempt ' + attempt + '):', e);
+ // Transient error — keep trying
+ }
 
-  // Store on prospect
-  prospect._discoveryData = {
-    adPlatforms: combined,
-    pixels: pixels,
-    generatedAt: Date.now()
-  };
+ if (attempt >= maxAttempts) {
+ clearInterval(progressInterval);
+ if (progressEl) progressEl.style.display = 'none';
+ if (bulletsEl) bulletsEl.innerHTML = _discInfoHtml('Still generating. Reopen this card in a moment to check again.');
+ if (btnWrapEl) { btnWrapEl.style.display = 'block'; }
+ if (btnEl) { btnEl.disabled = false; btnEl.textContent = 'Generate Intel'; }
+ if (linkEl) linkEl.style.display = 'block';
+ return;
+ }
 
-  // Recalculate total score
-  prospect.score = computeScore(prospect);
-  var newScore = prospect.score;
-  var s100 = Math.round(newScore);
+ setTimeout(poll, 2500);
+ };
 
-  // Update score badge in table row (keyed by stable _rebuildId)
-  var rebuildId = prospect._rebuildId;
-  if (rebuildId) {
-    var badge = document.getElementById('score-badge-' + rebuildId);
-    if (badge) {
-      badge.textContent = s100;
-      badge.className = 'score-badge ' + (s100 >= 80 ? 'score-high' : s100 >= 60 ? 'score-mid' : 'score-low');
-    }
-  }
-
-  // Update Competitors detail + flash in the currently-open call prep panel
-  // Panel elements are keyed by containerId (set fresh each time card opens)
-  if (prospect._scoreData) {
-    var oppComp = prospect._scoreData.components.filter(function(c){ return c.label === 'Competitors'; })[0];
-
-    var detailEl = document.getElementById('opp-detail-' + containerId);
-    if (detailEl && oppComp) detailEl.textContent = oppComp.detail;
-
-    var flashEl = document.getElementById('opp-flash-' + containerId);
-    if (flashEl) {
-      flashEl.style.opacity = '1';
-      flashEl.style.transition = 'none';
-      setTimeout(function() {
-        flashEl.style.transition = 'opacity 1s';
-        flashEl.style.opacity = '0';
-      }, 2000);
-    }
-
-    // Re-render the score breakdown container in the panel with fresh data
-    var breakdownEl = document.getElementById('score-breakdown-' + containerId);
-    if (breakdownEl) {
-      breakdownEl.innerHTML = _buildScoreBreakdownWithFlash(prospect, containerId);
-    }
-  }
+ setTimeout(poll, 2500);
 }
 
 function _renderDiscoveryBullets(report, bulletsEl, btnWrapEl, linkEl) {
-  var bullets = _extractDiscoveryBullets(report);
-  if (bulletsEl) {
-    bulletsEl.innerHTML = bullets.length > 0
-      ? bullets.map(function(b) {
-          return '<div style="display:flex;gap:10px;align-items:flex-start;padding:10px 14px;'
-            + 'background:var(--surface2);border:1px solid var(--border);border-radius:8px;">'
-            + '<div style="color:var(--teal);font-size:.85rem;flex-shrink:0;margin-top:1px;">→</div>'
-            + '<div style="font-size:.8rem;color:var(--text);line-height:1.55;">' + b + '</div>'
-            + '</div>';
-        }).join('')
-      : _discInfoHtml('Report loaded. Click "View Full Discovery Report" for the full breakdown.');
-  }
-  if (btnWrapEl) btnWrapEl.style.display = 'none';
-  if (linkEl) linkEl.style.display = 'block';
+ var bullets = _extractDiscoveryBullets(report);
+ if (bulletsEl) {
+ bulletsEl.innerHTML = bullets.length > 0
+ ? bullets.map(function(b) {
+ return '<div style="display:flex;gap:10px;align-items:flex-start;padding:10px 14px;'
+ + 'background:var(--surface2);border:1px solid var(--border);border-radius:8px;">'
+ + '<div style="color:var(--teal);font-size:.85rem;flex-shrink:0;margin-top:1px;">→</div>'
+ + '<div style="font-size:.8rem;color:var(--text);line-height:1.55;">' + b + '</div>'
+ + '</div>';
+ }).join('')
+ : _discInfoHtml('Report loaded. Click "View Full Discovery Report" for the full breakdown.');
+ }
+ if (btnWrapEl) btnWrapEl.style.display = 'none';
+ if (linkEl) linkEl.style.display = 'block';
 }
 
-function _showDiscoveryError(bulletsEl, btnWrapEl, btnEl, msg, domain, containerId) {
-  if (bulletsEl) {
-    bulletsEl.innerHTML =
-      '<div style="padding:12px 14px;background:var(--surface2);border:1px solid rgba(248,113,113,.2);'
-      + 'border-radius:8px;font-size:.78rem;color:var(--dim);">' + msg + '</div>';
-  }
-  if (btnEl) {
-    btnEl.disabled = false;
-    btnEl.innerHTML = '🔍 Generate Intel';
-    if (btnWrapEl) btnWrapEl.style.display = 'block';
-  } else if (domain && containerId) {
-    // Regen path: btn-wrap was cleared, re-inject the button
-    _showGenerateIntelButton(domain, containerId);
-  }
+function _showDiscoveryError(bulletsEl, btnWrapEl, btnEl, msg) {
+ if (bulletsEl) {
+ bulletsEl.innerHTML =
+ '<div style="padding:12px 14px;background:var(--surface2);border:1px solid rgba(248,113,113,.2);'
+ + 'border-radius:8px;font-size:.78rem;color:var(--dim);">' + msg + '</div>';
+ }
+ if (btnWrapEl) btnWrapEl.style.display = 'block';
+ if (btnEl) { btnEl.disabled = false; btnEl.innerHTML = '🔍 Generate Intel'; }
 }
 
 function _discInfoHtml(msg) {
-  return '<div style="padding:12px 14px;background:var(--surface2);border:1px solid var(--border);'
-    + 'border-radius:8px;font-size:.78rem;color:var(--dim);line-height:1.5;">' + msg + '</div>';
+ return '<div style="padding:12px 14px;background:var(--surface2);border:1px solid var(--border);'
+ + 'border-radius:8px;font-size:.78rem;color:var(--dim);line-height:1.5;">' + msg + '</div>';
 }
 
 function _extractDiscoveryBullets(report) {
-  var bullets = [];
+ var bullets = [];
 
-  // -- Bullet 1: Marketing objective
-  var objOverview = (report.marketingObjective && (
-    report.marketingObjective.overview ||
-    report.marketingObjective.primaryGoal ||
-    report.marketingObjective.inferredGoal
-  )) || null;
-  if (objOverview) bullets.push('Goal: ' + objOverview);
+ // 1. Marketing goal
+ if (report.marketingObjective && report.marketingObjective.primaryGoal) {
+ bullets.push('Marketing goal: ' + report.marketingObjective.primaryGoal);
+ } else if (report.marketingInsights && report.marketingInsights.summary) {
+ bullets.push('Marketing focus: ' + report.marketingInsights.summary);
+ }
 
-  // -- Bullet 2: Pixel / tracking gap
-  var pixelBullet = null;
-  if (report.pixelAnalysis) {
-    var pa = report.pixelAnalysis;
-    var hasAds = (pa.adWordsTags > 0) || pa.adwordsPixel === true ||
-      (pa.pixels && pa.pixels.some(function(p) {
-        var t = (p.type || p.name || '').toLowerCase();
-        return t.includes('adword') || t.includes('google_ads') || t.includes('conversion');
-      }));
-    var hasRemarketing = pa.remarketing === true || pa.remarketingPixel === true ||
-      (pa.pixels && pa.pixels.some(function(p) {
-        return (p.type || p.name || '').toLowerCase().includes('remarketing');
-      }));
-    var hasGTM = (pa.gtmTags > 0) || pa.gtmScript === true ||
-      (pa.implementationStatus && pa.implementationStatus.gtmScript === true);
-    var gaps = [];
-    if (!hasAds) gaps.push('no AdWords conversion tracking');
-    if (!hasRemarketing) gaps.push('no remarketing pixels');
-    if (!hasGTM) gaps.push('no GTM');
-    pixelBullet = gaps.length > 0
-      ? 'Tracking gap: ' + gaps.join(', ') + ' \u2014 can\'t measure ad ROI. Strong opener.'
-      : 'Tracking solid: GTM, AdWords, and remarketing pixels all detected.';
-  }
-  if (pixelBullet) bullets.push(pixelBullet);
+ // 2. Ad platforms / current marketing activity
+ var adLine = null;
+ if (report.currentMarketing) {
+ var platforms = report.currentMarketing.adPlatforms;
+ if (platforms && platforms.length > 0) {
+ adLine = 'Currently running ads on ' + platforms.join(' and ') + ' — active digital advertiser.';
+ } else if (report.currentMarketing.detectedAds && report.currentMarketing.detectedAds.length > 0) {
+ var names = [];
+ report.currentMarketing.detectedAds.forEach(function(ad) {
+ var p = ad.platform || ad.source;
+ if (p && names.indexOf(p) < 0) names.push(p);
+ });
+ adLine = names.length > 0
+ ? 'Currently running ads on ' + names.join(' and ') + ' — active digital advertiser.'
+ : 'No active ad campaigns detected — potential opening for Ignite.';
+ } else {
+ adLine = 'No active ad campaigns detected — potential opening for Ignite.';
+ }
+ } else if (report.adLibrary) {
+ if (report.adLibrary.length > 0) {
+ var legacyPlatforms = [];
+ report.adLibrary.forEach(function(ad) {
+ if (ad.platform && legacyPlatforms.indexOf(ad.platform) < 0) legacyPlatforms.push(ad.platform);
+ });
+ adLine = 'Currently running ads on ' + legacyPlatforms.join(' and ') + ' — active digital advertiser.';
+ } else {
+ adLine = 'No active ad campaigns detected — potential opening for Ignite.';
+ }
+ }
+ if (adLine) bullets.push(adLine);
 
-  // -- Bullet 3: Active ad platforms (budget signal)
-  var adBullet = null;
-  if (report.currentMarketing) {
-    var cm = report.currentMarketing;
-    var platforms = (cm.adPlatforms || []).slice();
-    if (platforms.length === 0 && cm.detectedAds && cm.detectedAds.length > 0) {
-      cm.detectedAds.forEach(function(ad) {
-        var p = ad.platform || ad.source || '';
-        if (p && platforms.indexOf(p) < 0) platforms.push(p);
-      });
-    }
-    adBullet = platforms.length > 0
-      ? 'Already spending on ' + platforms.join(' + ') + ' \u2014 budget confirmed, easier sell.'
-      : 'No active ad spend detected \u2014 greenfield opportunity for Ignite.';
-  } else if (report.adLibrary) {
-    if (report.adLibrary.length > 0) {
-      var legPlatforms = [];
-      report.adLibrary.forEach(function(ad) {
-        if (ad.platform && legPlatforms.indexOf(ad.platform) < 0) legPlatforms.push(ad.platform);
-      });
-      adBullet = 'Already spending on ' + legPlatforms.join(' + ') + ' \u2014 budget confirmed, easier sell.';
-    } else {
-      adBullet = 'No active ad spend detected \u2014 greenfield opportunity for Ignite.';
-    }
-  }
-  if (adBullet) bullets.push(adBullet);
+ // 3. Competitors
+ var competitors = report.competitors || report.competitorAnalysis;
+ if (competitors && competitors.length > 0) {
+ var top = competitors[0];
+ var cnt = competitors.length;
+ var topName = top.name || top.company || '';
+ var topPos = top.positioning || top.marketPosition || '';
+ bullets.push(cnt + ' competitor' + (cnt !== 1 ? 's' : '') + ' identified. Strongest: '
+ + topName + (topPos ? ' — ' + topPos : '') + '.');
+ }
 
-  // -- Bullet 4: Ad library links
-  var companyDomain = (report.companyInfo && (
-    report.companyInfo.domain || report.companyInfo.website
-  )) || '';
-  if (companyDomain) {
-    companyDomain = companyDomain.replace(/^https?:\/\//,'').replace(/^www\./,'').split('/')[0].split('?')[0];
-    var enc  = encodeURIComponent(companyDomain);
-    var cm2  = report.currentMarketing || {};
-    var adLibraries = [
-      { name: 'Meta',     url: cm2.metaAdsUrl     || cm2.metaAdsLibraryUrl     || 'https://www.facebook.com/ads/library/?active_status=all&ad_type=all&country=US&q=' + enc + '&search_type=keyword_unordered' },
-      { name: 'Google',   url: cm2.googleAdsUrl   || cm2.googleAdsLibraryUrl   || 'https://adstransparency.google.com/advertiser?query=' + enc + '&region=anywhere' },
-      { name: 'TikTok',   url: cm2.tiktokAdsUrl   || cm2.tiktokAdsLibraryUrl   || 'https://library.tiktok.com/ads?region=US&keyword=' + enc },
-      { name: 'LinkedIn', url: cm2.linkedinAdsUrl || cm2.linkedinAdsLibraryUrl || 'https://www.linkedin.com/ad-library/search?q=' + enc }
-    ];
-    var linkHtml = adLibraries.map(function(l) {
-      return '<a href="' + l.url + '" target="_blank" rel="noopener" '
-        + 'style="color:var(--teal);text-decoration:none;font-weight:600;'
-        + 'border-bottom:1px solid rgba(0,188,212,.35);padding-bottom:1px;">'
-        + l.name + '</a>';
-    }).join('<span style="color:var(--dim);margin:0 4px;">\u00b7</span>');
-    bullets.push('View their ads: ' + linkHtml);
-  }
+ // 4. Target audience
+ if (report.targetAudience && report.targetAudience.demographics) {
+ bullets.push('Target audience: ' + report.targetAudience.demographics);
+ } else if (report.messagingIdeas && report.messagingIdeas.themes && report.messagingIdeas.themes.length > 0) {
+ bullets.push('Key messaging theme: ' + report.messagingIdeas.themes[0]);
+ } else if (report.marketResearch && report.marketResearch.trends && report.marketResearch.trends.length > 0) {
+ bullets.push('Market trend: ' + report.marketResearch.trends[0]);
+ }
 
-  // -- Bullet 5: Top keyword opportunity
-  if (report.keywordResearch) {
-    var kr = report.keywordResearch;
-    var opps = kr.topOpportunities || kr.seedKeywords || [];
-    var best = null;
-    opps.forEach(function(kw) {
-      if (!best) { best = kw; return; }
-      var comp     = parseFloat(kw.competition   || kw.competitionScore  || kw.competitionIndex  || 100);
-      var bestComp = parseFloat(best.competition || best.competitionScore || best.competitionIndex || 100);
-      if (comp < bestComp) best = kw;
-    });
-    if (best) {
-      var kwName = best.keyword || best.term || best.name || '';
-      var vol    = best.volume  || best.searchVolume || best.monthlySearches || '';
-      var comp   = best.competition || best.competitionScore || best.competitionIndex || '';
-      var parts  = ['"' + kwName + '"'];
-      if (vol)  parts.push(vol + '/mo searches');
-      if (comp) parts.push('competition ' + comp + '/100');
-      bullets.push('Top keyword: ' + parts.join(' \u00b7 ') + '.');
-    }
-  }
+ // 5. Top campaign recommendation / seller angle
+ if (report.marketingObjective && report.marketingObjective.campaignRecommendations
+ && report.marketingObjective.campaignRecommendations.length > 0) {
+ bullets.push('Seller angle: ' + report.marketingObjective.campaignRecommendations[0]);
+ } else if (report.messagingIdeas && report.messagingIdeas.themes
+ && report.messagingIdeas.themes.length > 1) {
+ bullets.push('Messaging angle: ' + report.messagingIdeas.themes[1]);
+ } else if (report.marketingInsights && report.marketingInsights.recommendations
+ && report.marketingInsights.recommendations.length > 0) {
+ bullets.push('Seller angle: ' + report.marketingInsights.recommendations[0]);
+ }
 
-  // -- Fallback: messagingIdeas if fewer than 3 bullets
-  if (bullets.length < 3 && report.messagingIdeas) {
-    var mi = report.messagingIdeas;
-    if (mi.competitorComparisons && mi.competitorComparisons.length > 0) {
-      bullets.push('Differentiator: ' + mi.competitorComparisons[0]);
-    } else if (mi.themes && mi.themes.length > 0) {
-      bullets.push('Key theme: ' + mi.themes[0]);
-    }
-  }
-
-  return bullets.slice(0, 5);
+ return bullets.slice(0, 5);
 }
 
 function _buildLaneBody(section, a) {
