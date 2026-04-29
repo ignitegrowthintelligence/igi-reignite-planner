@@ -147,7 +147,7 @@
 .intel-mini-val { font-size:11px; color:rgba(255,255,255,0.72); font-weight:500; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:200px; }
 .intel-win-item { font-size:11px; color:rgba(255,255,255,0.48); padding:4px 0 4px 8px; border-left:2px solid rgba(239,65,54,0.3); border-radius:0; line-height:1.4; margin-bottom:4px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
 .intel-disc-btn { display:flex; align-items:center; justify-content:space-between; padding:9px 12px; background:rgba(239,65,54,0.1); border:1px solid rgba(239,65,54,0.25); border-radius:4px; font-size:11px; color:#EF4136; font-weight:600; margin-top:14px; cursor:pointer; text-decoration:none; }
-.intel-worth-grid { display:grid; grid-template-columns:repeat(2,1fr); gap:7px; margin-bottom:14px; }
+.intel-worth-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:7px; margin-bottom:14px; }
 .intel-worth-card { background:#191919; border:1px solid rgba(255,255,255,0.07); border-radius:5px; padding:10px 12px; }
 .intel-worth-lbl { font-size:12px; font-weight:600; color:#fff; margin-bottom:4px; }
 .intel-worth-body { font-size:12px; color:rgba(255,255,255,0.4); line-height:1.5; }
@@ -2755,6 +2755,7 @@ function _renderIntelPostState(data, acct) {
   var ab       = si.adBenchmarks || {};
   var ta       = si.targetAudience || {};
   var aw       = si.advertisingWindows || {};
+  var ap       = si.adPixels || {};
   var ms       = d.marketSummary || {};
   var mScore   = d.meetingStrengthScore || 0;
   var mReasons = d.meetingStrengthReasons || [];
@@ -2771,6 +2772,7 @@ function _renderIntelPostState(data, acct) {
 
   var leftHTML = '';
 
+  // 1 — Meeting Strength
   leftHTML += '<div class="intel-sl" style="margin-top:0;">Meeting Strength</div>'
     + '<div class="intel-mstr">'
     + '<div style="display:flex;align-items:flex-start;gap:10px;margin-bottom:8px;">'
@@ -2779,73 +2781,9 @@ function _renderIntelPostState(data, acct) {
     + mReasons.slice(0,3).map(function(r){ return '<div class="intel-tag">' + _esc(r) + '</div>'; }).join('')
     + '</div></div></div>';
 
-  if (ta.type || ta.demographics || ta.reach) {
-    leftHTML += '<div class="intel-sl">Target Audience</div>';
-    if (ta.type)         leftHTML += '<div class="intel-mini-row"><div class="intel-mini-lbl">Type</div><div class="intel-mini-val">' + _esc(ta.type) + '</div></div>';
-    if (ta.demographics) leftHTML += '<div class="intel-mini-row"><div class="intel-mini-lbl">Who</div><div class="intel-mini-val">' + _esc(ta.demographics) + '</div></div>';
-    if (ta.reach)        leftHTML += '<div class="intel-mini-row"><div class="intel-mini-lbl">Geography</div><div class="intel-mini-val">' + _esc(ta.reach) + '</div></div>';
-  }
-
-  if (cv.estimatedLTV) {
-    var ltvShort = cv.estimatedLTV.replace(/\s*[\(\|].*/,'').trim();
-    leftHTML += '<div class="intel-sl">Customer Value</div>'
-      + '<div style="background:#191919;border:1px solid rgba(255,255,255,0.07);border-radius:4px;padding:9px 11px;">'
-      + '<div style="font-size:9px;text-transform:uppercase;letter-spacing:0.07em;color:rgba(255,255,255,0.28);margin-bottom:3px;">Est. Customer LTV</div>'
-      + '<div style="font-size:15px;font-weight:700;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">' + _esc(ltvShort) + '</div>'
-      + (cv.industryExamples && cv.industryExamples.length
-        ? '<div style="font-size:10px;color:rgba(255,255,255,0.32);margin-top:5px;padding-top:5px;border-top:1px solid rgba(255,255,255,0.06);line-height:1.45;display:-webkit-box;-webkit-line-clamp:1;-webkit-box-orient:vertical;overflow:hidden;">'
-          + _esc(cv.industryExamples[0]) + '</div>' : '')
-      + '</div>';
-  }
-
-  leftHTML += '<a href="https://ignite.edwinlovett.com/research/?q=' + encodeURIComponent(d.domain || '') + '" target="_blank" rel="noopener" class="intel-disc-btn">Run Full Discovery Report <span>&#8594;</span></a>';
-
-  var rightHTML = '';
-
-  // 1 — Best Meeting Angle (hero)
-  if (angle) {
-    rightHTML += '<div class="intel-sl" style="margin-top:0;">Best meeting angle</div>'
-      + '<div class="intel-angle-box">'
-      + '<div class="intel-angle-q">&#8220;' + _esc(angle) + '&#8221;</div>'
-      + (hook ? '<div class="intel-angle-s">' + _esc(hook) + '</div>' : '')
-      + '</div>';
-  }
-
-  // 2 — What to Say
-  if (wts.phone || wts.walkin) {
-    rightHTML += '<div class="intel-sl">What to say</div>'
-      + '<div class="intel-script-grid">'
-      + (wts.phone  ? '<div class="intel-script-card"><div class="intel-script-type">&#9990; Phone</div><div class="intel-script-body">' + _esc(wts.phone)  + '</div></div>' : '')
-      + (wts.walkin ? '<div class="intel-script-card"><div class="intel-script-type">&#128666; Walk-in</div><div class="intel-script-body">' + _esc(wts.walkin) + '</div></div>' : '')
-      + '</div>';
-  }
-
-  // 3 — Why Worth Calling
-  if (worth.length) {
-    rightHTML += '<div class="intel-sl">Why they\'re worth calling</div>'
-      + '<div class="intel-worth-grid">'
-      + worth.map(function(w){
-          return '<div class="intel-worth-card">'
-            + '<div class="intel-worth-lbl">&#10003; ' + _esc(w.label || '') + '</div>'
-            + '<div class="intel-worth-body">' + _esc(w.detail || '') + '</div>'
-            + '</div>';
-        }).join('')
-      + '</div>';
-  }
-
-  // 4 — Coaching Note (low-score only)
-  if (coaching && mScore <= 6) {
-    rightHTML += '<div class="intel-coaching">'
-      + '<div style="font-size:14px;flex-shrink:0;margin-top:1px;">&#9888;&#65039;</div>'
-      + '<div>'
-      + '<div style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:rgba(251,191,36,0.9);margin-bottom:5px;">Coaching Note</div>'
-      + '<div class="intel-coaching-body">' + _esc(coaching) + '</div>'
-      + '</div></div>';
-  }
-
-  // 5 — Marketing Summary
+  // 2 — Marketing Summary
   if (ms.headline || (ms.activeCTAs && ms.activeCTAs.length) || (ms.gaps && ms.gaps.length)) {
-    rightHTML += '<div class="intel-sl">Marketing Summary</div>'
+    leftHTML += '<div class="intel-sl">Marketing Summary</div>'
       + '<div class="intel-mkt-sum">'
       + (ms.headline ? '<div class="intel-mkt-headline">' + _esc(ms.headline) + '</div>' : '')
       + (ms.activeCTAs && ms.activeCTAs.length
@@ -2859,9 +2797,100 @@ function _renderIntelPostState(data, acct) {
       + '</div>';
   }
 
-  // 6 — Conversation Starters
+  // 3 — Target Audience
+  if (ta.type || ta.demographics || ta.reach) {
+    leftHTML += '<div class="intel-sl">Target Audience</div>';
+    if (ta.type)         leftHTML += '<div class="intel-mini-row"><div class="intel-mini-lbl">Type</div><div class="intel-mini-val">' + _esc(ta.type) + '</div></div>';
+    if (ta.demographics) leftHTML += '<div class="intel-mini-row"><div class="intel-mini-lbl">Who</div><div class="intel-mini-val">' + _esc(ta.demographics) + '</div></div>';
+    if (ta.reach)        leftHTML += '<div class="intel-mini-row"><div class="intel-mini-lbl">Geography</div><div class="intel-mini-val">' + _esc(ta.reach) + '</div></div>';
+  }
+
+  // 4 — Customer Value
+  if (cv.estimatedLTV) {
+    var ltvShort = cv.estimatedLTV.replace(/\s*[\(\|].*/,'').trim();
+    leftHTML += '<div class="intel-sl">Customer Value</div>'
+      + '<div style="background:#191919;border:1px solid rgba(255,255,255,0.07);border-radius:4px;padding:9px 11px;">'
+      + '<div style="font-size:9px;text-transform:uppercase;letter-spacing:0.07em;color:rgba(255,255,255,0.28);margin-bottom:3px;">Est. Customer LTV</div>'
+      + '<div style="font-size:15px;font-weight:700;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">' + _esc(ltvShort) + '</div>'
+      + (cv.industryExamples && cv.industryExamples.length
+        ? '<div style="font-size:10px;color:rgba(255,255,255,0.32);margin-top:5px;padding-top:5px;border-top:1px solid rgba(255,255,255,0.06);line-height:1.45;display:-webkit-box;-webkit-line-clamp:1;-webkit-box-orient:vertical;overflow:hidden;">'
+          + _esc(cv.industryExamples[0]) + '</div>' : '')
+      + '</div>';
+  }
+
+  // 5 — Ad Windows
+  if (aw.seasonal && aw.seasonal.length) {
+    leftHTML += '<div class="intel-sl">Ad Windows</div>'
+      + aw.seasonal.slice(0,4).map(function(s){ return '<div class="intel-win-item">' + _esc(s) + '</div>'; }).join('');
+  }
+
+  // 6 — Ad Benchmarks
+  if (ab.metaCPL || ab.googleCPC) {
+    leftHTML += '<div class="intel-sl">Ad Benchmarks</div>'
+      + '<div style="background:#191919;border:1px solid rgba(255,255,255,0.07);border-radius:4px;overflow:hidden;">'
+      + (ab.metaCPL   ? '<div class="intel-mini-row" style="padding:6px 10px;"><div class="intel-mini-lbl">Meta CPL</div><div class="intel-mini-val">' + _esc(ab.metaCPL) + '</div></div>' : '')
+      + (ab.googleCPC ? '<div class="intel-mini-row" style="padding:6px 10px;border-top:1px solid rgba(255,255,255,0.05);"><div class="intel-mini-lbl">Google CPC</div><div class="intel-mini-val">' + _esc(ab.googleCPC) + '</div></div>' : '')
+      + (ab.googleCPA ? '<div class="intel-mini-row" style="padding:6px 10px;border-top:1px solid rgba(255,255,255,0.05);"><div class="intel-mini-lbl">Google CPA</div><div class="intel-mini-val">' + _esc(ab.googleCPA) + '</div></div>' : '')
+      + '</div>';
+  }
+
+  // 7 — Ad Pixels
+  var pixelList = Array.isArray(ap) ? ap : (ap.detected || []);
+  if (pixelList.length) {
+    leftHTML += '<div class="intel-sl">Ad Pixels</div>'
+      + '<div style="display:flex;flex-wrap:wrap;gap:4px;">'
+      + pixelList.map(function(p){ return '<span class="intel-cta-tag">' + _esc(p) + '</span>'; }).join('')
+      + '</div>';
+  }
+
+  leftHTML += '<a href="https://ignite.edwinlovett.com/research/?q=' + encodeURIComponent(d.domain || '') + '" target="_blank" rel="noopener" class="intel-disc-btn">Run Full Discovery Report <span>&#8594;</span></a>';
+
+  var rightHTML = '';
+
+  // 1 — Coaching Note (low-score only)
+  if (coaching && mScore <= 6) {
+    rightHTML += '<div class="intel-coaching" style="margin-top:0;">'
+      + '<div style="font-size:14px;flex-shrink:0;margin-top:1px;">&#9888;&#65039;</div>'
+      + '<div>'
+      + '<div style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:rgba(251,191,36,0.9);margin-bottom:5px;">Coaching Note</div>'
+      + '<div class="intel-coaching-body">' + _esc(coaching) + '</div>'
+      + '</div></div>';
+  }
+
+  // 2 — Why Worth Calling (3 columns)
+  if (worth.length) {
+    rightHTML += '<div class="intel-sl" style="margin-top:0;">Why they\'re worth calling</div>'
+      + '<div class="intel-worth-grid">'
+      + worth.map(function(w){
+          return '<div class="intel-worth-card">'
+            + '<div class="intel-worth-lbl">&#10003; ' + _esc(w.label || '') + '</div>'
+            + '<div class="intel-worth-body">' + _esc(w.detail || '') + '</div>'
+            + '</div>';
+        }).join('')
+      + '</div>';
+  }
+
+  // 3 — Best Meeting Angle
+  if (angle) {
+    rightHTML += '<div class="intel-sl">Best meeting angle</div>'
+      + '<div class="intel-angle-box">'
+      + '<div class="intel-angle-q">&#8220;' + _esc(angle) + '&#8221;</div>'
+      + (hook ? '<div class="intel-angle-s">' + _esc(hook) + '</div>' : '')
+      + '</div>';
+  }
+
+  // 4 — Open the Call
+  if (wts.phone || wts.walkin) {
+    rightHTML += '<div class="intel-sl">Open the call</div>'
+      + '<div class="intel-script-grid">'
+      + (wts.phone  ? '<div class="intel-script-card"><div class="intel-script-type">&#9990; Phone</div><div class="intel-script-body">' + _esc(wts.phone)  + '</div></div>' : '')
+      + (wts.walkin ? '<div class="intel-script-card"><div class="intel-script-type">&#128666; Walk-in</div><div class="intel-script-body">' + _esc(wts.walkin) + '</div></div>' : '')
+      + '</div>';
+  }
+
+  // 5 — Conversation Starters
   if (starters.length) {
-    rightHTML += '<div class="intel-sl" style="opacity:0.6;">Conversation starters</div>'
+    rightHTML += '<div class="intel-sl">Conversation starters</div>'
       + '<div class="intel-convo-grid">'
       + starters.map(function(q){
           return '<div class="intel-convo-item"><span class="intel-convo-q">?</span>' + _esc(q) + '</div>';
@@ -2869,6 +2898,7 @@ function _renderIntelPostState(data, acct) {
       + '</div>';
   }
 
+  // 6 — Meeting Ask
   if (mAsk.soft || mAsk.strong) {
     rightHTML += '<div class="intel-sl">Meeting ask</div>'
       + '<div class="intel-ask-grid">'
