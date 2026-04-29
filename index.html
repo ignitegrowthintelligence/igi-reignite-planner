@@ -2488,8 +2488,21 @@ function startNewPlan() {
 
 function _launchNamePlanModal() {
   showNamePlanModal(function(name) {
-    // Clear state
+    // Clear plan sections
     Object.keys(plan).forEach(function(s){ plan[s]=[]; });
+
+    // Clear prospect table data from previous plan so it doesn't bleed through
+    state.close        = [];  state.closeMeta     = null;
+    state.protect      = [];  state.protectMeta   = null;  state.protectIgnite = {};
+    state.reclaimAll   = [];  state.reclaimIgnite = [];    state.reclaimMeta   = null;
+    state.rebuild      = [];
+
+    // Clear rendered table rows so old prospect data doesn't show visually
+    ['close-table','protect-table','reclaim-table','rebuild-table'].forEach(function(id) {
+      var tbl = document.getElementById(id);
+      if (tbl) { var tb = tbl.querySelector('tbody'); if (tb) tb.innerHTML = ''; }
+    });
+
     state.loadedPlanName = name;
     state.loadedPlanId = null;
     document.getElementById('marketInput').value = name;
