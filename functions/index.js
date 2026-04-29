@@ -210,20 +210,28 @@ Critical rules:
 - marketSummary.activeCTAs should reflect real button/link text found on the site (e.g. "Shop Mattresses", "Schedule a Consultation", "Get a Free Quote"). Max 6. If site can't be fetched, return empty array.
 - marketSummary.gaps should be concrete, seller-relevant observations (e.g. "No email capture or lead form detected", "No promotional pricing or seasonal offers visible", "No customer reviews or social proof on homepage"). Max 3. Never mention pixels, GTM, or tracking tech.
 - categoryLanguage.swaps: generate 5-7 pairs specific to this business's exact industry. Simple, concrete vocabulary a seller would actually say out loud. Focus on what sounds credible vs. generic in this category. Examples: { "use": "booked consultations", "avoid": "leads" } for med spa; { "use": "loan application volume", "avoid": "website clicks" } for a bank.
-- categoryLanguage.context: one sentence on why language discipline matters for this specific category — especially important in medical, legal, financial, and regulated industries.`;
+- categoryLanguage.context: one sentence on why language discipline matters for this specific category — especially important in medical, legal, financial, and regulated industries.
+- CRITICAL — GTM rule: If Google Tag Manager is detected, NEVER mention missing pixels, missing tracking, pixel gaps, or tracking setup as a gap, insight, or opportunity anywhere in the response — not in gaps, not in meetingHook, not in whatToSay, not in bestMeetingAngle, not in coachingNote. GTM is a container that can silently fire any pixel. Flagging missing pixels when GTM is present is factually wrong and will mislead sellers.`;
 
 // ---------------------------------------------------------------------------
 // Claude API call
 // ---------------------------------------------------------------------------
 async function callClaude(html, domain, pixels, apiKey, businessName) {
+  // When GTM is present, individual pixel detection is unreliable — pixels may be
+  // firing through the container without appearing in raw HTML. Only pass GTM status.
+  const pixelSummary = pixels.gtm
+    ? '- Google Tag Manager: YES (' + pixels.gtmId + ')\n' +
+      '- NOTE: GTM container present. Individual pixel presence cannot be determined from HTML source — do NOT infer missing pixels.'
+    : '- Google Tag Manager: NOT DETECTED\n' +
+      '- Google Analytics: '  + (pixels.googleAnalytics ? 'YES (' + (pixels.gaId || 'UA format') + ')' : 'NOT DETECTED') + '\n' +
+      '- Google Ads pixel: '  + (pixels.googleAds       ? 'YES (' + pixels.adsId + ')'             : 'NOT DETECTED') + '\n' +
+      '- Remarketing: '       + (pixels.remarketing     ? 'YES'                                     : 'NOT DETECTED');
+
   const userContent =
     'Business name: ' + (businessName || '(extract from website)') + '\n' +
     'Domain: ' + domain + '\n\n' +
     'Pixel detection results:\n' +
-    '- Google Tag Manager: '  + (pixels.gtm             ? 'YES (' + pixels.gtmId + ')' : 'NOT DETECTED') + '\n' +
-    '- Google Analytics: '    + (pixels.googleAnalytics  ? 'YES (' + (pixels.gaId || 'UA format') + ')' : 'NOT DETECTED') + '\n' +
-    '- Google Ads pixel: '    + (pixels.googleAds        ? 'YES (' + pixels.adsId + ')' : 'NOT DETECTED') + '\n' +
-    '- Remarketing: '         + (pixels.remarketing      ? 'YES' : 'NOT DETECTED') + '\n\n' +
+    pixelSummary + '\n\n' +
     'Website HTML (truncated to 30,000 characters):\n' +
     (html ? html.slice(0, 30000) : 'Website could not be fetched. Generate intel based on the domain name and industry inference only.');
 
@@ -300,14 +308,19 @@ app.post('/', async (req, res) => {
     intel.domain           = domain;
     intel.generatedAt      = new Date().toISOString();
 
-    // Build human-readable adPixels list from detected tracking tags
+    // Build human-readable adPixels list from detected tracking tags.
+    // When GTM is present, only show GTM — individual pixels may be firing
+    // through the container and are not reliably detectable from HTML source.
     var detectedPixels = [];
-    if (pixels.gtm)             detectedPixels.push('Google Tag Manager' + (pixels.gtmId ? ' (' + pixels.gtmId + ')' : ''));
-    if (pixels.googleAnalytics) detectedPixels.push('Google Analytics'   + (pixels.gaId  ? ' (' + pixels.gaId  + ')' : ''));
-    if (pixels.googleAds)       detectedPixels.push('Google Ads'         + (pixels.adsId ? ' (' + pixels.adsId + ')' : ''));
-    if (pixels.remarketing)     detectedPixels.push('Remarketing tag');
+    if (pixels.gtm) {
+      detectedPixels.push('Google Tag Manager' + (pixels.gtmId ? ' (' + pixels.gtmId + ')' : ''));
+    } else {
+      if (pixels.googleAnalytics) detectedPixels.push('Google Analytics' + (pixels.gaId  ? ' (' + pixels.gaId  + ')' : ''));
+      if (pixels.googleAds)       detectedPixels.push('Google Ads'       + (pixels.adsId ? ' (' + pixels.adsId + ')' : ''));
+      if (pixels.remarketing)     detectedPixels.push('Remarketing tag');
+    }
     if (!intel.supportingIntel) intel.supportingIntel = {};
-    intel.supportingIntel.adPixels = { detected: detectedPixels };
+    intel.supportingIntel.adPixels = { detected: detectedPixels, hasGTM: pixels.gtm };
 
     // Save to Firestore
     await db.collection('prospectIntel').doc(safeKey).set(intel);
