@@ -192,6 +192,22 @@
 .intel-sr-fill { height:2px; border-radius:1px; background:#EF4136; }
 .intel-sr-v { font-size:11px; font-weight:700; color:#fff; margin-left:10px; flex-shrink:0; }
 .intel-sr-v.dim { color:rgba(255,255,255,0.4); }
+/* See more button */
+.intel-see-more { display:inline-block; font-size:10px; color:rgba(239,65,54,0.6); cursor:pointer; margin-top:5px; border:none; background:none; padding:0; font-family:inherit; letter-spacing:0.02em; }
+.intel-see-more:hover { color:#EF4136; }
+/* Modal overlay */
+.intel-modal-overlay { display:none; position:fixed; top:0;left:0;right:0;bottom:0; background:rgba(0,0,0,0.72); z-index:9999; align-items:center; justify-content:center; padding:20px; }
+.intel-modal-overlay.active { display:flex; }
+.intel-modal-card { background:#1F1F23; border:1px solid rgba(255,255,255,0.1); border-top:2px solid #EF4136; border-radius:6px; max-width:540px; width:100%; max-height:80vh; overflow-y:auto; padding:22px 24px; position:relative; }
+.intel-modal-title { font-size:10px; font-weight:700; letter-spacing:0.1em; text-transform:uppercase; color:#EF4136; margin-bottom:16px; padding-bottom:10px; border-bottom:1px solid rgba(239,65,54,0.18); }
+.intel-modal-close { position:absolute; top:10px; right:12px; background:none; border:none; color:rgba(255,255,255,0.35); font-size:16px; cursor:pointer; line-height:1; padding:4px 8px; font-family:inherit; }
+.intel-modal-close:hover { color:#fff; }
+/* Category Language */
+.intel-lang-pair { display:flex; gap:6px; align-items:baseline; padding:5px 0; border-bottom:1px solid rgba(255,255,255,0.04); }
+.intel-lang-pair:last-child { border-bottom:none; }
+.intel-lang-use { font-size:11px; color:rgba(255,255,255,0.75); font-weight:500; flex:1; }
+.intel-lang-arrow { font-size:10px; color:rgba(255,255,255,0.18); flex-shrink:0; }
+.intel-lang-avoid { font-size:11px; color:rgba(239,65,54,0.5); flex:1; }
   </style>
 </head>
 <body class="min-h-screen">
@@ -2659,6 +2675,12 @@ function _buildProspectPageHTML(section, acct) {
     + '<div class="intel-left" id="intel-left-panel"></div>'
     + '<div class="intel-right" id="intel-right-panel"></div>'
     + '</div>'
+    + '<div class="intel-modal-overlay" id="intel-modal-overlay" onclick="if(event.target===this)_closeIntelModal()">'
+    + '<div class="intel-modal-card">'
+    + '<button class="intel-modal-close" onclick="_closeIntelModal()">&#10005;</button>'
+    + '<div class="intel-modal-title" id="intel-modal-title"></div>'
+    + '<div id="intel-modal-body"></div>'
+    + '</div></div>'
     + '</div>';
 }
 
@@ -2757,6 +2779,7 @@ function _renderIntelPostState(data, acct) {
   var aw       = si.advertisingWindows || {};
   var ap       = si.adPixels || {};
   var ms       = d.marketSummary || {};
+  var cl       = d.categoryLanguage || {};
   var mScore   = d.meetingStrengthScore || 0;
   var mReasons = d.meetingStrengthReasons || [];
   var worth    = d.whyWorthCalling || [];
@@ -2770,6 +2793,8 @@ function _renderIntelPostState(data, acct) {
   var rebuildBtn = document.getElementById('intel-rebuild-btn');
   if (rebuildBtn) rebuildBtn.style.display = 'block';
 
+  window._intelModalData = {};
+
   var leftHTML = '';
 
   // 1 — Meeting Strength
@@ -2781,50 +2806,79 @@ function _renderIntelPostState(data, acct) {
     + mReasons.slice(0,3).map(function(r){ return '<div class="intel-tag">' + _esc(r) + '</div>'; }).join('')
     + '</div></div></div>';
 
-  // 2 — Marketing Summary
+  // 2 — Marketing Summary (with see more)
   if (ms.headline || (ms.activeCTAs && ms.activeCTAs.length) || (ms.gaps && ms.gaps.length)) {
+    var msBody = '';
+    if (ms.headline) msBody += '<div style="font-size:13px;color:rgba(255,255,255,0.75);line-height:1.6;margin-bottom:14px;">' + _esc(ms.headline) + '</div>';
+    if (ms.activeCTAs && ms.activeCTAs.length) msBody += '<div style="font-size:10px;font-weight:700;letter-spacing:0.07em;text-transform:uppercase;color:rgba(255,255,255,0.25);margin-bottom:6px;">Active CTAs</div><div style="margin-bottom:12px;">' + ms.activeCTAs.map(function(c){ return '<span class="intel-cta-tag">' + _esc(c) + '</span>'; }).join('') + '</div>';
+    if (ms.gaps && ms.gaps.length) msBody += '<div style="font-size:10px;font-weight:700;letter-spacing:0.07em;text-transform:uppercase;color:rgba(255,255,255,0.25);margin-bottom:6px;">Gaps identified</div><div>' + ms.gaps.map(function(g){ return '<span class="intel-gap-tag" style="max-width:none;white-space:normal;">' + _esc(g) + '</span>'; }).join('') + '</div>';
+    window._intelModalData['marketingSummary'] = { title: 'Marketing Summary', body: msBody };
+
     leftHTML += '<div class="intel-sl">Marketing Summary</div>'
       + '<div class="intel-mkt-sum">'
       + (ms.headline ? '<div class="intel-mkt-headline">' + _esc(ms.headline) + '</div>' : '')
-      + (ms.activeCTAs && ms.activeCTAs.length
-        ? '<div class="intel-mkt-cta-lbl">Active CTAs</div><div>'
-          + ms.activeCTAs.map(function(c){ return '<span class="intel-cta-tag">' + _esc(c) + '</span>'; }).join('')
-          + '</div>' : '')
-      + (ms.gaps && ms.gaps.length
-        ? '<div class="intel-mkt-cta-lbl" style="margin-top:7px;">Gaps identified</div><div>'
-          + ms.gaps.slice(0,2).map(function(g){ return '<span class="intel-gap-tag">' + _esc(g) + '</span>'; }).join('')
-          + '</div>' : '')
-      + '</div>';
+      + (ms.activeCTAs && ms.activeCTAs.length ? '<div class="intel-mkt-cta-lbl">Active CTAs</div><div>' + ms.activeCTAs.map(function(c){ return '<span class="intel-cta-tag">' + _esc(c) + '</span>'; }).join('') + '</div>' : '')
+      + (ms.gaps && ms.gaps.length ? '<div class="intel-mkt-cta-lbl" style="margin-top:7px;">Gaps identified</div><div>' + ms.gaps.slice(0,2).map(function(g){ return '<span class="intel-gap-tag">' + _esc(g) + '</span>'; }).join('') + '</div>' : '')
+      + '</div>'
+      + '<button class="intel-see-more" onclick="_showIntelModal(\'marketingSummary\')">See more ↗</button>';
   }
 
-  // 3 — Target Audience
+  // 3 — Target Audience (with see more)
   if (ta.type || ta.demographics || ta.reach) {
+    var taBody = '<div style="display:flex;flex-direction:column;gap:12px;">';
+    if (ta.type)         taBody += '<div><div style="font-size:10px;color:rgba(255,255,255,0.3);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:3px;">Type</div><div style="font-size:13px;color:#fff;">' + _esc(ta.type) + '</div></div>';
+    if (ta.demographics) taBody += '<div><div style="font-size:10px;color:rgba(255,255,255,0.3);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:3px;">Who</div><div style="font-size:13px;color:#fff;line-height:1.55;">' + _esc(ta.demographics) + '</div></div>';
+    if (ta.reach)        taBody += '<div><div style="font-size:10px;color:rgba(255,255,255,0.3);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:3px;">Geography</div><div style="font-size:13px;color:#fff;line-height:1.55;">' + _esc(ta.reach) + '</div></div>';
+    taBody += '</div>';
+    window._intelModalData['targetAudience'] = { title: 'Target Audience', body: taBody };
+
     leftHTML += '<div class="intel-sl">Target Audience</div>';
     if (ta.type)         leftHTML += '<div class="intel-mini-row"><div class="intel-mini-lbl">Type</div><div class="intel-mini-val">' + _esc(ta.type) + '</div></div>';
     if (ta.demographics) leftHTML += '<div class="intel-mini-row"><div class="intel-mini-lbl">Who</div><div class="intel-mini-val">' + _esc(ta.demographics) + '</div></div>';
     if (ta.reach)        leftHTML += '<div class="intel-mini-row"><div class="intel-mini-lbl">Geography</div><div class="intel-mini-val">' + _esc(ta.reach) + '</div></div>';
+    leftHTML += '<button class="intel-see-more" onclick="_showIntelModal(\'targetAudience\')">See more ↗</button>';
   }
 
-  // 4 — Customer Value
+  // 4 — Category Language
+  var clSwaps = cl.swaps || [];
+  if (clSwaps.length) {
+    if (clSwaps.length > 5) {
+      window._intelModalData['categoryLanguage'] = {
+        title: 'Category Language',
+        body: '<div>' + clSwaps.map(function(s){ return '<div class="intel-lang-pair"><div class="intel-lang-use">' + _esc(s.use) + '</div><div class="intel-lang-arrow">↔</div><div class="intel-lang-avoid">not &ldquo;' + _esc(s.avoid) + '&rdquo;</div></div>'; }).join('') + '</div>'
+      };
+    }
+    leftHTML += '<div class="intel-sl">Category Language</div>';
+    if (cl.context) leftHTML += '<div style="font-size:10px;color:rgba(255,255,255,0.35);margin-bottom:7px;line-height:1.5;">' + _esc(cl.context) + '</div>';
+    leftHTML += '<div style="background:#191919;border:1px solid rgba(255,255,255,0.07);border-radius:4px;padding:8px 11px;">'
+      + clSwaps.slice(0,5).map(function(s){ return '<div class="intel-lang-pair"><div class="intel-lang-use">' + _esc(s.use) + '</div><div class="intel-lang-arrow">↔</div><div class="intel-lang-avoid">not &ldquo;' + _esc(s.avoid) + '&rdquo;</div></div>'; }).join('')
+      + '</div>';
+    if (clSwaps.length > 5) leftHTML += '<button class="intel-see-more" onclick="_showIntelModal(\'categoryLanguage\')">See more ↗</button>';
+  }
+
+  // 5 — Customer Value
   if (cv.estimatedLTV) {
     var ltvShort = cv.estimatedLTV.replace(/\s*[\(\|].*/,'').trim();
     leftHTML += '<div class="intel-sl">Customer Value</div>'
       + '<div style="background:#191919;border:1px solid rgba(255,255,255,0.07);border-radius:4px;padding:9px 11px;">'
       + '<div style="font-size:9px;text-transform:uppercase;letter-spacing:0.07em;color:rgba(255,255,255,0.28);margin-bottom:3px;">Est. Customer LTV</div>'
       + '<div style="font-size:15px;font-weight:700;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">' + _esc(ltvShort) + '</div>'
-      + (cv.industryExamples && cv.industryExamples.length
-        ? '<div style="font-size:10px;color:rgba(255,255,255,0.32);margin-top:5px;padding-top:5px;border-top:1px solid rgba(255,255,255,0.06);line-height:1.45;display:-webkit-box;-webkit-line-clamp:1;-webkit-box-orient:vertical;overflow:hidden;">'
-          + _esc(cv.industryExamples[0]) + '</div>' : '')
+      + (cv.industryExamples && cv.industryExamples.length ? '<div style="font-size:10px;color:rgba(255,255,255,0.32);margin-top:5px;padding-top:5px;border-top:1px solid rgba(255,255,255,0.06);line-height:1.45;display:-webkit-box;-webkit-line-clamp:1;-webkit-box-orient:vertical;overflow:hidden;">' + _esc(cv.industryExamples[0]) + '</div>' : '')
       + '</div>';
   }
 
-  // 5 — Ad Windows
+  // 6 — Ad Windows (with see more)
   if (aw.seasonal && aw.seasonal.length) {
+    window._intelModalData['adWindows'] = {
+      title: 'Ad Windows',
+      body: '<div style="display:flex;flex-direction:column;gap:6px;">' + aw.seasonal.map(function(s){ return '<div style="font-size:12px;color:rgba(255,255,255,0.65);padding:6px 0 6px 10px;border-left:2px solid rgba(239,65,54,0.4);line-height:1.5;">' + _esc(s) + '</div>'; }).join('') + '</div>'
+    };
     leftHTML += '<div class="intel-sl">Ad Windows</div>'
-      + aw.seasonal.slice(0,4).map(function(s){ return '<div class="intel-win-item">' + _esc(s) + '</div>'; }).join('');
+      + aw.seasonal.slice(0,4).map(function(s){ return '<div class="intel-win-item">' + _esc(s) + '</div>'; }).join('')
+      + '<button class="intel-see-more" onclick="_showIntelModal(\'adWindows\')">See more ↗</button>';
   }
 
-  // 6 — Ad Benchmarks
+  // 7 — Ad Benchmarks
   if (ab.metaCPL || ab.googleCPC) {
     leftHTML += '<div class="intel-sl">Ad Benchmarks</div>'
       + '<div style="background:#191919;border:1px solid rgba(255,255,255,0.07);border-radius:4px;overflow:hidden;">'
@@ -2834,7 +2888,7 @@ function _renderIntelPostState(data, acct) {
       + '</div>';
   }
 
-  // 7 — Ad Pixels
+  // 8 — Ad Pixels
   var pixelList = Array.isArray(ap) ? ap : (ap.detected || []);
   if (pixelList.length) {
     leftHTML += '<div class="intel-sl">Ad Pixels</div>'
@@ -2847,13 +2901,18 @@ function _renderIntelPostState(data, acct) {
 
   var rightHTML = '';
 
-  // 1 — Coaching Note (low-score only)
+  // 1 — Coaching Note (low-score, with see more)
   if (coaching && mScore <= 6) {
+    window._intelModalData['coachingNote'] = {
+      title: 'Coaching Note',
+      body: '<div style="font-size:13px;color:rgba(255,255,255,0.7);line-height:1.7;">' + _esc(coaching) + '</div>'
+    };
     rightHTML += '<div class="intel-coaching" style="margin-top:0;">'
       + '<div style="font-size:14px;flex-shrink:0;margin-top:1px;">&#9888;&#65039;</div>'
-      + '<div>'
+      + '<div style="flex:1;">'
       + '<div style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:rgba(251,191,36,0.9);margin-bottom:5px;">Coaching Note</div>'
       + '<div class="intel-coaching-body">' + _esc(coaching) + '</div>'
+      + '<button class="intel-see-more" onclick="_showIntelModal(\'coachingNote\')" style="margin-top:5px;">See more ↗</button>'
       + '</div></div>';
   }
 
@@ -2861,12 +2920,7 @@ function _renderIntelPostState(data, acct) {
   if (worth.length) {
     rightHTML += '<div class="intel-sl" style="margin-top:0;">Why they\'re worth calling</div>'
       + '<div class="intel-worth-grid">'
-      + worth.map(function(w){
-          return '<div class="intel-worth-card">'
-            + '<div class="intel-worth-lbl">&#10003; ' + _esc(w.label || '') + '</div>'
-            + '<div class="intel-worth-body">' + _esc(w.detail || '') + '</div>'
-            + '</div>';
-        }).join('')
+      + worth.map(function(w){ return '<div class="intel-worth-card"><div class="intel-worth-lbl">&#10003; ' + _esc(w.label || '') + '</div><div class="intel-worth-body">' + _esc(w.detail || '') + '</div></div>'; }).join('')
       + '</div>';
   }
 
@@ -2879,22 +2933,26 @@ function _renderIntelPostState(data, acct) {
       + '</div>';
   }
 
-  // 4 — Open the Call
+  // 4 — Open the Call (with see more)
   if (wts.phone || wts.walkin) {
+    var wtsBody = '';
+    if (wts.phone)  wtsBody += '<div style="margin-bottom:16px;"><div style="font-size:10px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:#EF4136;margin-bottom:8px;">&#9990; Phone</div><div style="font-size:13px;color:rgba(255,255,255,0.75);line-height:1.7;">' + _esc(wts.phone) + '</div></div>';
+    if (wts.walkin) wtsBody += '<div><div style="font-size:10px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:#EF4136;margin-bottom:8px;">&#128666; Walk-in</div><div style="font-size:13px;color:rgba(255,255,255,0.75);line-height:1.7;">' + _esc(wts.walkin) + '</div></div>';
+    window._intelModalData['openTheCall'] = { title: 'Open the Call', body: wtsBody };
+
     rightHTML += '<div class="intel-sl">Open the call</div>'
       + '<div class="intel-script-grid">'
       + (wts.phone  ? '<div class="intel-script-card"><div class="intel-script-type">&#9990; Phone</div><div class="intel-script-body">' + _esc(wts.phone)  + '</div></div>' : '')
       + (wts.walkin ? '<div class="intel-script-card"><div class="intel-script-type">&#128666; Walk-in</div><div class="intel-script-body">' + _esc(wts.walkin) + '</div></div>' : '')
-      + '</div>';
+      + '</div>'
+      + '<button class="intel-see-more" onclick="_showIntelModal(\'openTheCall\')">See more ↗</button>';
   }
 
   // 5 — Conversation Starters
   if (starters.length) {
     rightHTML += '<div class="intel-sl">Conversation starters</div>'
       + '<div class="intel-convo-grid">'
-      + starters.map(function(q){
-          return '<div class="intel-convo-item"><span class="intel-convo-q">?</span>' + _esc(q) + '</div>';
-        }).join('')
+      + starters.map(function(q){ return '<div class="intel-convo-item"><span class="intel-convo-q">?</span>' + _esc(q) + '</div>'; }).join('')
       + '</div>';
   }
 
@@ -2998,6 +3056,27 @@ function _rebuildIntel(profileKey) {
     var rebuildBtn = document.getElementById('intel-rebuild-btn');
     if (rebuildBtn) rebuildBtn.style.display = 'none';
   });
+}
+
+function _showIntelModal(key) {
+  var d = window._intelModalData && window._intelModalData[key];
+  if (!d) return;
+  var overlay = document.getElementById('intel-modal-overlay');
+  var titleEl = document.getElementById('intel-modal-title');
+  var bodyEl  = document.getElementById('intel-modal-body');
+  if (!overlay || !titleEl || !bodyEl) return;
+  titleEl.textContent = d.title;
+  bodyEl.innerHTML    = d.body;
+  overlay.classList.add('active');
+  document.addEventListener('keydown', _intelModalKeyHandler);
+}
+function _closeIntelModal() {
+  var overlay = document.getElementById('intel-modal-overlay');
+  if (overlay) overlay.classList.remove('active');
+  document.removeEventListener('keydown', _intelModalKeyHandler);
+}
+function _intelModalKeyHandler(e) {
+  if (e.key === 'Escape') _closeIntelModal();
 }
 
 function _showWebsitePopup(acct, pageEl, profileKey) {

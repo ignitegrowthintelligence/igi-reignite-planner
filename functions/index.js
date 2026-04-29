@@ -159,6 +159,14 @@ Return ONLY a valid JSON object. No markdown fences, no explanation, no extra te
     "gaps": ["One specific gap or missed opportunity visible from the site", "Gap 2"]
   },
 
+  "categoryLanguage": {
+    "context": "One sentence: why does language discipline matter when selling digital advertising to this specific category? What would make a seller sound careless or uninformed?",
+    "swaps": [
+      { "use": "phrase the seller should say", "avoid": "phrase to avoid" },
+      { "use": "...", "avoid": "..." }
+    ]
+  },
+
   "contact": {
     "phone": "string or null",
     "email": "string or null",
@@ -200,7 +208,9 @@ Critical rules:
 - If website could not be fetched, infer everything from domain name and industry — still generate all fields
 - marketSummary.headline must be specific to THIS business — never generic. Reference actual content from the site.
 - marketSummary.activeCTAs should reflect real button/link text found on the site (e.g. "Shop Mattresses", "Schedule a Consultation", "Get a Free Quote"). Max 6. If site can't be fetched, return empty array.
-- marketSummary.gaps should be concrete, seller-relevant observations (e.g. "No email capture or lead form detected", "No promotional pricing or seasonal offers visible", "No customer reviews or social proof on homepage"). Max 3. Never mention pixels, GTM, or tracking tech.`;
+- marketSummary.gaps should be concrete, seller-relevant observations (e.g. "No email capture or lead form detected", "No promotional pricing or seasonal offers visible", "No customer reviews or social proof on homepage"). Max 3. Never mention pixels, GTM, or tracking tech.
+- categoryLanguage.swaps: generate 5-7 pairs specific to this business's exact industry. Simple, concrete vocabulary a seller would actually say out loud. Focus on what sounds credible vs. generic in this category. Examples: { "use": "booked consultations", "avoid": "leads" } for med spa; { "use": "loan application volume", "avoid": "website clicks" } for a bank.
+- categoryLanguage.context: one sentence on why language discipline matters for this specific category — especially important in medical, legal, financial, and regulated industries.`;
 
 // ---------------------------------------------------------------------------
 // Claude API call
