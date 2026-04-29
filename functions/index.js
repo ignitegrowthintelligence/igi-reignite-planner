@@ -117,11 +117,11 @@ Return ONLY a valid JSON object. No markdown fences, no explanation, no extra te
 
   "meetingStrengthScore": 8,
   "meetingStrengthReasons": [
-    "Short phrase reason 1 — specific to this business",
-    "Short phrase reason 2",
-    "Short phrase reason 3",
-    "Short phrase reason 4",
-    "Short phrase reason 5"
+    "Short phrase reason 1 — max 40 characters, specific to this business",
+    "Short phrase reason 2 — max 40 characters",
+    "Short phrase reason 3 — max 40 characters",
+    "Short phrase reason 4 — max 40 characters",
+    "Short phrase reason 5 — max 40 characters"
   ],
 
   "whyWorthCalling": [
