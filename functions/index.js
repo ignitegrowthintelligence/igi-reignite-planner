@@ -227,7 +227,7 @@ async function callClaude(html, domain, pixels, apiKey, businessName) {
     },
     body: JSON.stringify({
       model:      'claude-haiku-4-5-20251001',
-      max_tokens: 3000,
+      max_tokens: 4096,
       system:     SYSTEM_PROMPT,
       messages:   [{ role: 'user', content: userContent }],
     }),
@@ -289,6 +289,15 @@ app.post('/', async (req, res) => {
     intel.digitalReadiness = Object.assign({}, pixels, dr);
     intel.domain           = domain;
     intel.generatedAt      = new Date().toISOString();
+
+    // Build human-readable adPixels list from detected tracking tags
+    var detectedPixels = [];
+    if (pixels.gtm)             detectedPixels.push('Google Tag Manager' + (pixels.gtmId ? ' (' + pixels.gtmId + ')' : ''));
+    if (pixels.googleAnalytics) detectedPixels.push('Google Analytics'   + (pixels.gaId  ? ' (' + pixels.gaId  + ')' : ''));
+    if (pixels.googleAds)       detectedPixels.push('Google Ads'         + (pixels.adsId ? ' (' + pixels.adsId + ')' : ''));
+    if (pixels.remarketing)     detectedPixels.push('Remarketing tag');
+    if (!intel.supportingIntel) intel.supportingIntel = {};
+    intel.supportingIntel.adPixels = { detected: detectedPixels };
 
     // Save to Firestore
     await db.collection('prospectIntel').doc(safeKey).set(intel);
