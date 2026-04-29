@@ -1443,6 +1443,7 @@ function renderProtect(clients, extraNote) {
 function renderReclaim() {
   var ign = state.reclaimIgnite || [];
   var all = state.reclaimAll || [];
+  var pi  = state.protectIgnite || {};   // Ignite data loaded via the Protect tab Ignite file
 
   var allMap = {};
   all.forEach(function(c){ allMap[c.adv.toLowerCase()] = c; });
@@ -1453,13 +1454,16 @@ function renderReclaim() {
   ign.forEach(function(c) {
     var key = c.adv.toLowerCase();
     var allClient = allMap[key];
+    var piData = pi[c.adv] || pi[key] || null;
     if (allClient) {
       matched.add(key);
       combined.push({
         name:c.adv, adv:c.adv, score:c.score, bucket:c.bucket, _scoreData:c._scoreData,
         source:'both',
         allRev23:allClient.rev23||0, allRev24:allClient.rev24||0, allRev25:allClient.rev25||0,
-        ignRev23:c.rev23||0,         ignRev24:c.rev24||0,          ignRev25:c.rev25||0,
+        ignRev23:c.rev23||0 || (piData?piData.ign23||0:0),
+        ignRev24:c.rev24||0 || (piData?piData.ign24||0:0),
+        ignRev25:c.rev25||0 || (piData?piData.ign25||0:0),
         rev:Math.max(allClient.rev23||0, allClient.rev24||0, allClient.rev25||0)
       });
     } else {
@@ -1467,7 +1471,9 @@ function renderReclaim() {
         name:c.adv, adv:c.adv, score:c.score, bucket:c.bucket, _scoreData:c._scoreData,
         source:'ignite',
         allRev23:0, allRev24:0, allRev25:0,
-        ignRev23:c.rev23||0, ignRev24:c.rev24||0, ignRev25:c.rev25||0,
+        ignRev23:c.rev23||0 || (piData?piData.ign23||0:0),
+        ignRev24:c.rev24||0 || (piData?piData.ign24||0:0),
+        ignRev25:c.rev25||0 || (piData?piData.ign25||0:0),
         rev:c.rev
       });
     }
@@ -1475,11 +1481,14 @@ function renderReclaim() {
 
   all.forEach(function(c) {
     if (!matched.has(c.adv.toLowerCase())) {
+      var piData = pi[c.adv] || null;
       combined.push({
         name:c.adv, adv:c.adv, score:c.score, bucket:c.bucket, _scoreData:c._scoreData,
         source:'all',
         allRev23:c.rev23||0, allRev24:c.rev24||0, allRev25:c.rev25||0,
-        ignRev23:0, ignRev24:0, ignRev25:0,
+        ignRev23:piData?piData.ign23||0:0,
+        ignRev24:piData?piData.ign24||0:0,
+        ignRev25:piData?piData.ign25||0:0,
         rev:c.rev
       });
     }
@@ -1488,7 +1497,7 @@ function renderReclaim() {
   combined.sort(function(a,b){ return b.score-a.score; });
   if (!combined.length) return;
 
-  var hasIgnite = ign.length > 0;
+  var hasIgnite = ign.length > 0 || Object.keys(pi).length > 0;
   var hasAll    = all.length > 0;
 
   document.getElementById('reclaim-content').innerHTML =
