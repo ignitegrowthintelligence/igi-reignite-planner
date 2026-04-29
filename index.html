@@ -2577,6 +2577,9 @@ function _openProspectPage(cpid) {
   }).then(function(intelDoc) {
     if (intelDoc && intelDoc.exists) {
       _renderIntelPostState(intelDoc.data(), entry.acct);
+      var pk = _profileKey(entry.acct);
+      var sk = pk.replace(/[^a-z0-9\-_]/gi, '-').slice(0, 80);
+      _initPersonalizationVersions(pk, sk, intelDoc.data());
     } else {
       _renderIntelPreState(entry.acct, key);
     }
@@ -2926,7 +2929,7 @@ function _renderIntelPostState(data, acct) {
   // 3 — Best Meeting Angle
   if (angle) {
     rightHTML += '<div class="intel-sl">Best meeting angle</div>'
-      + '<div class="intel-angle-box">'
+      + '<div id="intel-angle-box-' + _pk + '" class="intel-angle-box">'
       + '<div class="intel-angle-q">&#8220;' + _esc(angle) + '&#8221;</div>'
       + (hook ? '<div class="intel-angle-s">' + _esc(hook) + '</div>' : '')
       + '</div>';
@@ -2940,11 +2943,13 @@ function _renderIntelPostState(data, acct) {
     window._intelModalData['openTheCall'] = { title: 'Open the Call', body: wtsBody };
 
     rightHTML += '<div class="intel-sl">Open the call</div>'
+      + '<div id="intel-script-wrap-' + _pk + '">'
       + '<div class="intel-script-grid">'
       + (wts.phone  ? '<div class="intel-script-card"><div class="intel-script-type">&#9990; Phone</div><div class="intel-script-body">' + _esc(wts.phone)  + '</div></div>' : '')
       + (wts.walkin ? '<div class="intel-script-card"><div class="intel-script-type">&#128666; Walk-in</div><div class="intel-script-body">' + _esc(wts.walkin) + '</div></div>' : '')
       + '</div>'
-      + '<button class="intel-see-more" onclick="_showIntelModal(\'openTheCall\')">See more ↗</button>';
+      + '<button class="intel-see-more" onclick="_showIntelModal(\'openTheCall\')">See more ↗</button>'
+      + '</div>';
   }
 
   // 5 — Conversation Starters
@@ -2964,10 +2969,215 @@ function _renderIntelPostState(data, acct) {
       + '</div>';
   }
 
+  // Personalization strip
+  rightHTML += '<div id="intel-pers-strip-' + _pk + '" style="margin-top:20px;padding-top:16px;border-top:1px solid rgba(255,255,255,.08);">'
+    + '<div id="intel-ver-nav-' + _pk + '" style="display:none;align-items:center;justify-content:space-between;margin-bottom:10px;'
+    + 'background:rgba(239,65,54,.06);border:1px solid rgba(239,65,54,.18);border-radius:6px;padding:7px 12px;">'
+    + '<button onclick="_intelNavVer(\'' + _pk + '\',-1)" '
+    + 'style="background:none;border:none;color:#EF4136;font-size:1.1rem;cursor:pointer;padding:0 6px;font-weight:700;">&#8249;</button>'
+    + '<span id="intel-ver-label-' + _pk + '" style="font-size:.7rem;color:rgba(255,255,255,.5);font-weight:600;letter-spacing:.06em;">VERSION 1 OF 1</span>'
+    + '<button onclick="_intelNavVer(\'' + _pk + '\',1)" '
+    + 'style="background:none;border:none;color:#EF4136;font-size:1.1rem;cursor:pointer;padding:0 6px;font-weight:700;">&#8250;</button>'
+    + '</div>'
+    + '<div style="display:flex;gap:8px;align-items:flex-start;">'
+    + '<input id="intel-ctx-' + _pk + '" type="text" maxlength="300" '
+    + 'placeholder="Add context about this client to personalize the angle and scripts… (e.g., just opened a second location, running a summer promo)" '
+    + 'onfocus="this.style.borderColor=\'rgba(239,65,54,.45)\'" onblur="this.style.borderColor=\'rgba(255,255,255,.14)\'" '
+    + 'style="flex:1;background:#191919;border:1px solid rgba(255,255,255,.14);border-radius:6px;'
+    + 'padding:9px 12px;font-size:.74rem;color:#fff;font-family:inherit;outline:none;line-height:1.4;" />'
+    + '<button id="intel-rerun-btn-' + _pk + '" onclick="_rerunIntelPersonalized(\'' + _pk + '\')" '
+    + 'style="flex-shrink:0;background:linear-gradient(135deg,rgba(239,65,54,.18),rgba(239,65,54,.1));'
+    + 'border:1px solid rgba(239,65,54,.35);border-radius:6px;color:#EF4136;font-family:inherit;'
+    + 'font-size:.74rem;font-weight:700;padding:9px 14px;cursor:pointer;white-space:nowrap;">&#9889; Re-run</button>'
+    + '</div>'
+    + '<div id="intel-rerun-status-' + _pk + '" style="display:none;font-size:.7rem;color:rgba(255,255,255,.4);margin-top:6px;"></div>'
+    + '</div>';
+
   var leftEl  = document.getElementById('intel-left-panel');
   var rightEl = document.getElementById('intel-right-panel');
   if (leftEl)  leftEl.innerHTML  = leftHTML;
   if (rightEl) rightEl.innerHTML = rightHTML;
+}
+
+function _initPersonalizationVersions(pk, safeKey, baseData) {
+  window._intelVersions = window._intelVersions || {};
+  window._intelVersionIdx = window._intelVersionIdx || {};
+
+  db.collection('prospectIntel').doc(safeKey).get().then(function(snap) {
+    var versions = (snap.exists && snap.data().versions) ? snap.data().versions : [];
+
+    if (versions.length === 0) {
+      var initVer = {
+        context: '',
+        angle: baseData.bestMeetingAngle || '',
+        hook: baseData.meetingHook || '',
+        wts: baseData.whatToSay || {},
+        generatedAt: firebase.firestore.Timestamp.now()
+      };
+      versions = [initVer];
+      db.collection('prospectIntel').doc(safeKey).set({ versions: versions }, { merge: true })
+        .catch(function(e) { console.warn('[IGI] version init failed:', e.message); });
+    }
+
+    window._intelVersions[pk] = versions;
+    var idx = versions.length - 1;
+    window._intelVersionIdx[pk] = idx;
+    var cur = versions[idx];
+
+    _updateAngleAndScript(pk, cur.angle, cur.hook, cur.wts);
+    _updateVersionNav(pk, versions, idx);
+
+    var ctxInput = document.getElementById('intel-ctx-' + pk);
+    if (ctxInput && cur.context) ctxInput.value = cur.context;
+  }).catch(function(e) {
+    console.warn('[IGI] _initPersonalizationVersions failed:', e.message);
+  });
+}
+
+function _updateAngleAndScript(pk, angle, hook, wts) {
+  var angleBox = document.getElementById('intel-angle-box-' + pk);
+  if (angleBox && angle) {
+    angleBox.innerHTML =
+      '<div class="intel-angle-q">&#8220;' + _esc(angle) + '&#8221;</div>'
+      + (hook ? '<div class="intel-angle-s">' + _esc(hook) + '</div>' : '');
+  }
+
+  var scriptWrap = document.getElementById('intel-script-wrap-' + pk);
+  if (scriptWrap && (wts.phone || wts.walkin)) {
+    var wtsBody = '';
+    if (wts.phone)  wtsBody += '<div style="margin-bottom:16px;"><div style="font-size:10px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:#EF4136;margin-bottom:8px;">&#9990; Phone</div><div style="font-size:13px;color:rgba(255,255,255,0.75);line-height:1.7;">' + _esc(wts.phone) + '</div></div>';
+    if (wts.walkin) wtsBody += '<div><div style="font-size:10px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:#EF4136;margin-bottom:8px;">&#128666; Walk-in</div><div style="font-size:13px;color:rgba(255,255,255,0.75);line-height:1.7;">' + _esc(wts.walkin) + '</div></div>';
+    window._intelModalData = window._intelModalData || {};
+    window._intelModalData['openTheCall'] = { title: 'Open the Call', body: wtsBody };
+
+    scriptWrap.innerHTML =
+      '<div class="intel-script-grid">'
+      + (wts.phone  ? '<div class="intel-script-card"><div class="intel-script-type">&#9990; Phone</div><div class="intel-script-body">' + _esc(wts.phone)  + '</div></div>' : '')
+      + (wts.walkin ? '<div class="intel-script-card"><div class="intel-script-type">&#128666; Walk-in</div><div class="intel-script-body">' + _esc(wts.walkin) + '</div></div>' : '')
+      + '</div>'
+      + '<button class="intel-see-more" onclick="_showIntelModal(\'openTheCall\')">See more ↗</button>';
+  }
+}
+
+function _updateVersionNav(pk, versions, idx) {
+  var navEl   = document.getElementById('intel-ver-nav-' + pk);
+  var labelEl = document.getElementById('intel-ver-label-' + pk);
+  if (!navEl) return;
+
+  if (versions.length > 1) {
+    navEl.style.display = 'flex';
+  } else {
+    navEl.style.display = 'none';
+    return;
+  }
+
+  var total = versions.length;
+  var pos   = idx + 1;
+  if (labelEl) labelEl.textContent = 'VERSION ' + pos + ' OF ' + total;
+}
+
+function _intelNavVer(pk, delta) {
+  var versions = (window._intelVersions || {})[pk];
+  if (!versions || !versions.length) return;
+
+  var idx = ((window._intelVersionIdx || {})[pk] || 0) + delta;
+  idx = Math.max(0, Math.min(versions.length - 1, idx));
+  window._intelVersionIdx[pk] = idx;
+
+  var ver = versions[idx];
+  _updateAngleAndScript(pk, ver.angle, ver.hook, ver.wts);
+  _updateVersionNav(pk, versions, idx);
+
+  var ctxInput = document.getElementById('intel-ctx-' + pk);
+  if (ctxInput) ctxInput.value = ver.context || '';
+}
+
+function _rerunIntelPersonalized(pk) {
+  var acct = window._activeProspectAcct;
+  if (!acct) return;
+
+  var rawDomain = acct._discDomain || acct._website || '';
+  var domain    = rawDomain ? rawDomain.replace(/^https?:\/\/(www\.)?/i,'').replace(/\/.*$/,'').split('?')[0] : '';
+  var businessName = acct.name || acct.acct || acct.adv || '';
+
+  var ctxInput = document.getElementById('intel-ctx-' + pk);
+  var btn      = document.getElementById('intel-rerun-btn-' + pk);
+  var statusEl = document.getElementById('intel-rerun-status-' + pk);
+  var context  = ctxInput ? ctxInput.value.trim() : '';
+
+  if (!domain) {
+    if (statusEl) { statusEl.style.display = 'block'; statusEl.textContent = 'No website found for this account — cannot re-run.'; }
+    return;
+  }
+
+  var versions = (window._intelVersions || {})[pk] || [];
+  if (versions.length >= 5) {
+    if (statusEl) {
+      statusEl.style.display = 'block';
+      statusEl.textContent = 'Max 5 versions reached. Use ← → to navigate existing versions.';
+    }
+    setTimeout(function() { if (statusEl) statusEl.style.display = 'none'; }, 4000);
+    return;
+  }
+
+  if (btn)      { btn.disabled = true; btn.textContent = 'Running…'; }
+  if (statusEl) { statusEl.style.display = 'block'; statusEl.textContent = 'Personalizing intel…'; }
+
+  var INTEL_URL = 'https://generate-prospect-intel-922690493850.us-central1.run.app';
+  var safeKey   = pk.replace(/[^a-z0-9\-_]/gi, '-').slice(0, 80);
+  var runKey    = safeKey + '-ctx-' + Date.now();
+
+  fetch(INTEL_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      domain: domain,
+      profileKey: runKey,
+      businessName: businessName,
+      context: context
+    })
+  })
+  .then(function(r) { return r.json(); })
+  .then(function(result) {
+    if (result.error) throw new Error(result.error);
+
+    var d        = result.data || {};
+    var newAngle = d.bestMeetingAngle || '';
+    var newHook  = d.meetingHook || '';
+    var newWts   = d.whatToSay || {};
+
+    _updateAngleAndScript(pk, newAngle, newHook, newWts);
+
+    var newVer = {
+      context: context,
+      angle: newAngle,
+      hook: newHook,
+      wts: newWts,
+      generatedAt: firebase.firestore.Timestamp.now()
+    };
+
+    var updated = versions.slice();
+    updated.push(newVer);
+    if (updated.length > 5) updated = updated.slice(-5);
+
+    window._intelVersions = window._intelVersions || {};
+    window._intelVersions[pk] = updated;
+    var newIdx = updated.length - 1;
+    window._intelVersionIdx = window._intelVersionIdx || {};
+    window._intelVersionIdx[pk] = newIdx;
+
+    _updateVersionNav(pk, updated, newIdx);
+
+    db.collection('prospectIntel').doc(safeKey).set({ versions: updated }, { merge: true })
+      .catch(function(e) { console.warn('[IGI] version save failed:', e.message); });
+
+    if (btn)      { btn.disabled = false; btn.textContent = '&#9889; Re-run'; }
+    if (statusEl) { statusEl.style.display = 'none'; }
+  })
+  .catch(function(err) {
+    if (btn)      { btn.disabled = false; btn.textContent = '&#8635; Retry'; }
+    if (statusEl) { statusEl.textContent = 'Failed: ' + (err.message || 'try again'); }
+  });
 }
 
 function _triggerIntelGeneration(profileKey) {
@@ -3022,7 +3232,12 @@ function _triggerIntelGeneration(profileKey) {
     if (result.error) throw new Error(result.error);
     if (bar)   bar.style.width   = '100%';
     if (label) label.textContent = 'Intelligence ready \u2713';
-    setTimeout(function() { _renderIntelPostState(result.data, acct); }, 400);
+    setTimeout(function() {
+      _renderIntelPostState(result.data, acct);
+      var pk2 = _profileKey(acct);
+      var safeKey2 = pk2.replace(/[^a-z0-9\-_]/gi, '-').slice(0, 80);
+      _initPersonalizationVersions(pk2, safeKey2, result.data);
+    }, 400);
   })
   .catch(function(err) {
     clearInterval(timer);
