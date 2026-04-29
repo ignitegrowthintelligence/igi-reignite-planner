@@ -2536,6 +2536,10 @@ function _openProspectPage(cpid) {
   history.pushState({ cpid: cpid }, '', '#/prospect/' + cpid);
   window._activeProspectAcct = entry.acct;
 
+  if (!entry.acct._discDomain && entry.acct._website) {
+    entry.acct._discDomain = entry.acct._website.replace(/^https?:\/\/(www\.)?/i,'').replace(/\/.*$/,'').split('?')[0];
+  }
+
   var key = _profileKey(entry.acct);
   var safeKey = key.replace(/[^a-z0-9\-_]/gi, '-').slice(0, 80);
 
@@ -2882,7 +2886,8 @@ function _renderIntelPostState(data, acct) {
 function _triggerIntelGeneration(profileKey) {
   var acct = window._activeProspectAcct;
   if (!acct) return;
-  var domain = acct._discDomain || acct.website || acct.domain || '';
+  var rawDomain = acct._discDomain || acct._website || acct.website || acct.domain || '';
+  var domain = rawDomain ? rawDomain.replace(/^https?:\/\/(www\.)?/i,'').replace(/\/.*$/,'').split('?')[0] : '';
   if (!domain) {
     var btn = document.getElementById('intel-gen-btn-' + profileKey);
     if (btn) {
