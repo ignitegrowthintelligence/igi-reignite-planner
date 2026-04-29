@@ -2655,7 +2655,7 @@ function _buildProspectPageHTML(section, acct) {
     + '<div class="intel-acct-name">' + _esc(name) + '</div>'
     + '<div class="intel-acct-cat">' + _esc(cat) + '</div>'
     + '</div>'
-    + '<button id="intel-rebuild-btn" class="intel-rebuild-btn" style="display:none;" onclick="_rebuildIntel(\'' + profileKey + '\')">' + 'Rebuild</button>'
+    + ''
     + '</div>'
     + '<div class="intel-score-bdg">'
     + '<div class="intel-score-num">' + score + '</div>'
@@ -2790,9 +2790,6 @@ function _renderIntelPostState(data, acct) {
   var mAsk     = d.meetingAsk || {};
   var coaching = d.coachingNote || null;
 
-  var rebuildBtn = document.getElementById('intel-rebuild-btn');
-  if (rebuildBtn) rebuildBtn.style.display = 'block';
-
   window._intelModalData = {};
 
   var leftHTML = '';
@@ -2897,7 +2894,9 @@ function _renderIntelPostState(data, acct) {
       + '</div>';
   }
 
-  leftHTML += '<a href="https://ignite.edwinlovett.com/research/?q=' + encodeURIComponent(d.domain || '') + '" target="_blank" rel="noopener" class="intel-disc-btn">Run Full Discovery Report <span>&#8594;</span></a>';
+  var _pk = _profileKey(acct);
+  leftHTML += '<a href="https://ignite.edwinlovett.com/research/?q=' + encodeURIComponent(d.domain || '') + '" target="_blank" rel="noopener" class="intel-disc-btn">Run Full Discovery Report <span>&#8594;</span></a>'
+    + '<button class="intel-disc-btn" style="width:100%;margin-top:6px;font-family:inherit;" onclick="_rebuildIntel(\'' + _pk + '\')">Re-run IGI Intel <span>&#8635;</span></button>';
 
   var rightHTML = '';
 
@@ -3053,8 +3052,6 @@ function _rebuildIntel(profileKey) {
   var safeKey = profileKey.replace(/[^a-z0-9\-_]/gi, '-').slice(0, 80);
   db.collection('prospectIntel').doc(safeKey).delete().then(function() {
     _renderIntelPreState(acct, profileKey);
-    var rebuildBtn = document.getElementById('intel-rebuild-btn');
-    if (rebuildBtn) rebuildBtn.style.display = 'none';
   });
 }
 
