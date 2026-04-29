@@ -2555,9 +2555,6 @@ function _openProspectPage(cpid) {
     if (intelDoc && intelDoc.exists) {
       _renderIntelPostState(intelDoc.data(), entry.acct);
     } else {
-      if (entry.section !== 'rebuild' && !entry.acct._discDomain) {
-        _showWebsitePopup(entry.acct, page, key);
-      }
       _renderIntelPreState(entry.acct, key);
     }
   }).catch(function() {
@@ -2875,7 +2872,21 @@ function _triggerIntelGeneration(profileKey) {
   var acct = window._activeProspectAcct;
   if (!acct) return;
   var domain = acct._discDomain || acct.website || acct.domain || '';
-  if (!domain) return;
+  if (!domain) {
+    var btn = document.getElementById('intel-gen-btn-' + profileKey);
+    if (btn) {
+      var wrap = btn.parentElement;
+      btn.style.display = 'none';
+      var inputRow = document.createElement('div');
+      inputRow.style.cssText = 'display:flex;gap:8px;margin-top:4px;';
+      inputRow.innerHTML =
+        '<input id="intel-domain-input" type="text" placeholder="example.com" style="flex:1;background:#191919;border:1px solid rgba(255,255,255,0.15);border-radius:5px;padding:9px 12px;font-size:12px;color:#fff;font-family:inherit;outline:none;" />'
+        + '<button style="background:#EF4136;border:none;border-radius:5px;padding:9px 16px;font-size:12px;font-weight:700;color:#fff;font-family:inherit;cursor:pointer;" onclick="_submitIntelDomain(\'' + profileKey + '\')">' + '&#9889; Generate</button>';
+      wrap.appendChild(inputRow);
+      setTimeout(function(){ var inp = document.getElementById('intel-domain-input'); if(inp) inp.focus(); }, 100);
+    }
+    return;
+  }
 
   var btn      = document.getElementById('intel-gen-btn-'      + profileKey);
   var progress = document.getElementById('intel-gen-progress-' + profileKey);
@@ -2916,6 +2927,20 @@ function _triggerIntelGeneration(profileKey) {
     if (btn)   { btn.style.display = 'block'; btn.textContent = '\u26A1 Retry'; }
     if (progress) progress.style.display = 'none';
   });
+}
+
+function _submitIntelDomain(profileKey) {
+  var input = document.getElementById('intel-domain-input');
+  if (!input) return;
+  var raw = input.value.trim();
+  if (!raw) { input.style.borderColor = '#EF4136'; return; }
+  var domain = raw.replace(/^https?:\/\//i,'').replace(/^www\./i,'').split('/')[0].split('?')[0];
+  var acct = window._activeProspectAcct;
+  if (!acct) return;
+  acct._discDomain = domain;
+  var key = _profileKey(acct);
+  db.collection('clientProfiles').doc(key).set({ domain: domain, businessName: acct.name || acct.acct || acct.adv || '', savedAt: new Date().toISOString() }, { merge: true });
+  _triggerIntelGeneration(profileKey);
 }
 
 function _rebuildIntel(profileKey) {
