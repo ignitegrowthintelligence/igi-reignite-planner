@@ -2949,6 +2949,32 @@ function _renderIntelPostState(data, acct) {
       + (wts.walkin ? '<div class="intel-script-card"><div class="intel-script-type">&#128666; Walk-in</div><div class="intel-script-body">' + _esc(wts.walkin) + '</div></div>' : '')
       + '</div>'
       + '<button class="intel-see-more" onclick="_showIntelModal(\'openTheCall\')">See more ↗</button>'
+      + '</div>'
+      + '<div id="intel-pers-strip-' + _pk + '" style="margin-top:14px;">'
+      + '<div id="intel-ver-nav-' + _pk + '" style="display:none;align-items:center;justify-content:space-between;'
+      + 'margin-bottom:10px;background:rgba(239,65,54,.06);border:1px solid rgba(239,65,54,.18);'
+      + 'border-radius:6px;padding:7px 12px;">'
+      + '<button onclick="_intelNavVer(\'' + _pk + '\',-1)" '
+      + 'style="background:none;border:none;color:#EF4136;font-size:1.2rem;cursor:pointer;padding:0 6px;font-weight:700;">‹</button>'
+      + '<span id="intel-ver-label-' + _pk + '" style="font-size:.7rem;color:rgba(255,255,255,.5);font-weight:600;letter-spacing:.06em;">VERSION 1 OF 1</span>'
+      + '<button onclick="_intelNavVer(\'' + _pk + '\',1)" '
+      + 'style="background:none;border:none;color:#EF4136;font-size:1.2rem;cursor:pointer;padding:0 6px;font-weight:700;">›</button>'
+      + '</div>'
+      + '<div style="display:flex;gap:8px;align-items:stretch;">'
+      + '<input id="intel-ctx-' + _pk + '" type="text" maxlength="300" '
+      + 'placeholder="Add client context to personalize the angle and scripts…" '
+      + 'onfocus="this.style.borderColor=\'rgba(239,65,54,.45)\'" '
+      + 'onblur="this.style.borderColor=\'rgba(255,255,255,.14)\'" '
+      + 'style="flex:1;background:#191919;border:1px solid rgba(255,255,255,.14);border-radius:6px;'
+      + 'padding:9px 12px;font-size:.74rem;color:#fff;font-family:inherit;outline:none;line-height:1.4;" />'
+      + '<button id="intel-rerun-btn-' + _pk + '" onclick="_rerunIntelPersonalized(\'' + _pk + '\')" '
+      + 'style="flex-shrink:0;background:linear-gradient(135deg,rgba(239,65,54,.18),rgba(239,65,54,.1));'
+      + 'border:1px solid rgba(239,65,54,.35);border-radius:6px;color:#EF4136;font-family:inherit;'
+      + 'font-size:.74rem;font-weight:700;padding:9px 14px;cursor:pointer;white-space:nowrap;">'
+      + '⚡ Re-run'
+      + '</button>'
+      + '</div>'
+      + '<div id="intel-rerun-status-' + _pk + '" style="display:none;font-size:.7rem;color:rgba(255,255,255,.4);margin-top:6px;"></div>'
       + '</div>';
   }
 
@@ -2968,30 +2994,6 @@ function _renderIntelPostState(data, acct) {
       + (mAsk.strong ? '<div class="intel-ask-strong"><div class="intel-ask-lbl-strong">Stronger ask</div><div class="intel-ask-body">' + _esc(mAsk.strong) + '</div></div>' : '')
       + '</div>';
   }
-
-  // Personalization strip
-  rightHTML += '<div id="intel-pers-strip-' + _pk + '" style="margin-top:20px;padding-top:16px;border-top:1px solid rgba(255,255,255,.08);">'
-    + '<div id="intel-ver-nav-' + _pk + '" style="display:none;align-items:center;justify-content:space-between;margin-bottom:10px;'
-    + 'background:rgba(239,65,54,.06);border:1px solid rgba(239,65,54,.18);border-radius:6px;padding:7px 12px;">'
-    + '<button onclick="_intelNavVer(\'' + _pk + '\',-1)" '
-    + 'style="background:none;border:none;color:#EF4136;font-size:1.1rem;cursor:pointer;padding:0 6px;font-weight:700;">&#8249;</button>'
-    + '<span id="intel-ver-label-' + _pk + '" style="font-size:.7rem;color:rgba(255,255,255,.5);font-weight:600;letter-spacing:.06em;">VERSION 1 OF 1</span>'
-    + '<button onclick="_intelNavVer(\'' + _pk + '\',1)" '
-    + 'style="background:none;border:none;color:#EF4136;font-size:1.1rem;cursor:pointer;padding:0 6px;font-weight:700;">&#8250;</button>'
-    + '</div>'
-    + '<div style="display:flex;gap:8px;align-items:flex-start;">'
-    + '<input id="intel-ctx-' + _pk + '" type="text" maxlength="300" '
-    + 'placeholder="Add context about this client to personalize the angle and scripts… (e.g., just opened a second location, running a summer promo)" '
-    + 'onfocus="this.style.borderColor=\'rgba(239,65,54,.45)\'" onblur="this.style.borderColor=\'rgba(255,255,255,.14)\'" '
-    + 'style="flex:1;background:#191919;border:1px solid rgba(255,255,255,.14);border-radius:6px;'
-    + 'padding:9px 12px;font-size:.74rem;color:#fff;font-family:inherit;outline:none;line-height:1.4;" />'
-    + '<button id="intel-rerun-btn-' + _pk + '" onclick="_rerunIntelPersonalized(\'' + _pk + '\')" '
-    + 'style="flex-shrink:0;background:linear-gradient(135deg,rgba(239,65,54,.18),rgba(239,65,54,.1));'
-    + 'border:1px solid rgba(239,65,54,.35);border-radius:6px;color:#EF4136;font-family:inherit;'
-    + 'font-size:.74rem;font-weight:700;padding:9px 14px;cursor:pointer;white-space:nowrap;">&#9889; Re-run</button>'
-    + '</div>'
-    + '<div id="intel-rerun-status-' + _pk + '" style="display:none;font-size:.7rem;color:rgba(255,255,255,.4);margin-top:6px;"></div>'
-    + '</div>';
 
   var leftEl  = document.getElementById('intel-left-panel');
   var rightEl = document.getElementById('intel-right-panel');
@@ -3120,7 +3122,7 @@ function _rerunIntelPersonalized(pk) {
     return;
   }
 
-  if (btn)      { btn.disabled = true; btn.textContent = 'Running…'; }
+  if (btn)      { btn.disabled = true; btn.innerHTML = 'Running…'; }
   if (statusEl) { statusEl.style.display = 'block'; statusEl.textContent = 'Personalizing intel…'; }
 
   var INTEL_URL = 'https://generate-prospect-intel-922690493850.us-central1.run.app';
@@ -3133,7 +3135,9 @@ function _rerunIntelPersonalized(pk) {
     body: JSON.stringify({
       domain: domain,
       profileKey: runKey,
-      businessName: businessName,
+      businessName: context
+        ? businessName + '. SALES REP CONTEXT FOR THIS CALL: ' + context
+        : businessName,
       context: context
     })
   })
@@ -3171,11 +3175,11 @@ function _rerunIntelPersonalized(pk) {
     db.collection('prospectIntel').doc(safeKey).set({ versions: updated }, { merge: true })
       .catch(function(e) { console.warn('[IGI] version save failed:', e.message); });
 
-    if (btn)      { btn.disabled = false; btn.textContent = '&#9889; Re-run'; }
+    if (btn)      { btn.disabled = false; btn.innerHTML = '⚡ Re-run'; }
     if (statusEl) { statusEl.style.display = 'none'; }
   })
   .catch(function(err) {
-    if (btn)      { btn.disabled = false; btn.textContent = '&#8635; Retry'; }
+    if (btn)      { btn.disabled = false; btn.innerHTML = '↺ Retry'; }
     if (statusEl) { statusEl.textContent = 'Failed: ' + (err.message || 'try again'); }
   });
 }
