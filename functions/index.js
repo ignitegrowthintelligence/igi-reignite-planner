@@ -216,7 +216,7 @@ Critical rules:
 // ---------------------------------------------------------------------------
 // Claude API call
 // ---------------------------------------------------------------------------
-async function callClaude(html, domain, pixels, apiKey, businessName) {
+async function callClaude(html, domain, pixels, apiKey, businessName, context) {
   // When GTM is present, individual pixel detection is unreliable — pixels may be
   // firing through the container without appearing in raw HTML. Only pass GTM status.
   const pixelSummary = pixels.gtm
@@ -232,6 +232,9 @@ async function callClaude(html, domain, pixels, apiKey, businessName) {
     'Domain: ' + domain + '\n\n' +
     'Pixel detection results:\n' +
     pixelSummary + '\n\n' +
+    (context ? '\n===SALES REP PERSONALIZATION===\n' +
+      context + '\n' +
+      'IMPORTANT: You MUST incorporate the above personalization into bestMeetingAngle and both whatToSay scripts (phone and walkin). The sales rep typed this instruction specifically so it appears in the output they will use. Do not ignore it.\n\n' : '') +
     'Website HTML (truncated to 30,000 characters):\n' +
     (html ? html.slice(0, 30000) : 'Website could not be fetched. Generate intel based on the domain name and industry inference only.');
 
@@ -273,7 +276,7 @@ async function callClaude(html, domain, pixels, apiKey, businessName) {
 // POST /  –  main handler
 // ---------------------------------------------------------------------------
 app.post('/', async (req, res) => {
-  const { domain, profileKey, businessName } = req.body || {};
+  const { domain, profileKey, businessName, context } = req.body || {};
 
   if (!domain || !profileKey) {
     return res.status(400).json({ error: 'domain and profileKey are required' });
@@ -301,7 +304,7 @@ app.post('/', async (req, res) => {
     if (!apiKey) throw new Error('ANTHROPIC_API_KEY secret not configured');
     console.log('[IGI] API key present, length:', apiKey.length, '| prefix:', apiKey.slice(0, 10));
 
-    const intel = await callClaude(html, domain, pixels, apiKey, businessName);
+    const intel = await callClaude(html, domain, pixels, apiKey, businessName, context);
 
     // Attach computed fields
     intel.digitalReadiness = Object.assign({}, pixels, dr);

@@ -3148,9 +3148,7 @@ function _rerunIntelPersonalized(pk) {
     body: JSON.stringify({
       domain: domain,
       profileKey: runKey,
-      businessName: context
-        ? businessName + '. SALES REP CONTEXT FOR THIS CALL: ' + context
-        : businessName,
+      businessName: businessName,
       context: context
     })
   })
