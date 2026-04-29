@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
-  <title>Re-Ignite Planner - IGI</title>
+  <title>IGI Focus</title>
   <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
   <script>
@@ -22,36 +22,36 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
     :root {
-      --teal:#00bcd4;--teal-dim:rgba(0,188,212,.12);--teal-border:rgba(0,188,212,.3);
-      --bg:#080d1a;--surface:#0f1629;--surface2:#141d35;--surface3:#1a2540;
-      --border:rgba(255,255,255,.07);--text:#e2e8f0;--dim:#64748b;
-      --green:#34d399;--red:#f87171;--yellow:#fbbf24;--orange:#fb923c;
+      --accent:#EF4136;--accent-dim:rgba(239,65,54,.12);--accent-border:rgba(239,65,54,.35);
+      --bg:#F2F2F2;--surface:#FFFFFF;--surface2:#F5F5F5;--surface3:#EBEBEB;
+      --border:#DDDDDD;--text:#191919;--dim:#555555;
+      --green:#16a34a;--red:#EF4136;--yellow:#c2820a;--orange:#EF4136;
     }
     *{box-sizing:border-box;}
-    body{background:var(--bg);font-family:'Inter',system-ui,sans-serif;color:var(--text);margin:0;min-height:100vh;}
-    .tab-active{background:var(--teal);color:#000;font-weight:700;border-radius:6px;}
-    .tab-inactive{color:var(--dim);border-radius:6px;}
+    body{background:var(--bg);font-family:'Calibri','Gill Sans',Arial,sans-serif;color:var(--text);margin:0;min-height:100vh;}
+    .tab-active{background:var(--accent);color:#fff;font-weight:700;border-radius:0;}
+    .tab-inactive{color:var(--dim);border-radius:0;}
     .tab-inactive:hover{background:var(--surface3);color:var(--text);}
-    .card{background:var(--surface);border:1px solid var(--border);border-radius:8px;}
-    .card-teal{border-top:2px solid var(--teal);}
-    .upload-zone{border:2px dashed var(--teal-border);border-radius:8px;background:var(--teal-dim);transition:all .2s;cursor:pointer;}
-    .upload-zone:hover,.upload-zone.drag{border-color:var(--teal);background:rgba(0,188,212,.18);}
+    .card{background:var(--surface);border:1px solid var(--border);border-radius:0;}
+    .card-teal{border-top:3px solid var(--accent);}
+    .upload-zone{border:2px dashed var(--accent-border);border-radius:0;background:var(--accent-dim);transition:all .2s;cursor:pointer;}
+    .upload-zone:hover,.upload-zone.drag{border-color:var(--accent);background:rgba(239,65,54,.15);}
     .bp-table{width:100%;border-collapse:collapse;}
-    .bp-table thead th{background:var(--surface2);color:var(--dim);font-size:.68rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;padding:10px 12px;border-bottom:1px solid var(--teal-border);white-space:nowrap;}
-    .bp-table thead th.accent{color:var(--teal);}
+    .bp-table thead th{background:#F5F5F5;color:#555555;font-size:.68rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;padding:10px 12px;border-bottom:2px solid var(--accent);white-space:nowrap;font-family:'Franklin Gothic Medium','Arial Narrow',Arial,sans-serif;}
+    .bp-table thead th.accent{color:var(--accent);}
     .bp-table tbody tr{border-bottom:1px solid var(--border);}
-    .bp-table tbody tr:hover{background:var(--surface2);}
+    .bp-table tbody tr:hover{background:#FFF5F4;}
     .bp-table td{padding:8px 12px;font-size:.83rem;}
-    .score-badge{display:inline-block;padding:2px 8px;border-radius:4px;font-size:.72rem;font-weight:700;}
-    .score-high{background:rgba(52,211,153,.15);color:var(--green);border:1px solid rgba(52,211,153,.3);}
-    .score-mid{background:rgba(251,191,36,.12);color:var(--yellow);border:1px solid rgba(251,191,36,.3);}
-    .score-low{background:rgba(248,113,113,.12);color:var(--red);border:1px solid rgba(248,113,113,.3);}
-    .badge-now{background:rgba(52,211,153,.15);color:var(--green);border:1px solid rgba(52,211,153,.3);border-radius:3px;padding:1px 7px;font-size:.65rem;font-weight:700;}
-    .badge-reclaim{background:rgba(251,146,60,.15);color:var(--orange);border:1px solid rgba(251,146,60,.3);border-radius:3px;padding:1px 7px;font-size:.65rem;}
-    .badge-ignite{background:rgba(0,188,212,.15);color:var(--teal);border:1px solid var(--teal-border);border-radius:3px;padding:1px 6px;font-size:.65rem;font-weight:700;}
-    .range-slider{-webkit-appearance:none;width:100%;height:6px;border-radius:3px;background:var(--surface2);outline:none;}
-    .range-slider::-webkit-slider-thumb{-webkit-appearance:none;width:18px;height:18px;border-radius:50%;background:var(--teal);cursor:pointer;}
-    .section-header{font-size:.68rem;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:var(--teal);margin-bottom:12px;}
+    .score-badge{display:inline-block;padding:2px 8px;border-radius:0;font-size:.72rem;font-weight:700;}
+    .score-high{background:rgba(22,163,74,.10);color:#16a34a;border:1px solid rgba(22,163,74,.3);}
+    .score-mid{background:rgba(194,130,10,.10);color:#c2820a;border:1px solid rgba(194,130,10,.3);}
+    .score-low{background:rgba(239,65,54,.10);color:var(--red);border:1px solid rgba(239,65,54,.3);}
+    .badge-now{background:rgba(22,163,74,.10);color:#16a34a;border:1px solid rgba(22,163,74,.3);border-radius:0;padding:1px 7px;font-size:.65rem;font-weight:700;}
+    .badge-reclaim{background:rgba(239,65,54,.12);color:var(--accent);border:1px solid rgba(239,65,54,.3);border-radius:0;padding:1px 7px;font-size:.65rem;}
+    .badge-ignite{background:var(--accent-dim);color:var(--accent);border:1px solid var(--accent-border);border-radius:0;padding:1px 6px;font-size:.65rem;font-weight:700;}
+    .range-slider{-webkit-appearance:none;width:100%;height:6px;border-radius:0;background:var(--surface3);outline:none;}
+    .range-slider::-webkit-slider-thumb{-webkit-appearance:none;width:18px;height:18px;border-radius:0;background:var(--accent);cursor:pointer;}
+    .section-header{font-size:.68rem;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:var(--accent);margin-bottom:12px;font-family:'Franklin Gothic Medium','Arial Narrow',Arial,sans-serif;}
     .mobile-scroll{overflow-x:auto;}
     @media(max-width:768px){.hide-mobile{display:none;}}
   @keyframes cp-spin { to { transform: rotate(360deg); } }
@@ -60,26 +60,25 @@
 <body class="min-h-screen">
 
 <!-- Header -->
-<header style="background:var(--surface);border-bottom:1px solid var(--teal-border);padding:12px 24px;">
+<header style="background:#191919;border-bottom:4px solid #EF4136;padding:12px 24px;">
   <div class="max-w-screen-xl mx-auto flex items-center justify-between flex-wrap gap-3">
     <div class="flex items-center gap-3">
-      <div style="width:34px;height:34px;background:var(--teal);border-radius:6px;display:flex;align-items:center;justify-content:center;font-weight:900;color:#000;font-size:1rem;">R</div>
       <div>
-        <div style="font-weight:800;font-size:1.05rem;color:#fff;">Re-Ignite <span style="color:var(--teal);">Planner</span></div>
-        <div id="marketLabel" style="font-size:.68rem;color:var(--dim);letter-spacing:.05em;">IGNITE GROWTH INTELLIGENCE</div>
+        <div style="font-weight:800;font-size:1.05rem;color:#EF4136;font-family:'Franklin Gothic Medium','Arial Narrow',Arial,sans-serif;">IGI <span style="color:#fff;">Focus</span></div>
+        <div id="marketLabel" style="font-size:.68rem;color:rgba(255,255,255,.5);letter-spacing:.08em;font-family:'Franklin Gothic Medium','Arial Narrow',Arial,sans-serif;">IGNITE GROWTH INTELLIGENCE</div>
       </div>
     </div>
     <div class="flex items-center gap-3" id="ribbonActions">
       <input id="marketInput" type="text" placeholder="Market name (e.g. Utica, NY)"
-        style="background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:6px 12px;color:var(--text);font-size:.78rem;width:200px;outline:none;"
+        style="background:#2a2a2a;border:1px solid rgba(239,65,54,.35);border-radius:0;padding:6px 12px;color:#fff;font-size:.78rem;width:200px;outline:none;"
         oninput="document.getElementById('marketLabel').textContent=this.value||'IGNITE GROWTH INTELLIGENCE'"/>
-      <button id="ribbonNewPlan" onclick="startNewPlan()" style="background:var(--surface2);border:1px solid var(--border);color:var(--dim);border-radius:6px;padding:6px 12px;font-size:.75rem;font-weight:600;cursor:pointer;white-space:nowrap;transition:all .15s;" onmouseover="this.style.borderColor='var(--teal-border)';this.style.color='var(--text)'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--dim)'">+ New Plan</button>
-      <button id="ribbonSavedPlans" onclick="switchTab('library')" style="background:var(--surface2);border:1px solid var(--border);color:var(--dim);border-radius:6px;padding:6px 12px;font-size:.75rem;font-weight:600;cursor:pointer;white-space:nowrap;transition:all .15s;" onmouseover="this.style.borderColor='var(--teal-border)';this.style.color='var(--text)'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--dim)'">📂 Saved Plans</button>
+      <button id="ribbonNewPlan" onclick="startNewPlan()" style="background:#2a2a2a;border:1px solid rgba(255,255,255,.2);color:rgba(255,255,255,.7);border-radius:0;padding:6px 12px;font-size:.75rem;font-weight:600;cursor:pointer;white-space:nowrap;transition:all .15s;" onmouseover="this.style.borderColor='rgba(239,65,54,.5)';this.style.color='#fff'" onmouseout="this.style.borderColor='rgba(255,255,255,.2)';this.style.color='rgba(255,255,255,.7)'">+ New Plan</button>
+      <button id="ribbonSavedPlans" onclick="switchTab('library')" style="background:#2a2a2a;border:1px solid rgba(255,255,255,.2);color:rgba(255,255,255,.7);border-radius:0;padding:6px 12px;font-size:.75rem;font-weight:600;cursor:pointer;white-space:nowrap;transition:all .15s;" onmouseover="this.style.borderColor='rgba(239,65,54,.5)';this.style.color='#fff'" onmouseout="this.style.borderColor='rgba(255,255,255,.2)';this.style.color='rgba(255,255,255,.7)'">Saved Plans</button>
       <a id="ribbonCommandCenter" href="https://ignitegrowthintelligence.github.io/igi-command-center/" target="_blank"
-        style="background:var(--teal-dim);border:1px solid var(--teal-border);color:var(--teal);border-radius:6px;padding:6px 12px;font-size:.75rem;text-decoration:none;white-space:nowrap;">
-        Command Center
+        style="background:rgba(239,65,54,.15);border:1px solid rgba(239,65,54,.4);color:#EF4136;border-radius:0;padding:6px 12px;font-size:.75rem;text-decoration:none;white-space:nowrap;font-family:'Franklin Gothic Medium','Arial Narrow',Arial,sans-serif;letter-spacing:.06em;font-weight:700;">
+        IGI SIGNAL
       </a>
-      <div id="sharedModeBadge" style="display:none;background:rgba(251,191,36,.12);border:1px solid rgba(251,191,36,.3);color:var(--yellow);border-radius:6px;padding:5px 12px;font-size:.72rem;font-weight:700;">✏️ Shared Plan</div>
+      <div id="sharedModeBadge" style="display:none;background:rgba(194,130,10,.12);border:1px solid rgba(194,130,10,.3);color:#c2820a;border-radius:0;padding:5px 12px;font-size:.72rem;font-weight:700;">Shared Plan</div>
     </div>
   </div>
 </header>
@@ -89,9 +88,9 @@
   <div id="summaryCards" class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-5"></div>
 
   <!-- Tabs -->
-  <div style="background:var(--surface);border:1px solid var(--border);border-radius:8px;overflow:hidden;">
+  <div style="background:var(--surface);border:1px solid var(--border);border-radius:0;overflow:hidden;">
     <div id="sharedPlanBanner" style="display:none;padding:10px 18px;background:rgba(251,191,36,.08);border-bottom:1px solid rgba(251,191,36,.25);">
-      <span style="font-size:.78rem;color:var(--yellow);font-weight:600;">🔗 Shared Plan View</span>
+      <span style="font-size:.78rem;color:var(--yellow);font-weight:600;">Shared Plan View</span>
       <span id="sharedPlanTitle" style="font-size:.78rem;color:var(--text);margin-left:8px;"></span>
     </div>
     <div style="background:var(--surface);border-bottom:1px solid var(--border);padding:10px 16px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
@@ -99,8 +98,8 @@
       <button onclick="switchTab('protect')" id="tab-protect" class="tab-inactive px-4 py-2 text-sm transition-all">Protect &amp; Expand</button>
       <button onclick="switchTab('reclaim')" id="tab-reclaim" class="tab-inactive px-4 py-2 text-sm transition-all">Reclaim</button>
       <button onclick="switchTab('rebuild')" id="tab-rebuild" class="tab-inactive px-4 py-2 text-sm transition-all">Rebuild</button>
-      <button onclick="switchTab('plan')"   id="tab-plan"   class="tab-inactive px-4 py-2 text-sm transition-all">📋 Plan (<span id="planCount">0</span>)</button>
-      <button onclick="switchTab('library')" id="tab-library" class="tab-inactive px-4 py-2 text-sm transition-all">📂 Saved Plans</button>
+      <button onclick="switchTab('plan')"   id="tab-plan"   class="tab-inactive px-4 py-2 text-sm transition-all">Plan (<span id="planCount">0</span>)</button>
+      <button onclick="switchTab('library')" id="tab-library" class="tab-inactive px-4 py-2 text-sm transition-all">Saved Plans</button>
     </div>
 
     <!-- CLOSE NOW -->
@@ -109,13 +108,13 @@
       <div class="upload-zone p-8 text-center mb-4" onclick="document.getElementById('f-close').click()"
            ondragover="event.preventDefault();this.classList.add('drag')" ondragleave="this.classList.remove('drag')"
            ondrop="event.preventDefault();this.classList.remove('drag');handleFile('close',event.dataTransfer.files[0])">
-        <div style="font-size:2rem;margin-bottom:8px;">📋</div>
+        
         <div style="font-weight:600;color:var(--text);">Upload Blueprint Pipeline</div>
         <div style="font-size:.75rem;color:var(--dim);margin-top:4px;">CSV or Excel - drop here or click to browse</div>
         <input type="file" id="f-close" accept=".csv,.xlsx,.xls" style="display:none" onchange="handleFile('close',this.files[0])"/>
       </div>
       <div style="display:flex;justify-content:flex-end;margin-bottom:8px;">
-        <button onclick="clearTab('close')" style="background:rgba(248,113,113,.08);border:1px solid rgba(248,113,113,.25);color:var(--red);border-radius:6px;padding:5px 12px;font-size:.72rem;font-weight:600;cursor:pointer;">✕ Clear Tab</button>
+        <button onclick="clearTab('close')" style="background:rgba(248,113,113,.08);border:1px solid rgba(248,113,113,.25);color:var(--red);border-radius:0;padding:5px 12px;font-size:.72rem;font-weight:600;cursor:pointer;">✕ Clear Tab</button>
       </div>
       <div id="close-content"></div>
     </div>
@@ -130,7 +129,7 @@
         <div class="upload-zone p-6 text-center" onclick="document.getElementById('f-protect').click()"
           ondragover="event.preventDefault();this.classList.add('drag')" ondragleave="this.classList.remove('drag')"
           ondrop="event.preventDefault();this.classList.remove('drag');handleFile('protect',event.dataTransfer.files[0])">
-          <div style="font-size:1.5rem;margin-bottom:6px;">📊</div>
+          
           <div style="font-weight:600;font-size:.85rem;">Basic Revenue Report — All Products</div>
           <div style="font-size:.72rem;color:var(--dim);margin-top:4px;">Auto-segments into Active (Protect) and Lapsed (Reclaim)</div>
           <input type="file" id="f-protect" accept=".csv,.xlsx,.xls" style="display:none" onchange="handleFile('protect',this.files[0])"/>
@@ -138,25 +137,25 @@
         <div class="upload-zone p-6 text-center" onclick="document.getElementById('f-protect-ign').click()"
           ondragover="event.preventDefault();this.classList.add('drag')" ondragleave="this.classList.remove('drag')"
           ondrop="event.preventDefault();this.classList.remove('drag');handleFile('protect-ignite',event.dataTransfer.files[0])">
-          <div style="font-size:1.5rem;margin-bottom:6px;">🎯</div>
+          
           <div style="font-weight:600;font-size:.85rem;">Basic Revenue Report — Ignite Only <span style="font-size:.68rem;color:var(--dim);font-weight:400;">(optional)</span></div>
           <div style="font-size:.72rem;color:var(--dim);margin-top:4px;">Adds Ignite vs. Broadcast split to both tabs</div>
           <input type="file" id="f-protect-ign" accept=".csv,.xlsx,.xls" style="display:none" onchange="handleFile('protect-ignite',this.files[0])"/>
         </div>
       </div>
       <div style="display:flex;justify-content:flex-end;margin-bottom:8px;">
-        <button onclick="clearTab('protect')" style="background:rgba(248,113,113,.08);border:1px solid rgba(248,113,113,.25);color:var(--red);border-radius:6px;padding:5px 12px;font-size:.72rem;font-weight:600;cursor:pointer;">✕ Clear Tab</button>
+        <button onclick="clearTab('protect')" style="background:rgba(248,113,113,.08);border:1px solid rgba(248,113,113,.25);color:var(--red);border-radius:0;padding:5px 12px;font-size:.72rem;font-weight:600;cursor:pointer;">✕ Clear Tab</button>
       </div>
       <div id="protect-content"></div>
     </div>
     <!-- RECLAIM -->
     <div id="panel-reclaim" class="p-5 hidden">
       <div class="section-header">Reclaim — Former Clients</div>
-      <div id="reclaim-placeholder" style="text-align:center;padding:40px 20px;color:var(--dim);font-size:.82rem;border:1px dashed var(--border);border-radius:8px;margin-bottom:16px;">
-        Upload the Basic Revenue Report on the <strong style="color:var(--teal);">Protect &amp; Expand</strong> tab to automatically populate lapsed clients here.
+      <div id="reclaim-placeholder" style="text-align:center;padding:40px 20px;color:var(--dim);font-size:.82rem;border:1px dashed var(--border);border-radius:0;margin-bottom:16px;">
+        Upload the Basic Revenue Report on the <strong style="color:var(--accent);">Protect &amp; Expand</strong> tab to automatically populate lapsed clients here.
       </div>
       <div style="display:flex;justify-content:flex-end;margin-bottom:8px;">
-        <button onclick="clearTab('reclaim')" style="background:rgba(248,113,113,.08);border:1px solid rgba(248,113,113,.25);color:var(--red);border-radius:6px;padding:5px 12px;font-size:.72rem;font-weight:600;cursor:pointer;">✕ Clear Tab</button>
+        <button onclick="clearTab('reclaim')" style="background:rgba(248,113,113,.08);border:1px solid rgba(248,113,113,.25);color:var(--red);border-radius:0;padding:5px 12px;font-size:.72rem;font-weight:600;cursor:pointer;">✕ Clear Tab</button>
       </div>
       <div id="reclaim-content"></div>
     </div>
@@ -172,19 +171,19 @@
         <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;" id="planActionBtns">
           <span id="planUpdatedMsg" style="display:none;font-size:.72rem;color:var(--green);font-weight:700;transition:opacity .4s;">&#10003; Plan updated</span>
           <span id="shareUrlMsg" style="display:none;font-size:.72rem;color:var(--green);font-weight:700;transition:opacity .4s;">&#10003; Link copied</span>
-          <button id="updatePlanBtn" onclick="updateCurrentPlan()" class="plan-edit-only" style="background:var(--teal);color:#000;border:none;border-radius:6px;padding:7px 14px;font-size:.75rem;font-weight:700;cursor:pointer;opacity:.35;" disabled>&#128190; Update Plan</button>
-          <button onclick="sharePlanUrl()" class="plan-edit-only" style="background:var(--teal-dim);border:1px solid var(--teal-border);color:var(--teal);border-radius:6px;padding:7px 14px;font-size:.75rem;font-weight:700;cursor:pointer;">🔗 Share URL</button>
-          <button onclick="exportPlan()" class="plan-edit-only" style="background:var(--teal-dim);border:1px solid var(--teal-border);color:var(--teal);border-radius:6px;padding:7px 14px;font-size:.75rem;font-weight:700;cursor:pointer;">⬇ Export CSV</button>
-          <button onclick="exportPlanPdf()" class="plan-edit-only" style="background:var(--teal-dim);border:1px solid var(--teal-border);color:var(--teal);border-radius:6px;padding:7px 14px;font-size:.75rem;font-weight:700;cursor:pointer;">🖨 Export PDF</button>
-          <button onclick="confirmClearPlan()" class="plan-edit-only" style="background:rgba(248,113,113,.1);border:1px solid rgba(248,113,113,.3);color:var(--red);border-radius:6px;padding:7px 14px;font-size:.75rem;cursor:pointer;">Clear All</button>
+          <button id="updatePlanBtn" onclick="updateCurrentPlan()" class="plan-edit-only" style="background:var(--accent);color:#000;border:none;border-radius:0;padding:7px 14px;font-size:.75rem;font-weight:700;cursor:pointer;opacity:.35;" disabled>Update Plan</button>
+          <button onclick="sharePlanUrl()" class="plan-edit-only" style="background:var(--accent-dim);border:1px solid var(--accent-border);color:var(--accent);border-radius:0;padding:7px 14px;font-size:.75rem;font-weight:700;cursor:pointer;">Share URL</button>
+          <button onclick="exportPlan()" class="plan-edit-only" style="background:var(--accent-dim);border:1px solid var(--accent-border);color:var(--accent);border-radius:0;padding:7px 14px;font-size:.75rem;font-weight:700;cursor:pointer;">Export CSV</button>
+          <button onclick="exportPlanPdf()" class="plan-edit-only" style="background:var(--accent-dim);border:1px solid var(--accent-border);color:var(--accent);border-radius:0;padding:7px 14px;font-size:.75rem;font-weight:700;cursor:pointer;">Export PDF</button>
+          <button onclick="confirmClearPlan()" class="plan-edit-only" style="background:rgba(248,113,113,.1);border:1px solid rgba(248,113,113,.3);color:var(--red);border-radius:0;padding:7px 14px;font-size:.75rem;cursor:pointer;">Clear All</button>
         </div>
       </div>
       <!-- Share URL bar -->
-      <div id="planUrlBar" style="display:none;padding:10px 16px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;margin-bottom:16px;">
+      <div id="planUrlBar" style="display:none;padding:10px 16px;background:var(--surface2);border:1px solid var(--border);border-radius:0;margin-bottom:16px;">
         <div style="font-size:.65rem;color:var(--dim);margin-bottom:4px;">Share this URL to access your plan from any device:</div>
         <div style="display:flex;gap:6px;">
-          <input id="planUrlInput" readonly style="flex:1;background:var(--surface);border:1px solid var(--border);border-radius:4px;padding:5px 8px;color:var(--teal);font-size:.7rem;outline:none;">
-          <button onclick="copyPlanUrl()" style="background:var(--teal);color:#000;border:none;border-radius:4px;padding:5px 10px;font-size:.72rem;font-weight:700;cursor:pointer;">Copy</button>
+          <input id="planUrlInput" readonly style="flex:1;background:var(--surface);border:1px solid var(--border);border-radius:0;padding:5px 8px;color:var(--accent);font-size:.7rem;outline:none;">
+          <button onclick="copyPlanUrl()" style="background:var(--accent);color:#000;border:none;border-radius:0;padding:5px 10px;font-size:.72rem;font-weight:700;cursor:pointer;">Copy</button>
         </div>
       </div>
       <!-- Summary cards -->
@@ -201,11 +200,11 @@
           <div style="font-weight:800;font-size:1.1rem;color:#fff;">Saved Plans</div>
           <div style="font-size:.72rem;color:var(--dim);margin-top:2px;">All saved market plans - click any to load and edit</div>
         </div>
-        <button onclick="saveToLibrary()" style="background:var(--teal);color:#000;font-weight:700;border:none;border-radius:6px;padding:8px 16px;font-size:.8rem;cursor:pointer;">💾 Save Current Plan</button>
+        <button onclick="saveToLibrary()" style="background:var(--accent);color:#000;font-weight:700;border:none;border-radius:0;padding:8px 16px;font-size:.8rem;cursor:pointer;">💾 Save Current Plan</button>
       </div>
       <!-- Search bar -->
       <div style="margin-bottom:16px;">
-        <input id="librarySearch" type="text" placeholder="Search by market name..." oninput="renderLibraryTab()" style="width:100%;max-width:360px;background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:8px 12px;color:var(--text);font-size:.85rem;outline:none;">
+        <input id="librarySearch" type="text" placeholder="Search by market name..." oninput="renderLibraryTab()" style="width:100%;max-width:360px;background:var(--surface2);border:1px solid var(--border);border-radius:0;padding:8px 12px;color:var(--text);font-size:.85rem;outline:none;">
       </div>
       <!-- Plan list -->
       <div id="libraryList"></div>
@@ -226,30 +225,30 @@
           </div>
           <div class="rebuild-discovery-controls" style="text-align:center;font-size:.68rem;color:var(--dim);">or</div>
           <button id="discoverBtn" onclick="discoverProspects()" class="rebuild-discovery-controls"
-            style="background:linear-gradient(135deg,rgba(0,188,212,.2),rgba(0,188,212,.08));border:1px solid var(--teal-border);border-radius:8px;padding:14px;cursor:pointer;color:var(--teal);font-weight:700;font-size:.85rem;">
+            style="background:linear-gradient(135deg,rgba(239,65,54,.15),rgba(239,65,54,.08));border:1px solid var(--accent-border);border-radius:0;padding:14px;cursor:pointer;color:var(--accent);font-weight:700;font-size:.85rem;">
             🔍 Auto-Discover Prospects
-            <div style="font-size:.68rem;font-weight:400;color:rgba(0,188,212,.7);margin-top:3px;">Set ZIP + radius, then tap to discover</div>
+            <div style="font-size:.68rem;font-weight:400;color:rgba(239,65,54,.7);margin-top:3px;">Set ZIP + radius, then tap to discover</div>
           </button>
           <div id="discoverStatus" class="rebuild-discovery-controls" style="font-size:.7rem;color:var(--dim);text-align:center;"></div>
         </div>
         <div class="card p-4 md:col-span-2 rebuild-discovery-controls">
-          <div style="font-size:.7rem;font-weight:700;color:var(--teal);letter-spacing:.07em;text-transform:uppercase;margin-bottom:12px;">Geography Filter</div>
+          <div style="font-size:.7rem;font-weight:700;color:var(--accent);letter-spacing:.07em;text-transform:uppercase;margin-bottom:12px;">Geography Filter</div>
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label style="font-size:.72rem;color:var(--dim);">Target ZIP Code</label>
               <input id="zipInput" type="text" maxlength="5" placeholder="e.g. 13501"
-                style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:8px 12px;color:var(--text);font-size:.85rem;margin-top:4px;outline:none;"
+                style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:0;padding:8px 12px;color:var(--text);font-size:.85rem;margin-top:4px;outline:none;"
                 oninput="handleZipInput(this.value)"/>
             </div>
-            <div id="geoDescDisplay" style="display:flex;align-items:center;gap:8px;padding:8px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:6px;margin-top:20px;min-height:40px;">
+            <div id="geoDescDisplay" style="display:flex;align-items:center;gap:8px;padding:8px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:0;margin-top:20px;min-height:40px;">
               <span style="font-size:.72rem;color:var(--dim);">Location:</span>
-              <span id="geoDescLabel" style="font-size:.82rem;color:var(--teal);font-weight:600;">Enter ZIP to detect</span>
+              <span id="geoDescLabel" style="font-size:.82rem;color:var(--accent);font-weight:600;">Enter ZIP to detect</span>
             </div>
           </div>
           <div style="margin-top:14px;">
             <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
               <label style="font-size:.72rem;color:var(--dim);">Radius</label>
-              <span id="radiusLabel" style="font-size:.85rem;font-weight:700;color:var(--teal);">25 miles</span>
+              <span id="radiusLabel" style="font-size:.85rem;font-weight:700;color:var(--accent);">25 miles</span>
             </div>
             <input type="range" id="radiusSlider" class="range-slider" min="5" max="75" value="25" step="5"
               oninput="document.getElementById('radiusLabel').textContent=this.value+' miles';document.getElementById('radiusWarn').style.display=this.value>50?'block':'none';filterRebuild()"/>
@@ -263,10 +262,10 @@
       <div style="margin-bottom:16px;" class="rebuild-discovery-controls">
         <div id="categoryFilterPanel">
           <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
-            <div style="font-size:.68rem;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:var(--teal);">Target Categories <span style="font-size:.65rem;color:var(--dim);font-weight:400;text-transform:none;letter-spacing:0;">&mdash; select up to 3 before discovering</span></div>
+            <div style="font-size:.68rem;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:var(--accent);">Target Categories <span style="font-size:.65rem;color:var(--dim);font-weight:400;text-transform:none;letter-spacing:0;">&mdash; select up to 3 before discovering</span></div>
             <span id="catSelectionCount" style="font-size:.68rem;color:var(--dim);white-space:nowrap;">Select up to 3</span>
           </div>
-          <div id="catLimitWarn" style="display:none;font-size:.68rem;color:var(--yellow);margin-bottom:8px;padding:5px 10px;background:rgba(251,191,36,.08);border:1px solid rgba(251,191,36,.25);border-radius:6px;">&#9888; Maximum 3 categories selected &mdash; uncheck one to select another</div>
+          <div id="catLimitWarn" style="display:none;font-size:.68rem;color:var(--yellow);margin-bottom:8px;padding:5px 10px;background:rgba(251,191,36,.08);border:1px solid rgba(251,191,36,.25);border-radius:0;">&#9888; Maximum 3 categories selected &mdash; uncheck one to select another</div>
           <div id="categoryCheckboxes"></div>
         </div>
       </div>
@@ -300,14 +299,14 @@ function openScorePanel(sid) {
   var comps=data.components||[];
   document.getElementById('igiPanelComponents').innerHTML=comps.map(function(c){
     var pct=c.max>0?Math.round((c.score/c.max)*100):0;
-    var barColor=c.bonus?'var(--teal)':pct>=70?'var(--green)':pct>=40?'var(--yellow)':'var(--red)';
+    var barColor=c.bonus?'var(--accent)':pct>=70?'var(--green)':pct>=40?'var(--yellow)':'var(--red)';
     return '<div style="margin-bottom:18px;">'
       +'<div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:5px;">'
-      +'<div style="font-size:.8rem;font-weight:700;color:var(--text);">'+(c.bonus?'<span style="color:var(--teal);font-size:.65rem;vertical-align:middle;margin-right:4px;">BONUS</span>':'')+c.label+'</div>'
+      +'<div style="font-size:.8rem;font-weight:700;color:var(--text);">'+(c.bonus?'<span style="color:var(--accent);font-size:.65rem;vertical-align:middle;margin-right:4px;">BONUS</span>':'')+c.label+'</div>'
       +'<div style="font-size:.8rem;font-weight:800;color:'+barColor+';">'+c.score+'<span style="color:var(--dim);font-weight:400;font-size:.7rem;">/'+c.max+'</span></div>'
       +'</div>'
-      +'<div style="background:var(--surface2);border-radius:4px;height:7px;overflow:hidden;margin-bottom:5px;">'
-      +'<div style="height:100%;width:'+pct+'%;background:'+barColor+';border-radius:4px;transition:width .5s;"></div>'
+      +'<div style="background:var(--surface2);border-radius:0;height:7px;overflow:hidden;margin-bottom:5px;">'
+      +'<div style="height:100%;width:'+pct+'%;background:'+barColor+';border-radius:0;transition:width .5s;"></div>'
       +'</div>'
       +'<div style="font-size:.68rem;color:var(--dim);line-height:1.4;">'+c.detail+'</div>'
       +'</div>';
@@ -393,7 +392,7 @@ function makeCheckbox(section, account) {
     +'<input type="checkbox" id="'+cbId+'" class="plan-cb" '+checked+' '
     +'data-section="'+section+'" data-rid="'+rid+'" data-name="'+safeName+'" '
     +'onchange="cbChange(this)" '
-    +'style="width:15px;height:15px;cursor:pointer;accent-color:var(--teal);" title="Add to plan"/>'
+    +'style="width:15px;height:15px;cursor:pointer;accent-color:var(--accent);" title="Add to plan"/>'
     +'</td>';
 }
 function cbChange(cb) {
@@ -441,7 +440,7 @@ function refreshPlanModal() {
   document.getElementById('planUrlBar').style.display='none';
 
   var labels = {close:'🔴 Close Now', protect:'🟢 Protect & Expand', reclaim:'🟡 Reclaim', rebuild:'🔵 Rebuild'};
-  var sectionColors = {close:'var(--red)', protect:'var(--green)', reclaim:'var(--yellow)', rebuild:'var(--teal)'};
+  var sectionColors = {close:'var(--red)', protect:'var(--green)', reclaim:'var(--yellow)', rebuild:'var(--accent)'};
 
   // Compute totals
   var totalAccounts = 0, totalRev = 0;
@@ -499,9 +498,9 @@ function refreshPlanModal() {
         + (function() {
             var cpid = registerCallPrep(s, a);
             var displayName = a.name || a.acct || a.adv || '-';
-            return '<td><strong style="color:#fff;cursor:pointer;text-decoration:underline;text-decoration-color:rgba(0,188,212,.35);text-underline-offset:3px;transition:color .15s;" '
+            return '<td><strong style="color:#fff;cursor:pointer;text-decoration:underline;text-decoration-color:rgba(239,65,54,.35);text-underline-offset:3px;transition:color .15s;" '
               + 'onclick="openCallPrep(\''+cpid+'\')" '
-              + 'onmouseover="this.style.color=\'var(--teal)\'" '
+              + 'onmouseover="this.style.color=\'var(--accent)\'" '
               + 'onmouseout="this.style.color=\'#fff\'" '
               + 'title="Click for call prep">' + displayName + '</strong></td>';
           })()
@@ -509,12 +508,12 @@ function refreshPlanModal() {
         + '<td class="text-right hide-mobile">'
         + '<input type="text" value="'+(a.rev||a.estRev||0)+'" '
         + 'onchange="updateRevenue(\''+s+'\',\''+safeName+'\',this.value)" '
-        + 'style="width:90px;background:var(--surface2);border:1px solid var(--border);border-radius:4px;padding:4px 8px;color:#fff;font-size:.78rem;font-weight:600;text-align:right;outline:none;">'
+        + 'style="width:90px;background:var(--surface2);border:1px solid var(--border);border-radius:0;padding:4px 8px;color:#fff;font-size:.78rem;font-weight:600;text-align:right;outline:none;">'
         + '</td>'
         + '<td class="text-right">'+scoreBadge(sc100)+'</td>'
         + '<td><input type="text" value="'+noteVal+'" placeholder="Add next step..." '
         + 'onchange="updateNextStep(\''+s+'\',\''+safeName+'\',this.value)" '
-        + 'style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:4px;padding:5px 8px;color:var(--text);font-size:.75rem;outline:none;"></td>'
+        + 'style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:0;padding:5px 8px;color:var(--text);font-size:.75rem;outline:none;"></td>'
         + '<td><button onclick="removeFromPlan(\''+s+'\',\''+safeName+'\')" '
         + 'style="background:none;border:none;color:var(--dim);cursor:pointer;font-size:.9rem;padding:4px 6px;">✕</button></td>'
         + '</tr>';
@@ -791,13 +790,13 @@ function _renderLibraryList(library) {
       var sameDate = created === updated;
       var safeName = (entry.name||'').replace(/'/g,"\\'");
       var shareUrl = 'https://ignitegrowthintelligence.github.io/igi-reignite-planner/?plan=' + entry.id;
-      return '<div class="card p-4" style="border:1px solid var(--border);transition:border-color .2s;" onmouseover="this.style.borderColor=\'var(--teal-border)\'" onmouseout="this.style.borderColor=\'var(--border)\'" >'
+      return '<div class="card p-4" style="border:1px solid var(--border);transition:border-color .2s;" onmouseover="this.style.borderColor=\'var(--accent-border)\'" onmouseout="this.style.borderColor=\'var(--border)\'" >'
         +'<div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;">'
         +'<div style="flex:1;cursor:pointer;" onclick="loadPlanFromFirestore(\''+entry.id+'\').then(function(){ switchTab(\'plan\'); refreshPlanModal(); })" >'
         +'<div style="font-weight:800;font-size:1rem;color:#fff;margin-bottom:4px;">'+(entry.name||'Untitled')+'</div>'
         +'<div style="font-size:.72rem;color:var(--dim);">'+created+(sameDate||!updated?'':' &nbsp;&middot;&nbsp; Updated '+updated)+'</div>'
         +'<div style="display:flex;gap:16px;margin-top:10px;flex-wrap:wrap;">'
-        +'<span style="font-size:.72rem;color:var(--text);"><span style="color:var(--teal);font-weight:700;">'+total+'</span> accounts</span>'
+        +'<span style="font-size:.72rem;color:var(--text);"><span style="color:var(--accent);font-weight:700;">'+total+'</span> accounts</span>'
         +'<span style="font-size:.72rem;color:var(--text);"><span style="color:var(--green);font-weight:700;">'+fmt(rev)+'</span> opportunity</span>'
         +(sc.close?'<span style="font-size:.68rem;color:var(--dim);">&#128308; '+sc.close+' Close</span>':'')
         +(sc.protect?'<span style="font-size:.68rem;color:var(--dim);">&#128994; '+sc.protect+' Protect</span>':'')
@@ -806,9 +805,9 @@ function _renderLibraryList(library) {
         +'</div>'
         +'</div>'
         +'<div style="display:flex;gap:8px;flex-shrink:0;">'
-        +'<button onclick="navigator.clipboard.writeText(\''+shareUrl+'\').then(function(){var b=event.target;b.textContent=\'Copied!\';setTimeout(function(){b.textContent=\'Copy Link\';},2000);})" style="background:var(--surface2);border:1px solid var(--border);color:var(--dim);border-radius:6px;padding:6px 10px;font-size:.72rem;cursor:pointer;">Copy Link</button>'
-        +'<button onclick="loadPlanFromFirestore(\''+entry.id+'\').then(function(){ switchTab(\'plan\'); refreshPlanModal(); })" style="background:var(--teal-dim);border:1px solid var(--teal-border);color:var(--teal);border-radius:6px;padding:6px 12px;font-size:.75rem;font-weight:700;cursor:pointer;">Load</button>'
-        +'<button onclick="event.stopPropagation();deletePlanFromFirestore(\''+entry.id+'\',\''+safeName+'\')" style="background:rgba(248,113,113,.1);border:1px solid rgba(248,113,113,.3);color:var(--red);border-radius:6px;padding:6px 10px;font-size:.75rem;cursor:pointer;" title="Delete">&#128465;</button>'
+        +'<button onclick="navigator.clipboard.writeText(\''+shareUrl+'\').then(function(){var b=event.target;b.textContent=\'Copied!\';setTimeout(function(){b.textContent=\'Copy Link\';},2000);})" style="background:var(--surface2);border:1px solid var(--border);color:var(--dim);border-radius:0;padding:6px 10px;font-size:.72rem;cursor:pointer;">Copy Link</button>'
+        +'<button onclick="loadPlanFromFirestore(\''+entry.id+'\').then(function(){ switchTab(\'plan\'); refreshPlanModal(); })" style="background:var(--accent-dim);border:1px solid var(--accent-border);color:var(--accent);border-radius:0;padding:6px 12px;font-size:.75rem;font-weight:700;cursor:pointer;">Load</button>'
+        +'<button onclick="event.stopPropagation();deletePlanFromFirestore(\''+entry.id+'\',\''+safeName+'\')" style="background:rgba(248,113,113,.1);border:1px solid rgba(248,113,113,.3);color:var(--red);border-radius:0;padding:6px 10px;font-size:.75rem;cursor:pointer;" title="Delete">&#128465;</button>'
         +'</div>'
         +'</div>'
         +'</div>';
@@ -891,7 +890,7 @@ function exportPlan() {
 function exportPlanPdf() {
   var market = document.getElementById('marketInput').value || 'Market';
   var labels = {close:'Close Now', protect:'Protect & Expand', reclaim:'Reclaim', rebuild:'Rebuild'};
-  var sectionColors = {close:'#f87171', protect:'#34d399', reclaim:'#fbbf24', rebuild:'#00bcd4'};
+  var sectionColors = {close:'#f87171', protect:'#34d399', reclaim:'#fbbf24', rebuild:'#EF4136'};
   var totalAccounts = 0, totalRev = 0;
   Object.keys(plan).forEach(function(s){ (plan[s]||[]).forEach(function(a){ totalAccounts++; totalRev += (a.rev||a.estRev||0); }); });
   function fmt2(n) { if (!n&&n!==0) return '-'; var abs=Math.abs(n); var s=abs>=1000000?'$'+(abs/1000000).toFixed(1)+'M':abs>=1000?'$'+Math.round(abs).toLocaleString():'$'+Math.round(abs); return n<0?'-'+s:s; }
@@ -929,7 +928,7 @@ function exportPlanPdf() {
     +'h1{font-size:1.4rem;font-weight:800;margin:0 0 2px;}'
     +'.sub{font-size:.72rem;color:#64748b;margin-bottom:20px;}'
     +'.cards{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:28px;}'
-    +'.card{border:1px solid #e2e8f0;border-top:3px solid #00bcd4;border-radius:6px;padding:12px 16px;}'
+    +'.card{border:1px solid #e2e8f0;border-top:3px solid #EF4136;border-radius:0;padding:12px 16px;}'
     +'.card-label{font-size:.62rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:#64748b;margin-bottom:4px;}'
     +'.card-value{font-size:1.35rem;font-weight:800;color:#1e293b;}'
     +'.card-sub{font-size:.68rem;color:#94a3b8;margin-top:2px;}'
@@ -1073,7 +1072,7 @@ function clearTab(section) {
 
 function renderClose(deals, budget, booked, pitched, fname) {
   document.getElementById('close-content').innerHTML =
-    '<input type="text" class="tab-search" data-table="close-table" placeholder="Search accounts..." oninput="filterTable(this)" style="background:var(--surface2);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:.8rem;width:100%;padding:7px 12px;margin-bottom:10px;outline:none;"/>'
+    '<input type="text" class="tab-search" data-table="close-table" placeholder="Search accounts..." oninput="filterTable(this)" style="background:var(--surface2);border:1px solid var(--border);border-radius:0;color:var(--text);font-size:.8rem;width:100%;padding:7px 12px;margin-bottom:10px;outline:none;"/>'
     +'<div style="margin-bottom:12px;font-size:.75rem;color:var(--dim);">'+fname+' - '+deals.length+' opportunities</div>'
     +'<div class="mobile-scroll"><table id="close-table" class="bp-table"><thead><tr>'
     +'<th style="width:32px;"></th><th class="text-left">Account</th>'
@@ -1238,13 +1237,13 @@ function renderProtect(clients, extraNote) {
     {label:"2026 Broadcast",value:hasIgnite?fmt(bcast26):"Upload Ignite file",sub:hasIgnite?pct(total26?bcast26/total26*100:null)+" of total":""}
   ]);
   document.getElementById("protect-content").innerHTML =
-    "<input type=\"text\" class=\"tab-search\" data-table=\"protect-table\" placeholder=\"Search accounts...\" oninput=\"filterTable(this)\" style=\"background:var(--surface2);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:.8rem;width:100%;padding:7px 12px;margin-bottom:10px;outline:none;\"/>"
+    "<input type=\"text\" class=\"tab-search\" data-table=\"protect-table\" placeholder=\"Search accounts...\" oninput=\"filterTable(this)\" style=\"background:var(--surface2);border:1px solid var(--border);border-radius:0;color:var(--text);font-size:.8rem;width:100%;padding:7px 12px;margin-bottom:10px;outline:none;\"/>"
     +"<div style=\"margin-bottom:12px;font-size:.75rem;color:var(--dim);\">"+clients.length+" active clients"+(hasIgnite?" - Ignite/Broadcast split loaded":"")+"</div>"
     +"<div class=\"mobile-scroll\"><table id=\"protect-table\" class=\"bp-table\"><thead><tr>"
     +"<th style=\"width:32px;\"></th><th class=\"text-left\">Advertiser</th>"
     +"<th class=\"text-left hide-mobile\">AE</th><th class=\"text-right accent\">IGI Score</th>"
     +"<th class=\"text-right hide-mobile\">2024 Total</th><th class=\"text-right\">2025 Total</th><th class=\"text-right\">2026 Total</th>"
-    +(hasIgnite?"<th class=\"text-right hide-mobile\" style=\"color:var(--teal);\">Ignite</th><th class=\"text-right hide-mobile\" style=\"color:var(--orange);\">Broadcast</th>":"")
+    +(hasIgnite?"<th class=\"text-right hide-mobile\" style=\"color:var(--accent);\">Ignite</th><th class=\"text-right hide-mobile\" style=\"color:var(--orange);\">Broadcast</th>":"")
     +"<th class=\"text-right hide-mobile\">Trend</th><th class=\"text-left hide-mobile\">Action</th>"
     +"</tr></thead><tbody>"
     +clients.map(function(c) {
@@ -1258,7 +1257,7 @@ function renderProtect(clients, extraNote) {
         +"<td class=\"text-right hide-mobile\" style=\"color:var(--dim);\">"+fmt(c.rev24||0)+"</td>"
         +"<td class=\"text-right\" style=\"color:var(--dim);\">"+fmt(c.rev25)+"</td>"
         +"<td class=\"text-right\" style=\"color:#fff;font-weight:600;\">"+fmt(c.rev26)+"</td>"
-        +(hasIgnite?"<td class=\"text-right hide-mobile\" style=\"color:var(--teal);\">"+( ign26!=null?fmt(ign26):"-")+"</td><td class=\"text-right hide-mobile\" style=\"color:var(--orange);\">"+( bcast26!=null?fmt(bcast26):"-")+"</td>":"")
+        +(hasIgnite?"<td class=\"text-right hide-mobile\" style=\"color:var(--accent);\">"+( ign26!=null?fmt(ign26):"-")+"</td><td class=\"text-right hide-mobile\" style=\"color:var(--orange);\">"+( bcast26!=null?fmt(bcast26):"-")+"</td>":"")
         +"<td class=\"text-right hide-mobile\">"+ti+"</td></tr>";
     }).join("")+"</tbody></table></div>";
 }
@@ -1316,9 +1315,9 @@ function renderReclaim() {
   var hasAll    = all.length > 0;
 
   document.getElementById('reclaim-content').innerHTML =
-    '<input type="text" class="tab-search" data-table="reclaim-table" placeholder="Search accounts\u2026" oninput="filterTable(this)" style="background:var(--surface2);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:.8rem;width:100%;padding:7px 12px;margin-bottom:10px;outline:none;"/>'
+    '<input type="text" class="tab-search" data-table="reclaim-table" placeholder="Search accounts\u2026" oninput="filterTable(this)" style="background:var(--surface2);border:1px solid var(--border);border-radius:0;color:var(--text);font-size:.8rem;width:100%;padding:7px 12px;margin-bottom:10px;outline:none;"/>'
     +'<div style="margin-bottom:12px;font-size:.75rem;color:var(--dim);">'+combined.length+' former clients'
-    +(matched.size?' \u2014 <span style="color:var(--teal);">'+matched.size+' matched across both files</span>':'')
+    +(matched.size?' \u2014 <span style="color:var(--accent);">'+matched.size+' matched across both files</span>':'')
     +'</div>'
     +'<div class="mobile-scroll"><table id="reclaim-table" class="bp-table"><thead><tr>'
     +'<th style="width:32px;"></th>'
@@ -1328,9 +1327,9 @@ function renderReclaim() {
     +(hasAll?'<th class="text-right hide-mobile" style="color:var(--dim);">All Rev 2024</th>':'')
     +(hasAll?'<th class="text-right hide-mobile" style="color:var(--dim);">All Rev 2025</th>':'')
     +(hasAll?'<th class="text-right" style="color:var(--dim);">All Rev 2026</th>':'')
-    +(hasIgnite?'<th class="text-right hide-mobile" style="color:var(--teal);font-size:.65rem;">IGN 2024</th>':'')
-    +(hasIgnite?'<th class="text-right hide-mobile" style="color:var(--teal);font-size:.65rem;">IGN 2025</th>':'')
-    +(hasIgnite?'<th class="text-right" style="color:var(--teal);font-size:.65rem;">IGN 2026</th>':'')
+    +(hasIgnite?'<th class="text-right hide-mobile" style="color:var(--accent);font-size:.65rem;">IGN 2024</th>':'')
+    +(hasIgnite?'<th class="text-right hide-mobile" style="color:var(--accent);font-size:.65rem;">IGN 2025</th>':'')
+    +(hasIgnite?'<th class="text-right" style="color:var(--accent);font-size:.65rem;">IGN 2026</th>':'')
     +'</tr></thead><tbody>'
     +combined.map(function(c) {
       var bucket = c.bucket==='Reclaim Now'
@@ -1339,7 +1338,7 @@ function renderReclaim() {
         ? '<span class="badge-reclaim" style="white-space:nowrap;">REAPPROACH</span>'
         : '<span style="font-size:.68rem;color:var(--dim);white-space:nowrap;">Low Priority</span>';
       var sourceBadge = c.source==='both'
-        ? '<span style="font-size:.65rem;background:rgba(52,211,153,.15);color:var(--green);border:1px solid rgba(52,211,153,.3);border-radius:3px;padding:1px 6px;">\u2713 BOTH</span>'
+        ? '<span style="font-size:.65rem;background:rgba(52,211,153,.15);color:var(--green);border:1px solid rgba(52,211,153,.3);border-radius:0;padding:1px 6px;">\u2713 BOTH</span>'
         : c.source==='ignite'
         ? '<span class="badge-ignite">IGNITE</span>'
         : '<span style="font-size:.68rem;color:var(--dim);">All Revenue</span>';
@@ -1357,9 +1356,9 @@ function renderReclaim() {
         +(hasAll?revCell(c.allRev24):'')
         +(hasAll?revCell(c.allRev25):'')
         +(hasAll?revCellVisible(c.allRev26):'')
-        +(hasIgnite?revCell(c.ignRev24,'var(--teal)'):'')
-        +(hasIgnite?revCell(c.ignRev25,'var(--teal)'):'')
-        +(hasIgnite?revCellVisible(c.ignRev26,'var(--teal)'):'')
+        +(hasIgnite?revCell(c.ignRev24,'var(--accent)'):'')
+        +(hasIgnite?revCell(c.ignRev25,'var(--accent)'):'')
+        +(hasIgnite?revCellVisible(c.ignRev26,'var(--accent)'):'')
         +'</tr>';
     }).join('')
     +'</tbody></table></div>';
@@ -1560,10 +1559,10 @@ async function enrichAccountsWithPlaces(accounts, onProgress) {
 
 function placesTierBadge(tier) {
   if (!tier) return '';
-  var color = tier === 'High Priority' ? 'var(--green)' : tier === 'Core' ? 'var(--teal)' : 'var(--yellow)';
-  var bg = tier === 'High Priority' ? 'rgba(52,211,153,.12)' : tier === 'Core' ? 'rgba(0,188,212,.12)' : 'rgba(251,191,36,.12)';
-  var border = tier === 'High Priority' ? 'rgba(52,211,153,.3)' : tier === 'Core' ? 'rgba(0,188,212,.3)' : 'rgba(251,191,36,.3)';
-  return '<span style="display:inline-block;margin-left:6px;padding:1px 7px;border-radius:3px;font-size:.62rem;font-weight:700;'
+  var color = tier === 'High Priority' ? 'var(--green)' : tier === 'Core' ? 'var(--accent)' : 'var(--yellow)';
+  var bg = tier === 'High Priority' ? 'rgba(52,211,153,.12)' : tier === 'Core' ? 'rgba(239,65,54,.12)' : 'rgba(251,191,36,.12)';
+  var border = tier === 'High Priority' ? 'rgba(52,211,153,.3)' : tier === 'Core' ? 'rgba(239,65,54,.35)' : 'rgba(251,191,36,.3)';
+  return '<span style="display:inline-block;margin-left:6px;padding:1px 7px;border-radius:0;font-size:.62rem;font-weight:700;'
     + 'background:' + bg + ';color:' + color + ';border:1px solid ' + border + ';">' + tier + '</span>';
 }
 
@@ -1942,7 +1941,7 @@ async function discoverProspects() {
 
  // ── Cache check ──────────────────────────────────────────────
  var cacheKey = buildDiscoveryCacheKey(zip, catsToQuery, radiusMi);
- status.innerHTML = '<span style="color:var(--teal);">Checking cache...</span>';
+ status.innerHTML = '<span style="color:var(--accent);">Checking cache...</span>';
 
  var cached = await loadDiscoveryCache(cacheKey);
  if (cached && cached.results && cached.results.length) {
@@ -1996,7 +1995,7 @@ async function discoverProspects() {
  var cfg = CATEGORY_CONFIG[cat];
  if (!cfg) continue;
 
- status.innerHTML = '<span style="color:var(--teal);">Searching Google Places for '
+ status.innerHTML = '<span style="color:var(--accent);">Searching Google Places for '
  + cat + ' (' + (ci+1) + ' of ' + catsToQuery.length + ')...</span>';
 
  try {
@@ -2151,7 +2150,7 @@ function buildCategoryFilters() {
 
  var tierDefs = [
  { name: 'High Priority', color: 'var(--green)', cats: ['Attorney/Legal','Auto Dealers','Banks/Financial','Furniture Stores','Gambling/Casinos','Hospital','HVAC','Plumbing','University/College'] },
- { name: 'Core', color: 'var(--teal)', cats: ['Carpet/Flooring','Cleaning Services','Contractors/Builders','Dentists','Doctors/Clinics','Home Repair/Hardware','Insurance','Med Spa','Real Estate','Recreational Vehicle'] },
+ { name: 'Core', color: 'var(--accent)', cats: ['Carpet/Flooring','Cleaning Services','Contractors/Builders','Dentists','Doctors/Clinics','Home Repair/Hardware','Insurance','Med Spa','Real Estate','Recreational Vehicle'] },
  { name: 'Opportunistic', color: 'var(--yellow)', cats: ['Auto Repair','Casual Dining','Employment/Recruiting','Eye Care','Health/Fitness','Hotel/Resort','Lawn/Garden','Salons/Personal Care','Senior Living'] }
  ];
 
@@ -2161,26 +2160,26 @@ function buildCategoryFilters() {
  var isOpen = !!_accordionOpen[tier];
  var chevron = isOpen ? '&#9660;' : '&#9658;';
  var selectedInTier = cats.filter(function(c){ return activeCategories.has(c); }).length;
- var tierBadge = selectedInTier > 0 ? ' <span style="background:rgba(0,188,212,.18);color:var(--teal);border:1px solid var(--teal-border);border-radius:10px;padding:1px 7px;font-size:.65rem;font-weight:700;margin-left:6px;">' + selectedInTier + ' selected</span>' : '';
+ var tierBadge = selectedInTier > 0 ? ' <span style="background:rgba(239,65,54,.15);color:var(--accent);border:1px solid var(--accent-border);border-radius:0;padding:1px 7px;font-size:.65rem;font-weight:700;margin-left:6px;">' + selectedInTier + ' selected</span>' : '';
 
  var items = isOpen ? '<div style="display:grid;grid-template-columns:repeat(5,1fr);gap:2px;padding:6px 8px;">'
  + cats.map(function(cat) {
  var isActive = activeCategories.has(cat);
  var isDisabled = !isActive && atLimit;
- return '<label style="display:flex;align-items:center;gap:6px;padding:5px 8px;border-radius:6px;cursor:'
+ return '<label style="display:flex;align-items:center;gap:6px;padding:5px 8px;border-radius:0;cursor:'
  + (isDisabled ? 'not-allowed' : 'pointer')
  + ';opacity:' + (isDisabled ? '.35' : '1')
- + ';background:' + (isActive ? 'rgba(0,188,212,.1)' : 'transparent')
+ + ';background:' + (isActive ? 'rgba(239,65,54,.1)' : 'transparent')
  + ';transition:background .15s;">'
  + '<input type="checkbox" ' + (isActive ? 'checked' : '') + ' ' + (isDisabled ? 'disabled' : '')
  + ' onchange="toggleCategoryFilter(\'' + cat + '\',this.checked)"'
- + ' style="accent-color:var(--teal);width:13px;height:13px;cursor:' + (isDisabled ? 'not-allowed' : 'pointer') + ';flex-shrink:0;">'
+ + ' style="accent-color:var(--accent);width:13px;height:13px;cursor:' + (isDisabled ? 'not-allowed' : 'pointer') + ';flex-shrink:0;">'
  + '<span style="font-size:.75rem;color:' + (isActive ? '#fff' : isDisabled ? 'rgba(255,255,255,.25)' : 'var(--text)') + ';line-height:1.3;">' + cat + '</span>'
  + '</label>';
  }).join('')
  + '</div>' : '';
 
- return '<div style="margin-bottom:6px;border:1px solid var(--border);border-radius:8px;overflow:hidden;">'
+ return '<div style="margin-bottom:6px;border:1px solid var(--border);border-radius:0;overflow:hidden;">'
  + '<button onclick="_accordionOpen[\'' + tier + '\']=!' + (isOpen?'true':'false') + ';buildCategoryFilters();" '
  + 'style="width:100%;display:flex;align-items:center;justify-content:space-between;padding:9px 14px;background:var(--surface2);border:none;cursor:pointer;text-align:left;">'
  + '<span style="display:flex;align-items:center;gap:8px;">'
@@ -2229,7 +2228,7 @@ function renderRebuild(prospects, radius) {
   ]);
   var locInfo=radius>0&&state.geoCenter?' within '+radius+' mi of '+state.geoCenter.zip:'';
   document.getElementById('rebuild-content').innerHTML =
-    '<input type="text" class="tab-search" data-table="rebuild-table" placeholder="Search accounts..." oninput="filterTable(this)" style="background:var(--surface2);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:.8rem;width:100%;padding:7px 12px;margin-bottom:10px;outline:none;"/>'
+    '<input type="text" class="tab-search" data-table="rebuild-table" placeholder="Search accounts..." oninput="filterTable(this)" style="background:var(--surface2);border:1px solid var(--border);border-radius:0;color:var(--text);font-size:.8rem;width:100%;padding:7px 12px;margin-bottom:10px;outline:none;"/>'
     +'<div style="margin-bottom:12px;font-size:.75rem;color:var(--dim);">'+prospects.length+' rebuild targets'+locInfo+'</div>'
     +'<div class="mobile-scroll"><table id="rebuild-table" class="bp-table"><thead><tr>'
     +'<th style="width:32px;"></th><th class="text-left">Advertiser Name</th>'
@@ -2241,12 +2240,12 @@ function renderRebuild(prospects, radius) {
     +prospects.map(function(p){
       return '<tr>'+makeCheckbox('rebuild',p)
         +'<td><strong style="color:#fff;">'+p.name+'</strong>'
-        +(p.source==='uploaded'?'<span style="font-size:.6rem;background:rgba(251,191,36,.12);color:var(--yellow);border:1px solid rgba(251,191,36,.3);border-radius:3px;padding:1px 6px;margin-left:6px;">UPLOADED</span>':p.source==='discovered'?'<span style="font-size:.6rem;background:rgba(0,188,212,.12);color:var(--teal);border:1px solid var(--teal-border);border-radius:3px;padding:1px 6px;margin-left:6px;">DISCOVERED</span>':p.source==='both'?'<span style="font-size:.6rem;background:rgba(52,211,153,.15);color:var(--green);border:1px solid rgba(52,211,153,.3);border-radius:3px;padding:1px 6px;margin-left:6px;">✓ BOTH</span>':'')
+        +(p.source==='uploaded'?'<span style="font-size:.6rem;background:rgba(251,191,36,.12);color:var(--yellow);border:1px solid rgba(251,191,36,.3);border-radius:0;padding:1px 6px;margin-left:6px;">UPLOADED</span>':p.source==='discovered'?'<span style="font-size:.6rem;background:rgba(239,65,54,.12);color:var(--accent);border:1px solid var(--accent-border);border-radius:0;padding:1px 6px;margin-left:6px;">DISCOVERED</span>':p.source==='both'?'<span style="font-size:.6rem;background:rgba(52,211,153,.15);color:var(--green);border:1px solid rgba(52,211,153,.3);border-radius:0;padding:1px 6px;margin-left:6px;">✓ BOTH</span>':'')
         +'</td>'
         +'<td style="color:var(--dim);font-size:.8rem;">'+(p.cat||'-')+'</td>'
         +'<td class="hide-mobile" style="font-size:.75rem;">'
         +(p._website
-        ? '<a href="'+p._website+'" target="_blank" rel="noopener" style="color:var(--teal);text-decoration:none;" title="'+p._website+'">🔗 Visit</a>'
+        ? '<a href="'+p._website+'" target="_blank" rel="noopener" style="color:var(--accent);text-decoration:none;" title="'+p._website+'">↗ Visit</a>'
         : '<span style="color:var(--dim);">-</span>')
         +'</td>'
         +'<td class="text-right">'+scoreBadge(p.score,p._scoreData,p._rebuildId)+'</td>'
@@ -2284,14 +2283,14 @@ function showNamePlanModal(onConfirm) {
   var overlay = document.getElementById('igiModalOverlay');
   var box = document.getElementById('igiModalBox');
   box.innerHTML =
-    '<div style="font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--teal);margin-bottom:10px;">Name Your Plan</div>'
+    '<div style="font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--accent);margin-bottom:10px;">Name Your Plan</div>'
     +'<div style="font-size:.85rem;color:var(--dim);margin-bottom:16px;">Give it a name that helps you find it later.</div>'
     +'<input id="newPlanNameInput" type="text" placeholder="e.g. Kim Jacobs - Albany, HVAC Spring Push, Downtown Q2" autofocus'
-    +' style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:9px 12px;color:var(--text);font-size:.85rem;outline:none;margin-bottom:18px;"'
+    +' style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:0;padding:9px 12px;color:var(--text);font-size:.85rem;outline:none;margin-bottom:18px;"'
     +' oninput="document.getElementById(\'createPlanConfirmBtn\').disabled=!this.value.trim();document.getElementById(\'createPlanConfirmBtn\').style.opacity=this.value.trim()?1:.4;"/>'
     +'<div style="display:flex;gap:10px;justify-content:flex-end;">'
-    +'<button onclick="closeModal()" style="background:var(--surface2);border:1px solid var(--border);color:var(--dim);border-radius:6px;padding:8px 18px;font-size:.8rem;cursor:pointer;">Cancel</button>'
-    +'<button id="createPlanConfirmBtn" disabled onclick="var n=document.getElementById(\'newPlanNameInput\').value.trim();if(n){closeModal();('+JSON.stringify(onConfirm.toString())+'||0)&&onConfirm&&typeof onConfirm===\'function\'&&onConfirm(n);}" style="background:var(--teal);color:#000;border:none;border-radius:6px;padding:8px 18px;font-size:.8rem;font-weight:700;cursor:pointer;opacity:.4;">Create Plan</button>'
+    +'<button onclick="closeModal()" style="background:var(--surface2);border:1px solid var(--border);color:var(--dim);border-radius:0;padding:8px 18px;font-size:.8rem;cursor:pointer;">Cancel</button>'
+    +'<button id="createPlanConfirmBtn" disabled onclick="var n=document.getElementById(\'newPlanNameInput\').value.trim();if(n){closeModal();('+JSON.stringify(onConfirm.toString())+'||0)&&onConfirm&&typeof onConfirm===\'function\'&&onConfirm(n);}" style="background:var(--accent);color:#000;border:none;border-radius:0;padding:8px 18px;font-size:.8rem;font-weight:700;cursor:pointer;opacity:.4;">Create Plan</button>'
     +'</div>';
   // Wire confirm with passed callback - use data attribute approach
   box.querySelector('#createPlanConfirmBtn').onclick = function() {
@@ -2347,16 +2346,16 @@ function showModal(opts) {
   var overlay = document.getElementById('igiModalOverlay');
   var box = document.getElementById('igiModalBox');
   var btnStyles = {
-    primary: 'background:var(--teal);color:#000;border:none;font-weight:700;',
+    primary: 'background:var(--accent);color:#000;border:none;font-weight:700;',
     danger: 'background:rgba(248,113,113,.15);border:1px solid rgba(248,113,113,.4);color:var(--red);',
     secondary: 'background:var(--surface2);border:1px solid var(--border);color:var(--dim);'
   };
   box.innerHTML =
-    '<div style="font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--teal);margin-bottom:10px;">' + opts.title + '</div>'
+    '<div style="font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--accent);margin-bottom:10px;">' + opts.title + '</div>'
     +'<div style="font-size:.85rem;color:var(--dim);margin-bottom:20px;line-height:1.55;">' + opts.body + '</div>'
     +'<div style="display:flex;gap:10px;justify-content:flex-end;">'
     + opts.buttons.map(function(b){
-        return '<button onclick="('+b.action.toString()+')()" style="border-radius:6px;padding:8px 18px;font-size:.8rem;cursor:pointer;' + (btnStyles[b.style]||btnStyles.secondary) + '">' + b.label + '</button>';
+        return '<button onclick="('+b.action.toString()+')()" style="border-radius:0;padding:8px 18px;font-size:.8rem;cursor:pointer;' + (btnStyles[b.style]||btnStyles.secondary) + '">' + b.label + '</button>';
       }).join('')
     +'</div>';
   // Re-wire buttons with real closures (innerHTML loses them)
@@ -2441,7 +2440,7 @@ function _buildProspectPageHTML(section, acct) {
     close:   'var(--red)',
     protect: 'var(--green)',
     reclaim: 'var(--yellow)',
-    rebuild: 'var(--teal)'
+    rebuild: 'var(--accent)'
   };
   var sectionLabels = {
     close:   'Close Now',
@@ -2449,7 +2448,7 @@ function _buildProspectPageHTML(section, acct) {
     reclaim: 'Reclaim',
     rebuild: 'Rebuild'
   };
-  var color = sectionColors[section] || 'var(--teal)';
+  var color = sectionColors[section] || 'var(--accent)';
   var label = sectionLabels[section] || section;
   var score = Math.round(acct.score || 0);
   var scoreColor = score >= 80 ? 'var(--green)' : score >= 60 ? 'var(--yellow)' : 'var(--red)';
@@ -2461,7 +2460,7 @@ function _buildProspectPageHTML(section, acct) {
     + 'display:flex;align-items:center;gap:14px;">'
     + '<button onclick="history.back()" '
     + 'style="background:var(--surface2);border:1px solid var(--border);'
-    + 'color:var(--dim);border-radius:6px;padding:6px 14px;cursor:pointer;font-size:.8rem;">'
+    + 'color:var(--dim);border-radius:0;padding:6px 14px;cursor:pointer;font-size:.8rem;">'
     + 'Back to Plan'
     + '</button>'
     + '<div style="font-size:.6rem;font-weight:700;text-transform:uppercase;'
@@ -2477,7 +2476,7 @@ function _buildProspectPageHTML(section, acct) {
     + '<div style="font-weight:900;font-size:1.4rem;color:#fff;line-height:1.25;flex:1;">'
     + (acct.name || acct.acct || acct.adv || '') + '</div>'
     + '<div style="text-align:center;flex-shrink:0;background:var(--surface2);'
-    + 'border:1px solid var(--border);border-radius:10px;padding:10px 18px;">'
+    + 'border:1px solid var(--border);border-radius:0;padding:10px 18px;">'
     + '<div style="font-size:2.2rem;font-weight:900;line-height:1;color:' + scoreColor + ';">'
     + score + '</div>'
     + '<div style="font-size:.55rem;color:var(--dim);letter-spacing:.1em;'
@@ -2515,20 +2514,20 @@ function _showWebsitePopup(acct, pageEl, profileKey) {
 
   popup.innerHTML =
     '<div style="background:var(--surface);border:1px solid var(--border);'
-    + 'border-radius:12px;padding:28px 24px;max-width:420px;width:100%;">'
+    + 'border-radius:0;padding:28px 24px;max-width:420px;width:100%;">'
     + '<div style="font-size:.6rem;font-weight:700;text-transform:uppercase;'
-    + 'letter-spacing:.1em;color:var(--teal);margin-bottom:10px;">Discovery Intelligence</div>'
+    + 'letter-spacing:.1em;color:var(--accent);margin-bottom:10px;">Discovery Intelligence</div>'
     + '<div style="font-size:1rem;font-weight:800;color:#fff;margin-bottom:6px;">' + name + '</div>'
     + '<div style="font-size:.82rem;color:var(--dim);margin-bottom:20px;line-height:1.5;">'
     + 'Enter the website to generate pre-call intelligence for this account.'
     + '</div>'
     + '<input id="website-popup-input" type="text" placeholder="example.com" '
     + 'style="width:100%;padding:10px 14px;background:var(--surface2);'
-    + 'border:1px solid var(--border);border-radius:8px;color:#fff;'
+    + 'border:1px solid var(--border);border-radius:0;color:#fff;'
     + 'font-size:.88rem;box-sizing:border-box;margin-bottom:14px;outline:none;" />'
     + '<button id="website-popup-btn" '
-    + 'style="width:100%;padding:12px;background:linear-gradient(135deg,rgba(0,188,212,.2),rgba(0,188,212,.08));'
-    + 'border:1px solid var(--teal-border);border-radius:8px;color:var(--teal);'
+    + 'style="width:100%;padding:12px;background:linear-gradient(135deg,rgba(239,65,54,.15),rgba(239,65,54,.08));'
+    + 'border:1px solid var(--accent-border);border-radius:0;color:var(--accent);'
     + 'font-size:.85rem;font-weight:700;cursor:pointer;margin-bottom:10px;">'
     + 'Generate Intel'
     + '</button>'
@@ -2605,19 +2604,19 @@ function buildCallPrepHTML(section, a) {
     close:   { label: 'Close Now',        color: 'var(--red)',    icon: '🔴' },
     protect: { label: 'Protect & Expand', color: 'var(--green)',  icon: '🟢' },
     reclaim: { label: 'Reclaim',          color: 'var(--yellow)', icon: '🟡' },
-    rebuild: { label: 'Rebuild',          color: 'var(--teal)',   icon: '🔵' }
+    rebuild: { label: 'Rebuild',          color: 'var(--accent)',   icon: '🔵' }
   };
-  var meta = sectionMeta[section] || { label: section, color: 'var(--teal)', icon: '📋' };
+  var meta = sectionMeta[section] || { label: section, color: 'var(--accent)', icon: '' };
   var score = Math.round(a.score || 0);
   var scoreColor = score >= 80 ? 'var(--green)' : score >= 60 ? 'var(--yellow)' : 'var(--red)';
 
   var header =
     '<div style="padding:22px 24px 16px;border-bottom:1px solid var(--border);position:relative;">'
-    + '<button onclick="closeCallPrep()" style="position:absolute;top:14px;right:14px;background:var(--surface2);border:1px solid var(--border);color:var(--dim);border-radius:6px;padding:5px 9px;cursor:pointer;font-size:.8rem;">✕</button>'
+    + '<button onclick="closeCallPrep()" style="position:absolute;top:14px;right:14px;background:var(--surface2);border:1px solid var(--border);color:var(--dim);border-radius:0;padding:5px 9px;cursor:pointer;font-size:.8rem;">✕</button>'
     + '<div style="font-size:.6rem;font-weight:700;text-transform:uppercase;letter-spacing:.12em;color:' + meta.color + ';margin-bottom:6px;">' + meta.icon + ' ' + meta.label + '</div>'
     + '<div style="display:flex;align-items:flex-start;justify-content:space-between;gap:16px;">'
     + '<div style="font-weight:900;font-size:1.2rem;color:#fff;line-height:1.25;flex:1;">' + (a.name || a.acct || a.adv || '-') + '</div>'
-    + '<div style="text-align:center;flex-shrink:0;background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:8px 14px;">'
+    + '<div style="text-align:center;flex-shrink:0;background:var(--surface2);border:1px solid var(--border);border-radius:0;padding:8px 14px;">'
     + '<div style="font-size:2.2rem;font-weight:900;line-height:1;color:' + scoreColor + ';">' + score + '</div>'
     + '<div style="font-size:.55rem;color:var(--dim);letter-spacing:.1em;text-transform:uppercase;margin-top:2px;">IGI Score</div>'
     + '</div></div>'
@@ -2678,7 +2677,7 @@ function _buildRebuildBody(a) {
 
   var rows = [];
   if (phone) rows.push(_profileRow('Phone',
-    '<a href="tel:' + phone.replace(/\s/g,'') + '" style="font-size:.88rem;font-weight:700;color:var(--teal);text-decoration:none;">' + phone + '</a>'));
+    '<a href="tel:' + phone.replace(/\s/g,'') + '" style="font-size:.88rem;font-weight:700;color:var(--accent);text-decoration:none;">' + phone + '</a>'));
   if (address) rows.push(_profileRow('Address',
     '<div style="font-size:.82rem;color:var(--text);line-height:1.4;">' + address + '</div>'));
   if (rating) rows.push(_profileRow('Rating',
@@ -2705,13 +2704,13 @@ function _buildRebuildBody(a) {
     var displayUrl = cleanUrl.replace(/^https?:\/\/(www\.)?/,'').replace(/\/$/,'');
     rows.push(_profileRow('Website',
       '<a href="' + cleanUrl + '" target="_blank" rel="noopener" '
-      + 'style="font-size:.82rem;color:var(--teal);text-decoration:none;font-weight:600;">' + displayUrl + ' →</a>'));
+      + 'style="font-size:.82rem;color:var(--accent);text-decoration:none;font-weight:600;">' + displayUrl + ' →</a>'));
   }
 
   var profileSection = rows.length
     ? '<div style="padding:18px 24px 0;">'
-      + '<div style="font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.09em;color:var(--teal);margin-bottom:10px;">Business Profile</div>'
-      + '<div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:2px 14px;">'
+      + '<div style="font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.09em;color:var(--accent);margin-bottom:10px;">Business Profile</div>'
+      + '<div style="background:var(--surface2);border:1px solid var(--border);border-radius:0;padding:2px 14px;">'
       + rows.join('')
       + '</div></div>'
     : '';
@@ -2737,24 +2736,24 @@ function _buildRebuildBody(a) {
     var discoverySection = website
      ? '<div style="padding:18px 24px 0;">'
      + '<div style="font-size:.65rem;font-weight:700;text-transform:uppercase;'
-     + 'letter-spacing:.09em;color:var(--teal);margin-bottom:10px;">Discovery Intelligence</div>'
+     + 'letter-spacing:.09em;color:var(--accent);margin-bottom:10px;">Discovery Intelligence</div>'
      + '<div id="' + containerId + '-bullets" style="display:flex;flex-direction:column;gap:8px;margin-bottom:10px;"></div>'
      + '<div id="' + containerId + '-progress" style="display:none;margin-bottom:10px;">'
      + '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:5px;">'
      + '<span id="' + containerId + '-progress-label" style="font-size:.68rem;color:var(--dim);">Generating intel...</span>'
-     + '<span id="' + containerId + '-progress-pct" style="font-size:.68rem;color:var(--teal);font-weight:700;">0%</span>'
+     + '<span id="' + containerId + '-progress-pct" style="font-size:.68rem;color:var(--accent);font-weight:700;">0%</span>'
      + '</div>'
-     + '<div style="height:4px;background:var(--surface2);border-radius:2px;overflow:hidden;">'
+     + '<div style="height:4px;background:var(--surface2);border-radius:0;overflow:hidden;">'
      + '<div id="' + containerId + '-progress-bar" style="height:100%;width:0%;'
-     + 'background:linear-gradient(90deg,var(--teal),rgba(0,188,212,.5));'
-     + 'border-radius:2px;transition:width .8s ease;"></div>'
+     + 'background:linear-gradient(90deg,var(--accent),rgba(239,65,54,.4));'
+     + 'border-radius:0;transition:width .8s ease;"></div>'
      + '</div></div>'
      + '<div id="' + containerId + '-btn-wrap">'
      + '<button id="' + containerId + '-btn" '
      + 'style="width:100%;display:flex;align-items:center;justify-content:center;'
      + 'gap:8px;padding:12px 16px;'
-     + 'background:linear-gradient(135deg,rgba(0,188,212,.15),rgba(0,188,212,.06));'
-     + 'border:1px solid var(--teal-border);border-radius:8px;color:var(--teal);'
+     + 'background:linear-gradient(135deg,rgba(239,65,54,.12),rgba(239,65,54,.06));'
+     + 'border:1px solid var(--accent-border);border-radius:0;color:var(--accent);'
      + 'font-size:.82rem;font-weight:700;cursor:pointer;"'
      + ' onclick="generateDiscoveryIntel(\'' + domain.replace(/\\/g,'\\\\').replace(/'/g,"\\'") + '\',\'' + containerId + '\',\'' + (a.name||'').replace(/\\/g,'\\\\').replace(/'/g,"\\'") + '\')">'
      + '⚡ Generate Intel'
@@ -2838,23 +2837,23 @@ function generateDiscoveryIntel(domain, containerId, businessName) {
       var mColor   = mScore >= 8 ? 'var(--green)' : mScore >= 5 ? 'var(--yellow)' : 'var(--red)';
 
       function _sec(emoji, title) {
-        return '<div style="font-size:1.05rem;font-weight:700;color:var(--teal);'
+        return '<div style="font-size:1.05rem;font-weight:700;color:var(--accent);'
           + 'margin:18px 0 9px;padding-bottom:7px;'
-          + 'border-bottom:1px solid rgba(0,229,199,.2);">' + emoji + ' ' + title + '</div>';
+          + 'border-bottom:1px solid rgba(239,65,54,.2);">' + emoji + ' ' + title + '</div>';
       }
 
       var html = '';
 
       // ── Meeting Strength ──────────────────────────────────────
       html += '<div style="display:flex;align-items:center;justify-content:space-between;'
-        + 'background:linear-gradient(135deg,rgba(0,229,199,.1),rgba(0,229,199,.04));'
-        + 'border:1px solid rgba(0,229,199,.3);border-radius:10px;padding:14px 18px;margin-bottom:6px;">'
+        + 'background:linear-gradient(135deg,rgba(239,65,54,.08),rgba(239,65,54,.04));'
+        + 'border:1px solid rgba(239,65,54,.3);border-radius:0;padding:14px 18px;margin-bottom:6px;">'
         + '<div style="flex:1;">'
         + '<div style="font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--dim);margin-bottom:6px;">Meeting Strength</div>'
         + '<div style="display:flex;flex-wrap:wrap;gap:5px;">'
         + mReasons.slice(0, 5).map(function(r) {
-            return '<div style="font-size:.67rem;padding:2px 9px;background:rgba(0,229,199,.1);'
-              + 'border:1px solid rgba(0,229,199,.22);border-radius:12px;color:var(--teal);">' + r + '</div>';
+            return '<div style="font-size:.67rem;padding:2px 9px;background:rgba(239,65,54,.08);'
+              + 'border:1px solid rgba(239,65,54,.25);border-radius:0;color:var(--accent);">' + r + '</div>';
           }).join('')
         + '</div></div>'
         + '<div style="text-align:center;margin-left:20px;flex-shrink:0;">'
@@ -2867,7 +2866,7 @@ function generateDiscoveryIntel(domain, containerId, businessName) {
         html += _sec('✅', "Why They're Worth Calling");
         html += '<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;">'
           + worth.map(function(w) {
-              return '<div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:12px 14px;">'
+              return '<div style="background:var(--surface2);border:1px solid var(--border);border-radius:0;padding:12px 14px;">'
                 + '<div style="font-size:.8rem;font-weight:700;color:var(--green);margin-bottom:5px;">✓ ' + (w.label || '') + '</div>'
                 + '<div style="font-size:.74rem;color:var(--dim);line-height:1.5;">' + (w.detail || '') + '</div>'
                 + '</div>';
@@ -2877,8 +2876,8 @@ function generateDiscoveryIntel(domain, containerId, businessName) {
       // ── Best Meeting Angle ────────────────────────────────────
       if (angle) {
         html += _sec('\u{1F3AF}', 'Best Meeting Angle');
-        html += '<div style="background:linear-gradient(135deg,rgba(0,188,212,.12),rgba(0,188,212,.04));'
-          + 'border:1px solid rgba(0,188,212,.35);border-radius:10px;padding:16px 18px;">'
+        html += '<div style="background:linear-gradient(135deg,rgba(239,65,54,.12),rgba(239,65,54,.04));'
+          + 'border:1px solid rgba(239,65,54,.35);border-radius:0;padding:16px 18px;">'
           + '<div style="font-size:.92rem;color:#fff;font-weight:500;line-height:1.6;font-style:italic;">'
           + '“' + angle + '”</div></div>';
         if (hook) {
@@ -2891,14 +2890,14 @@ function generateDiscoveryIntel(domain, containerId, businessName) {
         html += _sec('\u{1F4AC}', 'What To Say');
         html += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">';
         if (wts.phone) {
-          html += '<div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:14px 16px;">'
-            + '<div style="font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--teal);margin-bottom:10px;">\u{1F4DE} Phone</div>'
+          html += '<div style="background:var(--surface2);border:1px solid var(--border);border-radius:0;padding:14px 16px;">'
+            + '<div style="font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--accent);margin-bottom:10px;">\u{1F4DE} Phone</div>'
             + '<div style="font-size:.79rem;color:var(--text);line-height:1.7;">' + wts.phone + '</div>'
             + '</div>';
         }
         if (wts.walkin) {
-          html += '<div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:14px 16px;">'
-            + '<div style="font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--teal);margin-bottom:10px;">\u{1F6AA} Walk-In</div>'
+          html += '<div style="background:var(--surface2);border:1px solid var(--border);border-radius:0;padding:14px 16px;">'
+            + '<div style="font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--accent);margin-bottom:10px;">\u{1F6AA} Walk-In</div>'
             + '<div style="font-size:.79rem;color:var(--text);line-height:1.7;">' + wts.walkin + '</div>'
             + '</div>';
         }
@@ -2910,9 +2909,9 @@ function generateDiscoveryIntel(domain, containerId, businessName) {
         html += _sec('\u{1F4AC}', 'Conversation Starters');
         html += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">'
           + starters.map(function(q) {
-              return '<div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;'
+              return '<div style="background:var(--surface2);border:1px solid var(--border);border-radius:0;'
                 + 'padding:11px 13px;font-size:.78rem;color:var(--text);line-height:1.55;">'
-                + '<span style="color:var(--teal);font-weight:700;margin-right:6px;">?</span>' + q + '</div>';
+                + '<span style="color:var(--accent);font-weight:700;margin-right:6px;">?</span>' + q + '</div>';
             }).join('') + '</div>';
       }
 
@@ -2921,14 +2920,14 @@ function generateDiscoveryIntel(domain, containerId, businessName) {
         html += _sec('\u{1F4C5}', 'Meeting Ask');
         html += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">';
         if (mAsk.soft) {
-          html += '<div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:14px 16px;">'
+          html += '<div style="background:var(--surface2);border:1px solid var(--border);border-radius:0;padding:14px 16px;">'
             + '<div style="font-size:.63rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--dim);margin-bottom:8px;">Soft Ask</div>'
             + '<div style="font-size:.8rem;color:var(--text);line-height:1.65;font-style:italic;">' + mAsk.soft + '</div>'
             + '</div>';
         }
         if (mAsk.strong) {
-          html += '<div style="background:var(--surface2);border:1px solid rgba(0,229,199,.3);border-radius:8px;padding:14px 16px;">'
-            + '<div style="font-size:.63rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--teal);margin-bottom:8px;">Stronger Ask</div>'
+          html += '<div style="background:var(--surface2);border:1px solid rgba(239,65,54,.3);border-radius:0;padding:14px 16px;">'
+            + '<div style="font-size:.63rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--accent);margin-bottom:8px;">Stronger Ask</div>'
             + '<div style="font-size:.8rem;color:var(--text);line-height:1.65;font-style:italic;">' + mAsk.strong + '</div>'
             + '</div>';
         }
@@ -2939,7 +2938,7 @@ function generateDiscoveryIntel(domain, containerId, businessName) {
       if (d.coachingNote && mScore <= 6) {
         html += '<div style="display:flex;gap:12px;align-items:flex-start;'
           + 'background:rgba(251,191,36,.07);border:1px solid rgba(251,191,36,.3);'
-          + 'border-radius:10px;padding:14px 16px;margin-top:18px;">'
+          + 'border-radius:0;padding:14px 16px;margin-top:18px;">'
           + '<div style="font-size:1.1rem;flex-shrink:0;margin-top:1px;">⚠️</div>'
           + '<div>'
           + '<div style="font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;'
@@ -2955,7 +2954,7 @@ function generateDiscoveryIntel(domain, containerId, businessName) {
       var drLabel = dr.label || '';
       var drColor = drScore >= 8 ? 'var(--green)' : drScore >= 4 ? 'var(--yellow)' : 'var(--red)';
 
-      supHtml += '<div style="font-size:.82rem;font-weight:700;color:var(--teal);margin:0 0 8px;">\u{1F3AF} Pixel Analysis</div>';
+      supHtml += '<div style="font-size:.82rem;font-weight:700;color:var(--accent);margin:0 0 8px;">\u{1F3AF} Pixel Analysis</div>';
       supHtml += '<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:5px;margin-bottom:8px;">';
       var pboxes = [
         { label: 'GTM',         detected: dr.gtm             },
@@ -2965,7 +2964,7 @@ function generateDiscoveryIntel(domain, containerId, businessName) {
       ];
       for (var pi = 0; pi < pboxes.length; pi++) {
         var pb = pboxes[pi];
-        supHtml += '<div style="background:var(--surface);border:1px solid var(--border);border-radius:7px;padding:8px 4px;text-align:center;">'
+        supHtml += '<div style="background:var(--surface);border:1px solid var(--border);border-radius:0;padding:8px 4px;text-align:center;">'
           + '<div style="font-size:1rem;font-weight:900;color:' + (pb.detected ? 'var(--green)' : '#3a3a3a') + ';">' + (pb.detected ? '✓' : '✕') + '</div>'
           + '<div style="font-size:.58rem;color:var(--dim);margin-top:2px;">' + pb.label + '</div>'
           + '</div>';
@@ -2973,7 +2972,7 @@ function generateDiscoveryIntel(domain, containerId, businessName) {
       supHtml += '</div>';
       if (drLabel) {
         supHtml += '<div style="display:flex;justify-content:space-between;align-items:center;'
-          + 'background:var(--surface);border:1px solid var(--border);border-radius:7px;padding:7px 12px;margin-bottom:14px;">'
+          + 'background:var(--surface);border:1px solid var(--border);border-radius:0;padding:7px 12px;margin-bottom:14px;">'
           + '<div style="font-size:.74rem;color:var(--text);">' + drLabel + '</div>'
           + '<div style="font-size:1.1rem;font-weight:900;color:' + drColor + ';">' + drScore + '<span style="font-size:.55rem;color:var(--dim);font-weight:400;">/10</span></div>'
           + '</div>';
@@ -2986,8 +2985,8 @@ function generateDiscoveryIntel(domain, containerId, businessName) {
         if (ab.googleCPC) bmRows.push(['Google CPC', ab.googleCPC]);
         if (ab.googleCPA) bmRows.push(['Google CPA', ab.googleCPA]);
         benchHtml = '<div>'
-          + '<div style="font-size:.82rem;font-weight:700;color:var(--teal);margin-bottom:8px;">\u{1F4C8} Ad Benchmarks</div>'
-          + '<div style="background:var(--surface);border:1px solid var(--border);border-radius:8px;overflow:hidden;">'
+          + '<div style="font-size:.82rem;font-weight:700;color:var(--accent);margin-bottom:8px;">\u{1F4C8} Ad Benchmarks</div>'
+          + '<div style="background:var(--surface);border:1px solid var(--border);border-radius:0;overflow:hidden;">'
           + bmRows.map(function(r, i) {
               return '<div style="display:flex;justify-content:space-between;align-items:center;'
                 + 'padding:7px 12px;' + (i < bmRows.length - 1 ? 'border-bottom:1px solid var(--border);' : '') + '">'
@@ -2998,13 +2997,13 @@ function generateDiscoveryIntel(domain, containerId, businessName) {
       }
       if (cv.estimatedLTV) {
         ltvHtml = '<div>'
-          + '<div style="font-size:.82rem;font-weight:700;color:var(--teal);margin-bottom:8px;">\u{1F4E6} Customer Value</div>'
-          + '<div style="background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:10px 14px;">'
+          + '<div style="font-size:.82rem;font-weight:700;color:var(--accent);margin-bottom:8px;">\u{1F4E6} Customer Value</div>'
+          + '<div style="background:var(--surface);border:1px solid var(--border);border-radius:0;padding:10px 14px;">'
           + '<div style="font-size:.6rem;text-transform:uppercase;letter-spacing:.07em;color:var(--dim);margin-bottom:3px;">Est. LTV</div>'
           + '<div style="font-size:.88rem;color:var(--green);font-weight:700;">' + cv.estimatedLTV + '</div>'
           + (cv.industryExamples && cv.industryExamples.length
               ? cv.industryExamples.slice(0, 2).map(function(ex) {
-                  return '<div style="font-size:.68rem;color:var(--dim);padding:3px 0 3px 8px;border-left:2px solid rgba(0,229,199,.25);margin-top:6px;line-height:1.4;">' + ex + '</div>';
+                  return '<div style="font-size:.68rem;color:var(--dim);padding:3px 0 3px 8px;border-left:2px solid rgba(239,65,54,.25);margin-top:6px;line-height:1.4;">' + ex + '</div>';
                 }).join('') : '')
           + '</div></div>';
       }
@@ -3020,7 +3019,7 @@ function generateDiscoveryIntel(domain, containerId, businessName) {
         if (ta.demographics) taRows.push(['Who',  ta.demographics]);
         if (ta.reach)        taRows.push(['Geography', ta.reach]);
         audHtml = '<div>'
-          + '<div style="font-size:.82rem;font-weight:700;color:var(--teal);margin-bottom:8px;">\u{1F465} Target Audience</div>'
+          + '<div style="font-size:.82rem;font-weight:700;color:var(--accent);margin-bottom:8px;">\u{1F465} Target Audience</div>'
           + taRows.map(function(r) {
               return '<div style="display:flex;gap:8px;margin-bottom:5px;">'
                 + '<div style="font-size:.59rem;font-weight:700;color:var(--dim);text-transform:uppercase;min-width:72px;padding-top:2px;flex-shrink:0;">' + r[0] + '</div>'
@@ -3030,10 +3029,10 @@ function generateDiscoveryIntel(domain, containerId, businessName) {
       }
       if (aw.seasonal && aw.seasonal.length) {
         winHtml = '<div>'
-          + '<div style="font-size:.82rem;font-weight:700;color:var(--teal);margin-bottom:8px;">\u{1F4C5} Ad Windows</div>'
+          + '<div style="font-size:.82rem;font-weight:700;color:var(--accent);margin-bottom:8px;">\u{1F4C5} Ad Windows</div>'
           + aw.seasonal.slice(0, 4).map(function(s) {
               return '<div style="font-size:.73rem;color:var(--text);padding:4px 0 4px 9px;'
-                + 'border-left:2px solid rgba(0,229,199,.3);margin-bottom:5px;line-height:1.4;">' + s + '</div>';
+                + 'border-left:2px solid rgba(239,65,54,.3);margin-bottom:5px;line-height:1.4;">' + s + '</div>';
             }).join('') + '</div>';
       }
       if (audHtml || winHtml) {
@@ -3041,7 +3040,7 @@ function generateDiscoveryIntel(domain, containerId, businessName) {
           + (audHtml || '<div></div>') + (winHtml || '<div></div>') + '</div>';
       }
 
-      html += '<div style="margin-top:18px;border:1px solid var(--border);border-radius:10px;overflow:hidden;">'
+      html += '<div style="margin-top:18px;border:1px solid var(--border);border-radius:0;overflow:hidden;">'
         + '<button onclick="(function(){var el=document.getElementById(\'' + supId + '\');'
         + 'var ic=document.getElementById(\'' + supId + '-ic\');'
         + 'var open=el.style.display!==\'none\';'
@@ -3062,9 +3061,9 @@ function generateDiscoveryIntel(domain, containerId, businessName) {
         linkEl.innerHTML = '<a href="https://ignite.edwinlovett.com/research/?q='
           + encodeURIComponent(domain) + '" target="_blank" rel="noopener" '
           + 'style="display:flex;align-items:center;justify-content:space-between;'
-          + 'padding:10px 14px;background:rgba(0,229,199,.08);border:1px solid rgba(0,229,199,.25);'
-          + 'border-radius:8px;text-decoration:none;margin-top:6px;">'
-          + '<span style="font-size:.78rem;color:var(--teal);font-weight:600;">'
+          + 'padding:10px 14px;background:rgba(239,65,54,.08);border:1px solid rgba(239,65,54,.25);'
+          + 'border-radius:0;text-decoration:none;margin-top:6px;">'
+          + '<span style="font-size:.78rem;color:var(--accent);font-weight:600;">'
           + 'View Full Discovery Report →</span></a>';
       }
     }, 400);
@@ -3095,14 +3094,14 @@ function _buildLaneBody(section, a) {
     var daysIn = a.daysIn || 0;
     var daysColor = daysIn > 60 ? 'var(--red)' : daysIn > 30 ? 'var(--yellow)' : 'var(--green)';
 
-    statsHTML = _cpStatCard('Deal Value', fmt(a.rev), 'Total pipeline value', 'var(--teal)')
+    statsHTML = _cpStatCard('Deal Value', fmt(a.rev), 'Total pipeline value', 'var(--accent)')
       + _cpStatCard('Confidence', conf, 'Blueprint stage', confColor)
       + _cpStatCard('Days in Pipeline', daysIn + ' days', daysIn > 60 ? '⚠ Needs urgency' : daysIn > 30 ? 'Getting stale' : 'Active & fresh', daysColor)
-      + _cpStatCard('Product Type', a.type || '-', a.isIgnite ? 'Ignite involved ✓' : 'Broadcast only', a.isIgnite ? 'var(--teal)' : 'var(--dim)');
+      + _cpStatCard('Product Type', a.type || '-', a.isIgnite ? 'Ignite involved ✓' : 'Broadcast only', a.isIgnite ? 'var(--accent)' : 'var(--dim)');
 
     if (a.apr || a.may || a.jun) {
-      statsHTML += '<div style="grid-column:1/-1;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:14px 16px;">'
-        + '<div style="font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--teal);margin-bottom:10px;">Monthly Breakdown</div>'
+      statsHTML += '<div style="grid-column:1/-1;background:var(--surface2);border:1px solid var(--border);border-radius:0;padding:14px 16px;">'
+        + '<div style="font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--accent);margin-bottom:10px;">Monthly Breakdown</div>'
         + '<div style="display:flex;gap:24px;">'
         + (a.apr ? '<div><div style="font-size:.68rem;color:var(--dim);">April</div><div style="font-size:.95rem;font-weight:700;color:#fff;">' + fmt(a.apr) + '</div></div>' : '')
         + (a.may ? '<div><div style="font-size:.68rem;color:var(--dim);">May</div><div style="font-size:.95rem;font-weight:700;color:#fff;">' + fmt(a.may) + '</div></div>' : '')
@@ -3159,7 +3158,7 @@ function _buildLaneBody(section, a) {
 
     statsHTML = _cpStatCard('Peak Spend', fmt(peakDisplay), 'Highest year on record', 'var(--text)')
       + _cpStatCard('Last Active', lastActive, 'Most recent spend year', lastActive === '2025' ? 'var(--green)' : lastActive === '2024' ? 'var(--yellow)' : 'var(--dim)')
-      + _cpStatCard('Ignite History', ignHistory ? '✓ Former Buyer' : 'Broadcast Only', ignHistory ? 'Already understands digital' : 'Needs digital intro', ignHistory ? 'var(--teal)' : 'var(--dim)')
+      + _cpStatCard('Ignite History', ignHistory ? '✓ Former Buyer' : 'Broadcast Only', ignHistory ? 'Already understands digital' : 'Needs digital intro', ignHistory ? 'var(--accent)' : 'var(--dim)')
       + _cpStatCard('Priority', a.bucket || '-', 'Reclaim bucket', a.bucket === 'Reclaim Now' ? 'var(--green)' : a.bucket === 'Reapproach Later' ? 'var(--yellow)' : 'var(--dim)');
 
     if (lastActive === '2025') talkingPoints.push('Left within the past year - recency is your biggest asset. Acknowledge the gap first: "We noticed you\'re not active with us." Don\'t open with a pitch.');
@@ -3177,17 +3176,17 @@ function _buildLaneBody(section, a) {
 
   var statGrid = statsHTML
     ? '<div style="padding:18px 24px 0;">'
-      + '<div style="font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.09em;color:var(--teal);margin-bottom:12px;">Key Numbers</div>'
+      + '<div style="font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.09em;color:var(--accent);margin-bottom:12px;">Key Numbers</div>'
       + '<div style="display:grid;grid-template-columns:repeat(2,1fr);gap:10px;">' + statsHTML + '</div></div>'
     : '';
 
   var tpSection = talkingPoints.length
     ? '<div style="padding:18px 24px 0;">'
-      + '<div style="font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.09em;color:var(--teal);margin-bottom:12px;">📞 Call Prep</div>'
+      + '<div style="font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.09em;color:var(--accent);margin-bottom:12px;">📞 Call Prep</div>'
       + '<div style="display:flex;flex-direction:column;gap:8px;">'
       + talkingPoints.map(function(pt) {
-          return '<div style="display:flex;gap:10px;align-items:flex-start;padding:10px 14px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;">'
-            + '<div style="color:var(--teal);font-size:.85rem;flex-shrink:0;margin-top:1px;">→</div>'
+          return '<div style="display:flex;gap:10px;align-items:flex-start;padding:10px 14px;background:var(--surface2);border:1px solid var(--border);border-radius:0;">'
+            + '<div style="color:var(--accent);font-size:.85rem;flex-shrink:0;margin-top:1px;">→</div>'
             + '<div style="font-size:.8rem;color:var(--text);line-height:1.55;">' + pt + '</div>'
             + '</div>';
         }).join('')
@@ -3204,7 +3203,7 @@ function _buildLaneBody(section, a) {
     var bStatus = gp.businessStatus || null;
     var profileRows = [];
     if (phone) profileRows.push(_profileRow('Phone',
-      '<a href="tel:' + phone.replace(/\s/g,'') + '" style="font-size:.88rem;font-weight:700;color:var(--teal);text-decoration:none;">' + phone + '</a>'));
+      '<a href="tel:' + phone.replace(/\s/g,'') + '" style="font-size:.88rem;font-weight:700;color:var(--accent);text-decoration:none;">' + phone + '</a>'));
     if (rating) {
       var fullStars = Math.floor(rating);
       profileRows.push(_profileRow('Rating',
@@ -3222,12 +3221,12 @@ function _buildLaneBody(section, a) {
       var cleanUrl = website.split('?')[0].split('#')[0];
       var displayUrl = cleanUrl.replace(/^https?:\/\/(www\.)?/,'').replace(/\/$/,'');
       profileRows.push(_profileRow('Website',
-        '<a href="' + cleanUrl + '" target="_blank" rel="noopener" style="font-size:.82rem;color:var(--teal);text-decoration:none;font-weight:600;">' + displayUrl + ' \u2192</a>'));
+        '<a href="' + cleanUrl + '" target="_blank" rel="noopener" style="font-size:.82rem;color:var(--accent);text-decoration:none;font-weight:600;">' + displayUrl + ' \u2192</a>'));
     }
     if (profileRows.length) {
       placesProfile = '<div style="padding:18px 24px 0;">'
-        + '<div style="font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.09em;color:var(--teal);margin-bottom:10px;">Business Profile</div>'
-        + '<div class="prospect-profile-rows" style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:2px 14px;">'
+        + '<div style="font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.09em;color:var(--accent);margin-bottom:10px;">Business Profile</div>'
+        + '<div class="prospect-profile-rows" style="background:var(--surface2);border:1px solid var(--border);border-radius:0;padding:2px 14px;">'
         + profileRows.join('')
         + '</div></div>';
     }
@@ -3235,22 +3234,22 @@ function _buildLaneBody(section, a) {
 
   var laneDiscId = 'disc-' + Math.random().toString(36).slice(2, 8);
   var laneDiscSection = '<div style="padding:18px 24px 0;">'
-    + '<div style="font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.09em;color:var(--teal);margin-bottom:10px;">Discovery Intelligence</div>'
+    + '<div style="font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.09em;color:var(--accent);margin-bottom:10px;">Discovery Intelligence</div>'
     + '<div id="' + laneDiscId + '-bullets" style="display:flex;flex-direction:column;gap:8px;margin-bottom:10px;"></div>'
     + '<div id="' + laneDiscId + '-progress" style="display:none;margin-bottom:10px;">'
     + '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:5px;">'
     + '<span id="' + laneDiscId + '-progress-label" style="font-size:.68rem;color:var(--dim);">Generating intel...</span>'
-    + '<span id="' + laneDiscId + '-progress-pct" style="font-size:.68rem;color:var(--teal);font-weight:700;">0%</span>'
+    + '<span id="' + laneDiscId + '-progress-pct" style="font-size:.68rem;color:var(--accent);font-weight:700;">0%</span>'
     + '</div>'
-    + '<div style="height:4px;background:var(--surface2);border-radius:2px;overflow:hidden;">'
-    + '<div id="' + laneDiscId + '-progress-bar" style="height:100%;width:0%;background:linear-gradient(90deg,var(--teal),rgba(0,188,212,.5));border-radius:2px;transition:width .8s ease;"></div>'
+    + '<div style="height:4px;background:var(--surface2);border-radius:0;overflow:hidden;">'
+    + '<div id="' + laneDiscId + '-progress-bar" style="height:100%;width:0%;background:linear-gradient(90deg,var(--accent),rgba(239,65,54,.4));border-radius:0;transition:width .8s ease;"></div>'
     + '</div></div>'
     + '<div id="' + laneDiscId + '-btn-wrap">'
     + '<button id="' + laneDiscId + '-btn" '
     + 'style="width:100%;display:flex;align-items:center;justify-content:center;'
     + 'gap:8px;padding:12px 16px;'
-    + 'background:linear-gradient(135deg,rgba(0,188,212,.15),rgba(0,188,212,.06));'
-    + 'border:1px solid var(--teal-border);border-radius:8px;color:var(--teal);'
+    + 'background:linear-gradient(135deg,rgba(239,65,54,.12),rgba(239,65,54,.06));'
+    + 'border:1px solid var(--accent-border);border-radius:0;color:var(--accent);'
     + 'font-size:.82rem;font-weight:700;cursor:pointer;"'
     + ' onclick="generateDiscoveryIntel(window._activeProspectAcct&&window._activeProspectAcct._discDomain,\'" + laneDiscId + "\',window._activeProspectAcct&&window._activeProspectAcct.name)">'
     + '⚡ Generate Intel'
@@ -3263,7 +3262,7 @@ function _buildLaneBody(section, a) {
 }
 
 function _cpStatCard(label, value, sub, valueColor) {
-  return '<div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:12px 14px;">'
+  return '<div style="background:var(--surface2);border:1px solid var(--border);border-radius:0;padding:12px 14px;">'
     + '<div style="font-size:.62rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--dim);margin-bottom:4px;">' + label + '</div>'
     + '<div style="font-size:1rem;font-weight:800;color:' + (valueColor || '#fff') + ';margin-bottom:2px;">' + (value || '-') + '</div>'
     + '<div style="font-size:.68rem;color:var(--dim);">' + (sub || '') + '</div>'
@@ -3282,8 +3281,8 @@ function _buildScoreBreakdownContent(a) {
         + '<div style="font-size:.78rem;font-weight:800;color:' + barColor + ';">' + c.score
         + '<span style="color:var(--dim);font-weight:400;font-size:.68rem;">/' + c.max + '</span></div>'
         + '</div>'
-        + '<div style="background:var(--surface2);border-radius:4px;height:6px;overflow:hidden;margin-bottom:4px;">'
-        + '<div style="height:100%;width:' + pct + '%;background:' + barColor + ';border-radius:4px;"></div>'
+        + '<div style="background:var(--surface2);border-radius:0;height:6px;overflow:hidden;margin-bottom:4px;">'
+        + '<div style="height:100%;width:' + pct + '%;background:' + barColor + ';border-radius:0;"></div>'
         + '</div>'
         + '<div style="font-size:.67rem;color:var(--dim);line-height:1.4;">' + c.detail + '</div>'
         + '</div>';
@@ -3294,7 +3293,7 @@ function _buildScoreBreakdown(a) {
   var sd = a._scoreData || null;
   if (!sd || !sd.components || !sd.components.length) return '';
   return '<div style="margin-top:24px;padding-top:18px;border-top:1px solid var(--border);">'
-    + '<div style="font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--teal);margin-bottom:14px;">IGI Score Breakdown</div>'
+    + '<div style="font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--accent);margin-bottom:14px;">IGI Score Breakdown</div>'
     + _buildScoreBreakdownContent(a)
     + '</div>';
 }
@@ -3303,7 +3302,7 @@ function _buildScoreBreakdownWithFlash(a, containerId) {
   var sd = a._scoreData || null;
   if (!sd || !sd.components || !sd.components.length) return '';
   return '<div style="margin-top:24px;padding-top:18px;border-top:1px solid var(--border);">'
-    + '<div style="font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--teal);margin-bottom:14px;">IGI Score Breakdown</div>'
+    + '<div style="font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--accent);margin-bottom:14px;">IGI Score Breakdown</div>'
     + sd.components.map(function(c) {
         var pct = c.max > 0 ? Math.round((c.score / c.max) * 100) : 0;
         var barColor = pct >= 70 ? 'var(--green)' : pct >= 40 ? 'var(--yellow)' : 'var(--red)';
@@ -3312,13 +3311,13 @@ function _buildScoreBreakdownWithFlash(a, containerId) {
           + '<div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:4px;">'
           + '<div style="font-size:.78rem;font-weight:600;color:var(--text);">' + c.label + '</div>'
           + '<div style="display:flex;align-items:center;gap:8px;">'
-          + (isOpp ? '<span id="opp-flash-' + containerId + '" style="font-size:.65rem;color:var(--teal);font-weight:600;opacity:0;transition:opacity 1s;">✓ Score updated</span>' : '')
+          + (isOpp ? '<span id="opp-flash-' + containerId + '" style="font-size:.65rem;color:var(--accent);font-weight:600;opacity:0;transition:opacity 1s;">✓ Score updated</span>' : '')
           + '<div style="font-size:.78rem;font-weight:800;color:' + barColor + ';">' + c.score
           + '<span style="color:var(--dim);font-weight:400;font-size:.68rem;">/' + c.max + '</span></div>'
           + '</div>'
           + '</div>'
-          + '<div style="background:var(--surface2);border-radius:4px;height:6px;overflow:hidden;margin-bottom:4px;">'
-          + '<div style="height:100%;width:' + pct + '%;background:' + barColor + ';border-radius:4px;"></div>'
+          + '<div style="background:var(--surface2);border-radius:0;height:6px;overflow:hidden;margin-bottom:4px;">'
+          + '<div style="height:100%;width:' + pct + '%;background:' + barColor + ';border-radius:0;"></div>'
           + '</div>'
           + '<div ' + (isOpp ? 'id="opp-detail-' + containerId + '"' : '') + ' style="font-size:.67rem;color:var(--dim);line-height:1.4;">' + c.detail + '</div>'
           + '</div>';
@@ -3356,25 +3355,25 @@ checkSharedMode().then(function(isShared) {
 <div id="igiBackdrop" onclick="closeScorePanel()" style="display:none;position:fixed;inset:0;z-index:1500;background:rgba(0,0,0,.55);"></div>
 
 <!-- IGI Score Panel -->
-<div id="igiScorePanel" style="position:fixed;top:0;right:0;bottom:0;width:min(400px,100%);background:var(--surface);border-left:1px solid var(--teal-border);z-index:1600;transform:translateX(100%);transition:transform .35s cubic-bezier(.4,0,.2,1);display:flex;flex-direction:column;overflow:hidden;">
+<div id="igiScorePanel" style="position:fixed;top:0;right:0;bottom:0;width:min(400px,100%);background:var(--surface);border-left:1px solid var(--accent-border);z-index:1600;transform:translateX(100%);transition:transform .35s cubic-bezier(.4,0,.2,1);display:flex;flex-direction:column;overflow:hidden;">
   <div style="padding:20px;border-bottom:1px solid var(--border);flex-shrink:0;position:relative;">
     <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;">
       <div style="flex:1;">
-        <div style="font-size:.6rem;font-weight:700;text-transform:uppercase;letter-spacing:.12em;color:var(--teal);margin-bottom:6px;">IGI Score Breakdown</div>
+        <div style="font-size:.6rem;font-weight:700;text-transform:uppercase;letter-spacing:.12em;color:var(--accent);margin-bottom:6px;">IGI Score Breakdown</div>
         <div id="igiPanelName" style="font-weight:800;font-size:1.05rem;color:#fff;line-height:1.3;"></div>
         <div id="igiPanelSub" style="font-size:.72rem;color:var(--dim);margin-top:3px;"></div>
       </div>
-      <div style="text-align:center;flex-shrink:0;background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:10px 14px;">
+      <div style="text-align:center;flex-shrink:0;background:var(--surface2);border:1px solid var(--border);border-radius:0;padding:10px 14px;">
         <div id="igiPanelScore" style="font-size:2.6rem;font-weight:900;line-height:1;"></div>
         <div style="font-size:.58rem;color:var(--dim);letter-spacing:.1em;text-transform:uppercase;margin-top:3px;">IGI Score</div>
       </div>
     </div>
-    <button onclick="closeScorePanel()" style="position:absolute;top:14px;right:14px;background:var(--surface2);border:1px solid var(--border);color:var(--dim);border-radius:6px;padding:5px 9px;cursor:pointer;font-size:.8rem;">✕</button>
+    <button onclick="closeScorePanel()" style="position:absolute;top:14px;right:14px;background:var(--surface2);border:1px solid var(--border);color:var(--dim);border-radius:0;padding:5px 9px;cursor:pointer;font-size:.8rem;">✕</button>
   </div>
   <div id="igiPanelDesc" style="padding:12px 20px;background:var(--surface2);border-bottom:1px solid var(--border);font-size:.72rem;color:var(--dim);flex-shrink:0;line-height:1.5;"></div>
   <div id="igiPanelComponents" style="flex:1;overflow-y:auto;padding:18px 20px;"></div>
   <div style="padding:12px 20px;border-top:1px solid var(--border);flex-shrink:0;text-align:center;">
-    <div style="font-size:.62rem;color:var(--dim);letter-spacing:.04em;">Powered by <span style="color:var(--teal);font-weight:700;">Ignite Growth Intelligence</span> &middot; IGI Score</div>
+    <div style="font-size:.62rem;color:var(--dim);letter-spacing:.04em;">Powered by <span style="color:var(--accent);font-weight:700;">Ignite Growth Intelligence</span> &middot; IGI Score</div>
   </div>
 </div>
 
@@ -3385,13 +3384,9 @@ checkSharedMode().then(function(isShared) {
 
 <!-- Call Prep Card Modal -->
 <div id="callPrepOverlay" onclick="if(event.target===this)closeCallPrep()" style="display:none;position:fixed;inset:0;z-index:2100;background:rgba(0,0,0,.72);align-items:center;justify-content:center;opacity:0;transition:opacity .18s;padding:16px;">
-  <div id="callPrepBox" style="background:var(--surface);border:1px solid var(--teal-border);border-radius:14px;width:min(720px,100%);max-height:90vh;overflow-y:auto;box-shadow:0 28px 70px rgba(0,0,0,.7);transform:scale(.95);transition:transform .18s;"></div>
+  <div id="callPrepBox" style="background:var(--surface);border:1px solid var(--accent-border);border-radius:0;width:min(720px,100%);max-height:90vh;overflow-y:auto;box-shadow:0 28px 70px rgba(0,0,0,.7);transform:scale(.95);transition:transform .18s;"></div>
 </div>
 
 <!-- Plan Management Modal -->
 <div id="igiModalOverlay" onclick="if(event.target===this)closeModal()" style="display:none;position:fixed;inset:0;z-index:2000;background:rgba(0,0,0,.65);align-items:center;justify-content:center;opacity:0;transition:opacity .18s;">
-  <div id="igiModalBox" style="background:var(--surface);border:1px solid var(--teal-border);border-radius:12px;padding:28px 28px 24px;width:min(440px,92vw);box-shadow:0 24px 60px rgba(0,0,0,.6);transform:scale(.95);transition:transform .18s;"></div>
-</div>
-
-</body>
-</html
+  <div id="igiModalBox" style="background:var(--surface);border:1px solid var(--accent-border);border-radius:0;padding:28px 28px 24px;width:min(440px,92vw);box-shado
