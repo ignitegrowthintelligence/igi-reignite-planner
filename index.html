@@ -141,8 +141,8 @@
 .intel-mini-row { display:flex; justify-content:space-between; align-items:center; padding:5px 0; border-bottom:1px solid rgba(255,255,255,0.04); }
 .intel-mini-row:last-child { border-bottom:none; }
 .intel-mini-lbl { font-size:10px; color:rgba(255,255,255,0.38); }
-.intel-mini-val { font-size:10px; color:rgba(255,255,255,0.72); font-weight:500; }
-.intel-win-item { font-size:10px; color:rgba(255,255,255,0.48); padding:4px 0 4px 8px; border-left:2px solid rgba(239,65,54,0.3); border-radius:0; line-height:1.4; margin-bottom:4px; }
+.intel-mini-val { font-size:10px; color:rgba(255,255,255,0.72); font-weight:500; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:200px; }
+.intel-win-item { font-size:10px; color:rgba(255,255,255,0.48); padding:4px 0 4px 8px; border-left:2px solid rgba(239,65,54,0.3); border-radius:0; line-height:1.4; margin-bottom:4px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
 .intel-disc-btn { display:flex; align-items:center; justify-content:space-between; padding:9px 12px; background:rgba(239,65,54,0.1); border:1px solid rgba(239,65,54,0.25); border-radius:4px; font-size:11px; color:#EF4136; font-weight:600; margin-top:14px; cursor:pointer; text-decoration:none; }
 .intel-worth-grid { display:grid; grid-template-columns:repeat(2,1fr); gap:7px; margin-bottom:14px; }
 .intel-worth-card { background:#191919; border:1px solid rgba(255,255,255,0.07); border-radius:5px; padding:10px 12px; }
@@ -165,7 +165,7 @@
 .intel-ask-lbl-strong { font-size:9px; font-weight:700; letter-spacing:0.08em; text-transform:uppercase; color:#EF4136; margin-bottom:6px; }
 .intel-ask-body { font-size:10px; color:rgba(255,255,255,0.5); line-height:1.65; font-style:italic; }
 .intel-coaching { display:flex; gap:10px; align-items:flex-start; background:rgba(251,191,36,0.07); border:1px solid rgba(251,191,36,0.25); border-radius:5px; padding:11px 13px; margin-bottom:14px; }
-.intel-coaching-body { font-size:10px; color:rgba(255,255,255,0.6); line-height:1.6; }
+.intel-coaching-body { font-size:10px; color:rgba(255,255,255,0.6); line-height:1.6; display:-webkit-box; -webkit-line-clamp:3; -webkit-box-orient:vertical; overflow:hidden; }
 .intel-locked-lbl { font-size:9px; font-weight:700; letter-spacing:0.1em; text-transform:uppercase; color:rgba(255,255,255,0.15); margin-bottom:6px; padding-bottom:6px; border-bottom:1px solid rgba(255,255,255,0.05); margin-top:14px; }
 .intel-skel { height:7px; background:rgba(255,255,255,0.05); border-radius:2px; margin-bottom:5px; }
 .intel-gen-cta { background:rgba(239,65,54,0.07); border:1.5px solid rgba(239,65,54,0.3); border-radius:8px; padding:28px 24px; text-align:center; margin-bottom:20px; }
@@ -177,10 +177,10 @@
 .intel-preview-card { background:#191919; border:1px solid rgba(255,255,255,0.06); border-radius:5px; padding:10px 12px; opacity:0.4; }
 .intel-preview-lbl { font-size:9px; font-weight:700; letter-spacing:0.08em; text-transform:uppercase; color:rgba(255,255,255,0.3); margin-bottom:7px; }
 .intel-mkt-sum { background:#191919; border:1px solid rgba(255,255,255,0.07); border-radius:5px; padding:11px 12px; }
-.intel-mkt-headline { font-size:11px; color:rgba(255,255,255,0.7); line-height:1.55; margin-bottom:8px; }
+.intel-mkt-headline { font-size:11px; color:rgba(255,255,255,0.7); line-height:1.55; margin-bottom:8px; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
 .intel-mkt-cta-lbl { font-size:9px; font-weight:700; letter-spacing:0.07em; text-transform:uppercase; color:rgba(255,255,255,0.25); margin-bottom:5px; margin-top:8px; }
 .intel-cta-tag { display:inline-block; font-size:9px; padding:2px 8px; background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.1); border-radius:3px; color:rgba(255,255,255,0.55); margin:2px 2px 2px 0; }
-.intel-gap-tag { display:inline-block; font-size:9px; padding:2px 8px; background:rgba(239,65,54,0.07); border:1px solid rgba(239,65,54,0.2); border-radius:3px; color:rgba(239,65,54,0.7); margin:2px 2px 2px 0; }
+.intel-gap-tag { display:inline-block; font-size:9px; padding:2px 8px; background:rgba(239,65,54,0.07); border:1px solid rgba(239,65,54,0.2); border-radius:3px; color:rgba(239,65,54,0.7); margin:2px 2px 2px 0; max-width:280px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; vertical-align:middle; }
 .intel-sr { display:flex; justify-content:space-between; align-items:flex-start; padding:6px 0; border-bottom:1px solid rgba(255,255,255,0.04); }
 .intel-sr:last-child { border-bottom:none; }
 .intel-sr-l { font-size:11px; color:rgba(255,255,255,0.65); }
@@ -2778,23 +2778,24 @@ function _renderIntelPostState(data, acct) {
   }
 
   if (cv.estimatedLTV) {
+    var ltvShort = cv.estimatedLTV.replace(/\s*[\(\|].*/,'').trim();
     leftHTML += '<div class="intel-sl">Customer Value</div>'
       + '<div style="background:#191919;border:1px solid rgba(255,255,255,0.07);border-radius:4px;padding:9px 11px;">'
       + '<div style="font-size:9px;text-transform:uppercase;letter-spacing:0.07em;color:rgba(255,255,255,0.28);margin-bottom:3px;">Est. Customer LTV</div>'
-      + '<div style="font-size:15px;font-weight:700;color:#fff;">' + _esc(cv.estimatedLTV) + '</div>'
+      + '<div style="font-size:15px;font-weight:700;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">' + _esc(ltvShort) + '</div>'
       + (cv.industryExamples && cv.industryExamples.length
-        ? '<div style="font-size:10px;color:rgba(255,255,255,0.32);margin-top:5px;padding-top:5px;border-top:1px solid rgba(255,255,255,0.06);line-height:1.45;">'
+        ? '<div style="font-size:10px;color:rgba(255,255,255,0.32);margin-top:5px;padding-top:5px;border-top:1px solid rgba(255,255,255,0.06);line-height:1.45;display:-webkit-box;-webkit-line-clamp:1;-webkit-box-orient:vertical;overflow:hidden;">'
           + _esc(cv.industryExamples[0]) + '</div>' : '')
       + '</div>';
   }
 
   if (aw.seasonal && aw.seasonal.length) {
-    leftHTML += '<div class="intel-sl">Ad Windows</div>'
+    leftHTML += '<div class="intel-sl" style="opacity:0.6;">Ad Windows</div>'
       + aw.seasonal.slice(0,4).map(function(s){ return '<div class="intel-win-item">' + _esc(s) + '</div>'; }).join('');
   }
 
   if (ab.metaCPL || ab.googleCPC) {
-    leftHTML += '<div class="intel-sl">Ad Benchmarks</div>'
+    leftHTML += '<div class="intel-sl" style="opacity:0.6;">Ad Benchmarks</div>'
       + '<div style="background:#191919;border:1px solid rgba(255,255,255,0.07);border-radius:4px;overflow:hidden;">'
       + (ab.metaCPL   ? '<div class="intel-mini-row" style="padding:6px 10px;"><div class="intel-mini-lbl">Meta CPL</div><div class="intel-mini-val">' + _esc(ab.metaCPL) + '</div></div>' : '')
       + (ab.googleCPC ? '<div class="intel-mini-row" style="padding:6px 10px;border-top:1px solid rgba(255,255,255,0.05);"><div class="intel-mini-lbl">Google CPC</div><div class="intel-mini-val">' + _esc(ab.googleCPC) + '</div></div>' : '')
@@ -2825,7 +2826,7 @@ function _renderIntelPostState(data, acct) {
           + '</div>' : '')
       + (ms.gaps && ms.gaps.length
         ? '<div class="intel-mkt-cta-lbl" style="margin-top:7px;">Gaps identified</div><div>'
-          + ms.gaps.map(function(g){ return '<span class="intel-gap-tag">' + _esc(g) + '</span>'; }).join('')
+          + ms.gaps.slice(0,2).map(function(g){ return '<span class="intel-gap-tag">' + _esc(g) + '</span>'; }).join('')
           + '</div>' : '')
       + '</div>';
   }
@@ -2859,7 +2860,7 @@ function _renderIntelPostState(data, acct) {
   }
 
   if (starters.length) {
-    rightHTML += '<div class="intel-sl">Conversation starters</div>'
+    rightHTML += '<div class="intel-sl" style="opacity:0.6;">Conversation starters</div>'
       + '<div class="intel-convo-grid">'
       + starters.map(function(q){
           return '<div class="intel-convo-item"><span class="intel-convo-q">?</span>' + _esc(q) + '</div>';
