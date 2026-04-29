@@ -494,16 +494,27 @@ function cleanNum(s) {
   const v = parseFloat(str);
   return isNaN(v) ? 0 : (neg ? -v : v);
 }
-function _findYearTotals(headers) {
+function _findYearTotals(headers, rows, hRow) {
+  var result = { col24: -1, col25: -1, col26: -1 };
+  if (rows && hRow > 0) {
+    var yearRow = rows[hRow - 1] || [];
+    headers.forEach(function(h, i) {
+      if (String(h).toLowerCase().trim() !== 'total') return;
+      var cell = String(yearRow[i] || '');
+      if      (cell.includes('2024')) result.col24 = i;
+      else if (cell.includes('2025')) result.col25 = i;
+      else if (cell.includes('2026')) result.col26 = i;
+    });
+    if (result.col24 >= 0 || result.col25 >= 0 || result.col26 >= 0) return result;
+  }
   var totals = [];
   headers.forEach(function(h, i) {
     if (String(h).toLowerCase().trim() === 'total') totals.push(i);
   });
-  return {
-    col24: totals[0] !== undefined ? totals[0] : -1,
-    col25: totals[1] !== undefined ? totals[1] : -1,
-    col26: totals[2] !== undefined ? totals[2] : -1
-  };
+  result.col24 = totals[0] !== undefined ? totals[0] : -1;
+  result.col25 = totals[1] !== undefined ? totals[1] : -1;
+  result.col26 = totals[2] !== undefined ? totals[2] : -1;
+  return result;
 }
 function scoreBadge(s, scoreData, containerId) {
   var s100=Math.round(s||0);
@@ -1265,7 +1276,7 @@ function parseRevenueReport(rows, fname) {
   }
 
   var headers = rows[hRow] || [];
-  var cols = _findYearTotals(headers);
+  var cols = _findYearTotals(headers, rows, hRow);
 
   var adMap = {};
   for (var i = hRow + 1; i < rows.length; i++) {
@@ -1361,7 +1372,7 @@ function parseIgniteReport(rows, fname) {
     }
   }
   var headers = rows[hRow] || [];
-  var cols = _findYearTotals(headers);
+  var cols = _findYearTotals(headers, rows, hRow);
   var ignMap = {};
   for (var i = hRow + 1; i < rows.length; i++) {
     var r = rows[i];
@@ -2358,6 +2369,7 @@ function buildCategoryFilters() {
 function toggleCategoryFilter(cat, checked) {
  var MAX_CATS = 3;
  if (checked) {
+ activeCategories.delete('All');
  if (activeCategories.size >= MAX_CATS) {
  buildCategoryFilters();
  var warn = document.getElementById('catLimitWarn');
