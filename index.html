@@ -495,17 +495,18 @@ function cleanNum(s) {
   return isNaN(v) ? 0 : (neg ? -v : v);
 }
 function _findYearTotals(headers, rows, hRow) {
-  var result = { col24: -1, col25: -1, col26: -1 };
+  var result = { col23: -1, col24: -1, col25: -1, col26: -1 };
   if (rows && hRow > 0) {
     var yearRow = rows[hRow - 1] || [];
     headers.forEach(function(h, i) {
       if (String(h).toLowerCase().trim() !== 'total') return;
       var cell = String(yearRow[i] || '');
-      if      (cell.includes('2024')) result.col24 = i;
+      if      (cell.includes('2023')) result.col23 = i;
+      else if (cell.includes('2024')) result.col24 = i;
       else if (cell.includes('2025')) result.col25 = i;
       else if (cell.includes('2026')) result.col26 = i;
     });
-    if (result.col24 >= 0 || result.col25 >= 0 || result.col26 >= 0) return result;
+    if (result.col23 >= 0 || result.col24 >= 0 || result.col25 >= 0 || result.col26 >= 0) return result;
   }
   var totals = [];
   headers.forEach(function(h, i) {
@@ -1286,10 +1287,12 @@ function parseRevenueReport(rows, fname) {
     if (!adv || adv.toLowerCase() === 'total' || adv.toLowerCase() === 'grand total') continue;
     var ae = String(r[1] || '').trim();
     var market = String(r[0] || '').trim();
+    var r23 = cols.col23 >= 0 ? cleanNum(r[cols.col23]) : 0;
     var r24 = cols.col24 >= 0 ? cleanNum(r[cols.col24]) : 0;
     var r25 = cols.col25 >= 0 ? cleanNum(r[cols.col25]) : 0;
     var r26 = cols.col26 >= 0 ? cleanNum(r[cols.col26]) : 0;
-    if (!adMap[adv]) adMap[adv] = { name: adv, adv: adv, ae: ae, market: market, rev24: 0, rev25: 0, rev26: 0 };
+    if (!adMap[adv]) adMap[adv] = { name: adv, adv: adv, ae: ae, market: market, rev23: 0, rev24: 0, rev25: 0, rev26: 0 };
+    adMap[adv].rev23 += r23;
     adMap[adv].rev24 += r24;
     adMap[adv].rev25 += r25;
     adMap[adv].rev26 += r26;
@@ -1310,9 +1313,8 @@ function parseRevenueReport(rows, fname) {
       c.score = 0;
       protectClients.push(c);
 
-    } else if (c.rev25 > 0 || c.rev24 > 0) {
-      var peakSpend = Math.max(c.rev24, c.rev25);
-      c.rev = peakSpend;
+    } else if (c.rev25 > 0 || c.rev24 > 0 || c.rev23 > 0) {
+      c.rev = Math.max(c.rev23||0, c.rev24||0, c.rev25||0);
       c.isIgnite = false;
       c.score = 0;
       reclaimClients.push(c);
@@ -1379,10 +1381,12 @@ function parseIgniteReport(rows, fname) {
     if (!r || !r[2]) continue;
     var adv = String(r[2]).trim();
     if (!adv || adv.toLowerCase() === 'total' || adv.toLowerCase() === 'grand total') continue;
+    var r23 = cols.col23 >= 0 ? cleanNum(r[cols.col23]) : 0;
     var r24 = cols.col24 >= 0 ? cleanNum(r[cols.col24]) : 0;
     var r25 = cols.col25 >= 0 ? cleanNum(r[cols.col25]) : 0;
     var r26 = cols.col26 >= 0 ? cleanNum(r[cols.col26]) : 0;
-    if (!ignMap[adv]) ignMap[adv] = { ign24: 0, ign25: 0, ign26: 0 };
+    if (!ignMap[adv]) ignMap[adv] = { ign23: 0, ign24: 0, ign25: 0, ign26: 0 };
+    ignMap[adv].ign23 += r23;
     ignMap[adv].ign24 += r24;
     ignMap[adv].ign25 += r25;
     ignMap[adv].ign26 += r26;
@@ -1415,7 +1419,7 @@ function renderProtect(clients, extraNote) {
     +"<div class=\"mobile-scroll\"><table id=\"protect-table\" class=\"bp-table\"><thead><tr>"
     +"<th style=\"width:32px;\"></th><th class=\"text-left\">Advertiser</th>"
     +"<th class=\"text-left hide-mobile\">AE</th><th class=\"text-right accent\">IGI Score</th>"
-    +"<th class=\"text-right hide-mobile\">2024 Total</th><th class=\"text-right\">2025 Total</th><th class=\"text-right\">2026 Total</th>"
+    +"<th class=\"text-right hide-mobile\">2025 Total</th><th class=\"text-right\">2026 Total</th>"
     +(hasIgnite?"<th class=\"text-right hide-mobile\" style=\"color:var(--accent);\">Ignite</th><th class=\"text-right hide-mobile\" style=\"color:var(--orange);\">Broadcast</th>":"")
     +"<th class=\"text-right hide-mobile\">Trend</th><th class=\"text-left hide-mobile\">Action</th>"
     +"</tr></thead><tbody>"
@@ -1427,7 +1431,7 @@ function renderProtect(clients, extraNote) {
         +"<td><strong style=\"color:#fff;\">"+c.adv+"</strong>"+placesTierBadge(c._placesTier)+"</td>"
         +"<td class=\"hide-mobile\" style=\"color:var(--dim);font-size:.78rem;\">"+c.ae+"</td>"
         +"<td class=\"text-right\">"+scoreBadge(c.score,c._scoreData)+"</td>"
-        +"<td class=\"text-right hide-mobile\" style=\"color:var(--dim);\">"+fmt(c.rev24||0)+"</td>"
+
         +"<td class=\"text-right\" style=\"color:var(--dim);\">"+fmt(c.rev25)+"</td>"
         +"<td class=\"text-right\" style=\"color:#fff;font-weight:600;\">"+fmt(c.rev26)+"</td>"
         +(hasIgnite?"<td class=\"text-right hide-mobile\" style=\"color:var(--accent);\">"+( ign26!=null?fmt(ign26):"-")+"</td><td class=\"text-right hide-mobile\" style=\"color:var(--orange);\">"+( bcast26!=null?fmt(bcast26):"-")+"</td>":"")
@@ -1454,16 +1458,16 @@ function renderReclaim() {
       combined.push({
         name:c.adv, adv:c.adv, score:c.score, bucket:c.bucket, _scoreData:c._scoreData,
         source:'both',
-        allRev24:allClient.rev24||0, allRev25:allClient.rev25||0, allRev26:allClient.rev26||0,
-        ignRev24:c.rev24||0,         ignRev25:c.rev25||0,          ignRev26:c.rev26||0,
-        rev:Math.max(allClient.rev24||0, allClient.rev25||0, allClient.rev26||0)
+        allRev23:allClient.rev23||0, allRev24:allClient.rev24||0, allRev25:allClient.rev25||0,
+        ignRev23:c.rev23||0,         ignRev24:c.rev24||0,          ignRev25:c.rev25||0,
+        rev:Math.max(allClient.rev23||0, allClient.rev24||0, allClient.rev25||0)
       });
     } else {
       combined.push({
         name:c.adv, adv:c.adv, score:c.score, bucket:c.bucket, _scoreData:c._scoreData,
         source:'ignite',
-        allRev24:0, allRev25:0, allRev26:0,
-        ignRev24:c.rev24||0, ignRev25:c.rev25||0, ignRev26:c.rev26||0,
+        allRev23:0, allRev24:0, allRev25:0,
+        ignRev23:c.rev23||0, ignRev24:c.rev24||0, ignRev25:c.rev25||0,
         rev:c.rev
       });
     }
@@ -1474,8 +1478,8 @@ function renderReclaim() {
       combined.push({
         name:c.adv, adv:c.adv, score:c.score, bucket:c.bucket, _scoreData:c._scoreData,
         source:'all',
-        allRev24:c.rev24||0, allRev25:c.rev25||0, allRev26:c.rev26||0,
-        ignRev24:0, ignRev25:0, ignRev26:0,
+        allRev23:c.rev23||0, allRev24:c.rev24||0, allRev25:c.rev25||0,
+        ignRev23:0, ignRev24:0, ignRev25:0,
         rev:c.rev
       });
     }
@@ -1497,12 +1501,12 @@ function renderReclaim() {
     +'<th class="text-left">Advertiser</th>'
     +'<th class="text-right accent">IGI Score</th>'
     +'<th class="text-left" style="min-width:90px;white-space:nowrap;">Bucket</th>'
+    +(hasAll?'<th class="text-right hide-mobile" style="color:var(--dim);">All Rev 2023</th>':'')
     +(hasAll?'<th class="text-right hide-mobile" style="color:var(--dim);">All Rev 2024</th>':'')
-    +(hasAll?'<th class="text-right hide-mobile" style="color:var(--dim);">All Rev 2025</th>':'')
-    +(hasAll?'<th class="text-right" style="color:var(--dim);">All Rev 2026</th>':'')
+    +(hasAll?'<th class="text-right" style="color:var(--dim);">All Rev 2025</th>':'')
+    +(hasIgnite?'<th class="text-right hide-mobile" style="color:var(--accent);font-size:.65rem;">IGN 2023</th>':'')
     +(hasIgnite?'<th class="text-right hide-mobile" style="color:var(--accent);font-size:.65rem;">IGN 2024</th>':'')
-    +(hasIgnite?'<th class="text-right hide-mobile" style="color:var(--accent);font-size:.65rem;">IGN 2025</th>':'')
-    +(hasIgnite?'<th class="text-right" style="color:var(--accent);font-size:.65rem;">IGN 2026</th>':'')
+    +(hasIgnite?'<th class="text-right" style="color:var(--accent);font-size:.65rem;">IGN 2025</th>':'')
     +'</tr></thead><tbody>'
     +combined.map(function(c) {
       var bucket = c.bucket==='Reclaim Now'
@@ -1526,12 +1530,12 @@ function renderReclaim() {
         +'<td><strong style="color:#fff;">'+c.adv+'</strong>'+placesTierBadge(c._placesTier)+'</td>'
         +'<td class="text-right">'+scoreBadge(c.score, c._scoreData)+'</td>'
         +'<td>'+bucket+'</td>'
+        +(hasAll?revCell(c.allRev23):'')
         +(hasAll?revCell(c.allRev24):'')
-        +(hasAll?revCell(c.allRev25):'')
-        +(hasAll?revCellVisible(c.allRev26):'')
+        +(hasAll?revCellVisible(c.allRev25):'')
+        +(hasIgnite?revCell(c.ignRev23,'var(--accent)'):'')
         +(hasIgnite?revCell(c.ignRev24,'var(--accent)'):'')
-        +(hasIgnite?revCell(c.ignRev25,'var(--accent)'):'')
-        +(hasIgnite?revCellVisible(c.ignRev26,'var(--accent)'):'')
+        +(hasIgnite?revCellVisible(c.ignRev25,'var(--accent)'):'')
         +'</tr>';
     }).join('')
     +'</tbody></table></div>';
