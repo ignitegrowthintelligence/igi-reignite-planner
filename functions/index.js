@@ -153,6 +153,12 @@ Return ONLY a valid JSON object. No markdown fences, no explanation, no extra te
 
   "coachingNote": "Only populate this field if meetingStrengthScore is 6 or below. 2-3 sentences of direct coaching for the sales rep: explain specifically WHY this one is harder (competitive category, established business, thin digital gaps, low transaction value, etc.), what they should do differently on this call vs. a high-score prospect, and what a realistic win looks like here. Leave this field null if score is 7 or above.",
 
+  "marketSummary": {
+    "headline": "2-3 sentence plain-English summary of the business's website messaging and current marketing focus. What is the site trying to do? What's the main offer or value prop? What tone and audience does it speak to?",
+    "activeCTAs": ["CTA text as it appears on the site", "CTA text 2", "CTA text 3"],
+    "gaps": ["One specific gap or missed opportunity visible from the site", "Gap 2"]
+  },
+
   "contact": {
     "phone": "string or null",
     "email": "string or null",
@@ -191,7 +197,10 @@ Critical rules:
 - NEVER use the words pixels, GTM, tracking tags, remarketing, or conversion tracking in whatToSay, meetingHook, or bestMeetingAngle
 - whatToSay scripts must feel specific to THIS business — reference their actual services, location, reviews, or promotions from the site
 - conversationStarters must open natural business conversations, not interrogations
-- If website could not be fetched, infer everything from domain name and industry — still generate all fields`;
+- If website could not be fetched, infer everything from domain name and industry — still generate all fields
+- marketSummary.headline must be specific to THIS business — never generic. Reference actual content from the site.
+- marketSummary.activeCTAs should reflect real button/link text found on the site (e.g. "Shop Mattresses", "Schedule a Consultation", "Get a Free Quote"). Max 6. If site can't be fetched, return empty array.
+- marketSummary.gaps should be concrete, seller-relevant observations (e.g. "No email capture or lead form detected", "No promotional pricing or seasonal offers visible", "No customer reviews or social proof on homepage"). Max 3. Never mention pixels, GTM, or tracking tech.`;
 
 // ---------------------------------------------------------------------------
 // Claude API call
