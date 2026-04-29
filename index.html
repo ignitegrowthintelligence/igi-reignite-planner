@@ -2594,13 +2594,24 @@ function _buildProspectPageHTML(section, acct) {
   var score = Math.round(acct.score || 0);
   var name  = acct.name || acct.acct || acct.adv || '';
   var cat   = acct.cat || acct.type || '';
-  var phone = acct.phone || acct.tel || '';
-  var rating = acct.rating
-    ? ('\u2605'.repeat(Math.round(acct.rating)) + '\u2606'.repeat(5 - Math.round(acct.rating))
-       + ' <span style="font-size:10px;color:rgba(255,255,255,0.28);">(' + (acct.reviews || acct.reviewCount || '') + ' reviews)</span>')
-    : '\u2014';
-  var status  = acct.status || acct.hours_status || '';
-  var website = acct._discDomain || acct.website || acct.domain || '';
+  var gp      = acct._places || {};
+  var phone   = gp.nationalPhoneNumber || '';
+  var rating  = gp.rating || null;
+  var reviews = gp.userRatingCount || 0;
+  var website = acct._website || gp.websiteUri || acct._discDomain || '';
+  var domain  = website.replace(/^https?:\/\/(www\.)?/i,'').replace(/\/.*$/,'').split('?')[0] || '';
+
+  var hours = gp.regularOpeningHours || null;
+  var todayHoursStr = '';
+  if (hours && hours.weekdayDescriptions && hours.weekdayDescriptions.length === 7) {
+    var jsDay = new Date().getDay();
+    var gIdx  = jsDay === 0 ? 6 : jsDay - 1;
+    todayHoursStr = (hours.weekdayDescriptions[gIdx] || '').replace(/^[^:]+:\s*/, '').trim();
+  }
+  var isOpenNow = hours && typeof hours.openNow === 'boolean' ? hours.openNow : null;
+  var openTag = isOpenNow === true  ? ' <span style="color:rgba(255,255,255,0.5);font-size:9px;">(Open now)</span>'
+              : isOpenNow === false ? ' <span style="color:#EF4136;font-size:9px;">(Closed now)</span>'
+              : '';
   var profileKey = _profileKey(acct);
 
   return '<div class="intel-page" id="intel-page-root">'
@@ -2626,10 +2637,10 @@ function _buildProspectPageHTML(section, acct) {
     + '</div>'
     + '</div>'
     + '<div class="intel-vitals">'
-    + '<div class="intel-vit"><div class="intel-vit-l">Phone</div><div class="intel-vit-v red">' + _esc(phone || '\u2014') + '</div></div>'
-    + '<div class="intel-vit"><div class="intel-vit-l">Status</div><div class="intel-vit-v">' + _esc(status || '\u2014') + '</div></div>'
-    + '<div class="intel-vit"><div class="intel-vit-l">Rating</div><div class="intel-vit-v">' + (acct.rating ? rating : '\u2014') + '</div></div>'
-    + '<div class="intel-vit"><div class="intel-vit-l">Website</div><div class="intel-vit-v red" style="font-size:10px;">' + (website ? '<a href="https://' + _esc(website) + '" target="_blank" rel="noopener" style="color:#EF4136;text-decoration:none;">' + _esc(website) + ' &#8594;</a>' : '\u2014') + '</div></div>'
+    + '<div class="intel-vit"><div class="intel-vit-l">Phone</div><div class="intel-vit-v red">' + (phone ? '<a href="tel:' + phone.replace(/\s/g,'') + '" style="color:#EF4136;text-decoration:none;">' + _esc(phone) + '</a>' : '\u2014') + '</div></div>'
+    + '<div class="intel-vit"><div class="intel-vit-l">Hours Today</div><div class="intel-vit-v" style="font-size:11px;">' + (_esc(todayHoursStr) || '\u2014') + openTag + '</div></div>'
+    + '<div class="intel-vit"><div class="intel-vit-l">Rating</div><div class="intel-vit-v">' + (rating ? ('\u2605'.repeat(Math.floor(rating)) + '\u2606'.repeat(5 - Math.floor(rating)) + ' <span style="font-size:10px;color:rgba(255,255,255,0.28);">(' + reviews.toLocaleString() + ')</span>') : '\u2014') + '</div></div>'
+    + '<div class="intel-vit"><div class="intel-vit-l">Website</div><div class="intel-vit-v red" style="font-size:10px;">' + (domain ? '<a href="https://' + _esc(domain) + '" target="_blank" rel="noopener" style="color:#EF4136;text-decoration:none;">' + _esc(domain) + ' &#8594;</a>' : '\u2014') + '</div></div>'
     + '</div>'
     + '<div class="intel-body">'
     + '<div class="intel-left" id="intel-left-panel"></div>'
