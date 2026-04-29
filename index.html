@@ -129,22 +129,22 @@
 .intel-vit-l { font-size:9px; color:rgba(255,255,255,0.28); letter-spacing:0.07em; text-transform:uppercase; }
 .intel-vit-v { font-size:12px; color:#fff; margin-top:3px; font-weight:500; }
 .intel-vit-v.red { color:#EF4136; }
-.intel-body { display:grid; grid-template-columns:1fr 2fr; min-height:0; }
-.intel-left { background:#16161A; border-right:1px solid rgba(255,255,255,0.06); padding:14px; min-width:0; }
-.intel-right { background:#111113; padding:16px; min-width:0; }
-.intel-sl { font-size:9px; font-weight:700; letter-spacing:0.1em; text-transform:uppercase; color:#EF4136; margin-bottom:9px; padding-bottom:6px; border-bottom:1px solid rgba(239,65,54,0.18); margin-top:14px; }
+.intel-body { display:grid; grid-template-columns:1fr 2fr; height:calc(100vh - 162px); min-height:0; overflow:hidden; }
+.intel-left { background:#16161A; border-right:1px solid rgba(255,255,255,0.06); padding:14px; min-width:0; overflow-y:auto; }
+.intel-right { background:#111113; padding:16px; min-width:0; overflow-y:auto; }
+.intel-sl { font-size:9px; font-weight:700; letter-spacing:0.1em; text-transform:uppercase; color:#EF4136; margin-bottom:8px; padding-bottom:5px; border-bottom:1px solid rgba(239,65,54,0.18); margin-top:10px; }
 .intel-sl:first-child { margin-top:0; }
 .intel-mstr { background:#191919; border:1px solid rgba(239,65,54,0.2); border-radius:5px; padding:12px; }
 .intel-mstr-score { font-size:38px; font-weight:900; color:#fff; line-height:1; flex-shrink:0; }
 .intel-mstr-score-sub { font-size:9px; color:rgba(255,255,255,0.25); }
-.intel-tag { font-size:9px; padding:2px 7px; background:rgba(239,65,54,0.09); border:1px solid rgba(239,65,54,0.18); border-radius:3px; color:rgba(239,65,54,0.8); line-height:1.4; }
+.intel-tag { font-size:9px; padding:2px 7px; background:rgba(239,65,54,0.09); border:1px solid rgba(239,65,54,0.18); border-radius:3px; color:rgba(239,65,54,0.8); line-height:1.4; max-width:160px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
 .intel-mini-row { display:flex; justify-content:space-between; align-items:center; padding:5px 0; border-bottom:1px solid rgba(255,255,255,0.04); }
 .intel-mini-row:last-child { border-bottom:none; }
 .intel-mini-lbl { font-size:10px; color:rgba(255,255,255,0.38); }
 .intel-mini-val { font-size:10px; color:rgba(255,255,255,0.72); font-weight:500; }
 .intel-win-item { font-size:10px; color:rgba(255,255,255,0.48); padding:4px 0 4px 8px; border-left:2px solid rgba(239,65,54,0.3); border-radius:0; line-height:1.4; margin-bottom:4px; }
 .intel-disc-btn { display:flex; align-items:center; justify-content:space-between; padding:9px 12px; background:rgba(239,65,54,0.1); border:1px solid rgba(239,65,54,0.25); border-radius:4px; font-size:11px; color:#EF4136; font-weight:600; margin-top:14px; cursor:pointer; text-decoration:none; }
-.intel-worth-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:7px; margin-bottom:14px; }
+.intel-worth-grid { display:grid; grid-template-columns:repeat(2,1fr); gap:7px; margin-bottom:14px; }
 .intel-worth-card { background:#191919; border:1px solid rgba(255,255,255,0.07); border-radius:5px; padding:10px 12px; }
 .intel-worth-lbl { font-size:11px; font-weight:600; color:#fff; margin-bottom:4px; }
 .intel-worth-body { font-size:10px; color:rgba(255,255,255,0.4); line-height:1.5; }
@@ -2695,8 +2695,6 @@ function _renderIntelPreState(acct, profileKey) {
     + '<div style="background:rgba(239,65,54,0.05);border:1px solid rgba(239,65,54,0.1);border-radius:5px;padding:12px;">'
     + '<div style="font-size:38px;font-weight:900;color:rgba(255,255,255,0.1);line-height:1;">\u2014</div>'
     + '</div>'
-    + '<div class="intel-locked-lbl">&#128274; Marketing Summary</div>'
-    + '<div class="intel-skel"></div><div class="intel-skel" style="width:80%;"></div><div class="intel-skel" style="width:65%;"></div>'
     + '<div class="intel-locked-lbl">&#128274; Target Audience</div>'
     + '<div class="intel-skel"></div><div class="intel-skel" style="width:75%;"></div>'
     + '<div class="intel-locked-lbl">&#128274; Customer Value</div>'
@@ -2769,23 +2767,8 @@ function _renderIntelPostState(data, acct) {
     + '<div style="display:flex;align-items:flex-start;gap:10px;margin-bottom:8px;">'
     + '<div><div class="intel-mstr-score">' + mScore + '</div><div class="intel-mstr-score-sub">/ 10</div></div>'
     + '<div style="display:flex;flex-wrap:wrap;gap:3px;">'
-    + mReasons.slice(0,5).map(function(r){ return '<div class="intel-tag">' + _esc(r) + '</div>'; }).join('')
+    + mReasons.slice(0,3).map(function(r){ return '<div class="intel-tag">' + _esc(r) + '</div>'; }).join('')
     + '</div></div></div>';
-
-  if (ms.headline || (ms.activeCTAs && ms.activeCTAs.length) || (ms.gaps && ms.gaps.length)) {
-    leftHTML += '<div class="intel-sl">Marketing Summary</div>'
-      + '<div class="intel-mkt-sum">'
-      + (ms.headline ? '<div class="intel-mkt-headline">' + _esc(ms.headline) + '</div>' : '')
-      + (ms.activeCTAs && ms.activeCTAs.length
-        ? '<div class="intel-mkt-cta-lbl">Active CTAs</div><div>'
-          + ms.activeCTAs.map(function(c){ return '<span class="intel-cta-tag">' + _esc(c) + '</span>'; }).join('')
-          + '</div>' : '')
-      + (ms.gaps && ms.gaps.length
-        ? '<div class="intel-mkt-cta-lbl" style="margin-top:7px;">Gaps identified</div><div>'
-          + ms.gaps.map(function(g){ return '<span class="intel-gap-tag">' + _esc(g) + '</span>'; }).join('')
-          + '</div>' : '')
-      + '</div>';
-  }
 
   if (ta.type || ta.demographics || ta.reach) {
     leftHTML += '<div class="intel-sl">Target Audience</div>';
@@ -2830,6 +2813,21 @@ function _renderIntelPostState(data, acct) {
       + '<div style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:rgba(251,191,36,0.9);margin-bottom:5px;">Coaching Note</div>'
       + '<div class="intel-coaching-body">' + _esc(coaching) + '</div>'
       + '</div></div>';
+  }
+
+  if (ms.headline || (ms.activeCTAs && ms.activeCTAs.length) || (ms.gaps && ms.gaps.length)) {
+    rightHTML += '<div class="intel-sl" style="margin-top:0;">Marketing Summary</div>'
+      + '<div class="intel-mkt-sum">'
+      + (ms.headline ? '<div class="intel-mkt-headline">' + _esc(ms.headline) + '</div>' : '')
+      + (ms.activeCTAs && ms.activeCTAs.length
+        ? '<div class="intel-mkt-cta-lbl">Active CTAs</div><div>'
+          + ms.activeCTAs.map(function(c){ return '<span class="intel-cta-tag">' + _esc(c) + '</span>'; }).join('')
+          + '</div>' : '')
+      + (ms.gaps && ms.gaps.length
+        ? '<div class="intel-mkt-cta-lbl" style="margin-top:7px;">Gaps identified</div><div>'
+          + ms.gaps.map(function(g){ return '<span class="intel-gap-tag">' + _esc(g) + '</span>'; }).join('')
+          + '</div>' : '')
+      + '</div>';
   }
 
   if (worth.length) {
