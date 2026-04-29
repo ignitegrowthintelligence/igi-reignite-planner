@@ -109,27 +109,30 @@
 
 /* ── IGI Intel Page - dark two-column layout ── */
 .intel-page { background:#111113; min-height:100vh; font-family:'Inter',system-ui,sans-serif; }
-.intel-hdr { background:#111113; border-bottom:3px solid #EF4136; padding:0 20px; display:flex; align-items:center; justify-content:space-between; height:52px; }
+.intel-hdr { background:#111113; border-bottom:3px solid #EF4136; }
+.intel-hdr-inner { max-width:1200px; margin:0 auto; padding:0 20px; display:flex; align-items:center; justify-content:space-between; height:52px; box-sizing:border-box; }
 .intel-hdr-logo { font-size:15px; font-weight:700; letter-spacing:-0.01em; color:#fff; }
 .intel-hdr-logo span { color:#EF4136; }
 .intel-hdr-div { width:1px; height:16px; background:rgba(255,255,255,0.12); margin:0 10px; }
 .intel-hdr-sub { font-size:10px; letter-spacing:0.09em; text-transform:uppercase; color:rgba(255,255,255,0.28); }
 .intel-hdr-back { font-size:11px; color:rgba(255,255,255,0.45); display:flex; align-items:center; gap:5px; border:1px solid rgba(255,255,255,0.12); border-radius:4px; padding:5px 11px; background:none; cursor:pointer; }
-.intel-topbar { background:#191919; border-bottom:1px solid rgba(255,255,255,0.06); padding:12px 20px; display:flex; align-items:center; justify-content:space-between; }
+.intel-topbar { background:#191919; border-bottom:1px solid rgba(255,255,255,0.06); }
+.intel-topbar-inner { max-width:1200px; margin:0 auto; padding:12px 20px; display:flex; align-items:center; justify-content:space-between; box-sizing:border-box; }
 .intel-acct-name { font-size:17px; font-weight:700; color:#fff; }
 .intel-acct-cat { font-size:10px; color:rgba(255,255,255,0.35); letter-spacing:0.06em; text-transform:uppercase; margin-top:3px; }
 .intel-score-bdg { border:1.5px solid rgba(255,255,255,0.15); border-radius:6px; padding:7px 14px; text-align:center; background:#111113; }
 .intel-score-num { font-size:26px; font-weight:800; color:#fff; line-height:1; }
 .intel-score-lbl { font-size:9px; letter-spacing:0.1em; text-transform:uppercase; color:rgba(255,255,255,0.3); margin-top:2px; }
 .intel-rebuild-btn { font-size:10px; color:#EF4136; letter-spacing:0.07em; text-transform:uppercase; font-weight:700; border:1px solid rgba(239,65,54,0.4); border-radius:4px; padding:5px 11px; background:none; cursor:pointer; }
-.intel-vitals { background:#18181B; border-bottom:1px solid rgba(255,255,255,0.06); padding:10px 20px; display:grid; grid-template-columns:repeat(4,1fr); }
+.intel-vitals { background:#18181B; border-bottom:1px solid rgba(255,255,255,0.06); }
+.intel-vitals-inner { max-width:1200px; margin:0 auto; padding:10px 20px; display:grid; grid-template-columns:repeat(4,1fr); box-sizing:border-box; }
 .intel-vit { padding:5px 12px 5px 0; border-right:1px solid rgba(255,255,255,0.07); }
 .intel-vit:first-child { padding-left:0; }
 .intel-vit:last-child { border-right:none; padding-left:12px; }
 .intel-vit-l { font-size:10px; color:rgba(255,255,255,0.28); letter-spacing:0.07em; text-transform:uppercase; }
 .intel-vit-v { font-size:13px; color:#fff; margin-top:3px; font-weight:500; }
 .intel-vit-v.red { color:#EF4136; }
-.intel-body { display:grid; grid-template-columns:1fr 2fr; height:calc(100vh - 162px); min-height:0; overflow:hidden; }
+.intel-body { display:grid; grid-template-columns:1fr 2fr; height:calc(100vh - 162px); min-height:0; overflow:hidden; max-width:1200px; margin:0 auto; }
 .intel-left { background:#16161A; border-right:1px solid rgba(255,255,255,0.06); padding:14px; min-width:0; overflow-y:auto; }
 .intel-right { background:#111113; padding:16px; min-width:0; overflow-y:auto; }
 .intel-sl { font-size:10px; font-weight:700; letter-spacing:0.09em; text-transform:uppercase; color:#EF4136; margin-bottom:8px; padding-bottom:5px; border-bottom:1px solid rgba(239,65,54,0.18); margin-top:10px; }
@@ -2620,6 +2623,7 @@ function _buildProspectPageHTML(section, acct) {
 
   return '<div class="intel-page" id="intel-page-root">'
     + '<div class="intel-hdr">'
+    + '<div class="intel-hdr-inner">'
     + '<div style="display:flex;align-items:center;">'
     + '<div class="intel-hdr-logo"><span>IGI</span> Intel</div>'
     + '<div class="intel-hdr-div"></div>'
@@ -2627,7 +2631,9 @@ function _buildProspectPageHTML(section, acct) {
     + '</div>'
     + '<button class="intel-hdr-back" onclick="history.back()">&#8592; IGI Focus</button>'
     + '</div>'
+    + '</div>'
     + '<div class="intel-topbar">'
+    + '<div class="intel-topbar-inner">'
     + '<div style="display:flex;align-items:center;gap:12px;">'
     + '<div>'
     + '<div class="intel-acct-name">' + _esc(name) + '</div>'
@@ -2640,11 +2646,14 @@ function _buildProspectPageHTML(section, acct) {
     + '<div class="intel-score-lbl">IGI Score</div>'
     + '</div>'
     + '</div>'
+    + '</div>'
     + '<div class="intel-vitals">'
+    + '<div class="intel-vitals-inner">'
     + '<div class="intel-vit"><div class="intel-vit-l">Phone</div><div class="intel-vit-v red">' + (phone ? '<a href="tel:' + phone.replace(/\s/g,'') + '" style="color:#EF4136;text-decoration:none;">' + _esc(phone) + '</a>' : '\u2014') + '</div></div>'
     + '<div class="intel-vit"><div class="intel-vit-l">Hours Today</div><div class="intel-vit-v" style="font-size:11px;">' + (_esc(todayHoursStr) || '\u2014') + openTag + '</div></div>'
     + '<div class="intel-vit"><div class="intel-vit-l">Rating</div><div class="intel-vit-v">' + (rating ? ('\u2605'.repeat(Math.floor(rating)) + '\u2606'.repeat(5 - Math.floor(rating)) + ' <span style="font-size:10px;color:rgba(255,255,255,0.28);">(' + reviews.toLocaleString() + ')</span>') : '\u2014') + '</div></div>'
     + '<div class="intel-vit"><div class="intel-vit-l">Website</div><div class="intel-vit-v red" style="font-size:10px;">' + (domain ? '<a href="https://' + _esc(domain) + '" target="_blank" rel="noopener" style="color:#EF4136;text-decoration:none;">' + _esc(domain) + ' &#8594;</a>' : '\u2014') + '</div></div>'
+    + '</div>'
     + '</div>'
     + '<div class="intel-body">'
     + '<div class="intel-left" id="intel-left-panel"></div>'
