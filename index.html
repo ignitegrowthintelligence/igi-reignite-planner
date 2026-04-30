@@ -254,7 +254,7 @@
       <button onclick="switchTab('reclaim')" id="tab-reclaim" class="tab-inactive px-4 py-2 text-sm transition-all">Reclaim</button>
       <button onclick="switchTab('rebuild')" id="tab-rebuild" class="tab-inactive px-4 py-2 text-sm transition-all">Rebuild</button>
       <button onclick="switchTab('plan')"   id="tab-plan"   class="tab-inactive px-4 py-2 text-sm transition-all">Plan (<span id="planCount">0</span>)</button>
-      <button onclick="switchTab('library')" id="tab-library" class="tab-inactive px-4 py-2 text-sm transition-all">Saved Plans</button>
+      
     </div>
 
     <!-- CLOSE NOW -->
@@ -326,7 +326,7 @@
         <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;" id="planActionBtns">
           <span id="planUpdatedMsg" style="display:none;font-size:.72rem;color:var(--green);font-weight:700;transition:opacity .4s;">&#10003; Plan updated</span>
           <span id="shareUrlMsg" style="display:none;font-size:.72rem;color:var(--green);font-weight:700;transition:opacity .4s;">&#10003; Link copied</span>
-          <button id="updatePlanBtn" onclick="updateCurrentPlan()" class="plan-edit-only" style="background:var(--accent);color:#000;border:none;border-radius:var(--r-btn);padding:7px 14px;font-size:.75rem;font-weight:700;cursor:pointer;opacity:.35;" disabled>Update Plan</button>
+          
           <button onclick="sharePlanUrl()" class="plan-edit-only" style="background:var(--accent-dim);border:1px solid var(--accent-border);color:var(--accent);border-radius:var(--r-btn);padding:7px 14px;font-size:.75rem;font-weight:700;cursor:pointer;">Share URL</button>
           <button onclick="exportPlan()" class="plan-edit-only" style="background:var(--accent-dim);border:1px solid var(--accent-border);color:var(--accent);border-radius:var(--r-btn);padding:7px 14px;font-size:.75rem;font-weight:700;cursor:pointer;">Export CSV</button>
           <button onclick="exportPlanPdf()" class="plan-edit-only" style="background:var(--accent-dim);border:1px solid var(--accent-border);color:var(--accent);border-radius:var(--r-btn);padding:7px 14px;font-size:.75rem;font-weight:700;cursor:pointer;">Export PDF</button>
@@ -624,7 +624,7 @@ function sortTable(tableId, colIdx, dtype) {
 
 // ─── TAB SWITCHING ────────────────────────────────────────────────────────────
 function switchTab(t) {
-  ['close','protect','reclaim','rebuild','plan','library'].forEach(function(id) {
+  ['close','protect','reclaim','rebuild','plan'].forEach(function(id) {
     const p = document.getElementById('panel-'+id);
     const b = document.getElementById('tab-'+id);
     if (p) p.classList.toggle('hidden', id!==t);
@@ -3071,12 +3071,7 @@ function filterTable(input) {
 
 // ─── PLAN MANAGEMENT ─────────────────────────────────────────────────────────
 function syncUpdatePlanBtn() {
-  var btn = document.getElementById('updatePlanBtn');
-  if (!btn) return;
-  var hasName = !!(state.loadedPlanName && state.loadedPlanId);
-  btn.disabled = !hasName;
-  btn.style.opacity = hasName ? '1' : '.35';
-  btn.style.cursor = hasName ? 'pointer' : 'default';
+  // Update Plan button removed — auto-save handles all updates
 }
 
 function updateCurrentPlan() {
@@ -3110,22 +3105,6 @@ function showNamePlanModal(onConfirm) {
 }
 
 function startNewPlan() {
-  // Check for unsaved changes
-  if (state.loadedPlanName) {
-    var total = Object.values(plan).reduce(function(s,a){return s+a.length;},0);
-    if (total > 0) {
-      showModal({
-        title: 'Unsaved Changes',
-        body: 'You have unsaved changes to <strong style="color:#fff;">"' + state.loadedPlanName + '"</strong>. What would you like to do?',
-        buttons: [
-          { label: 'Update Plan', style: 'primary', action: function() { closeModal(); updatePlanInFirestore().then(function() { _launchNamePlanModal(); }).catch(function() { _launchNamePlanModal(); }); } },
-          { label: 'Discard', style: 'danger', action: function() { closeModal(); _launchNamePlanModal(); } },
-          { label: 'Cancel', style: 'secondary', action: closeModal }
-        ]
-      });
-      return;
-    }
-  }
   _launchNamePlanModal();
 }
 
@@ -3156,6 +3135,8 @@ function _launchNamePlanModal() {
     refreshPlanModal();
     document.querySelectorAll('.plan-cb').forEach(function(cb){ cb.checked=false; });
     switchTab('close');
+    // Immediately create the plan in Firestore so auto-save works from here on
+    savePlanToFirestore(name);
   });
 }
 
@@ -4845,4 +4826,6 @@ checkSharedMode().then(function(isShared) {
 </div>
 
 <!-- Plan Management Modal -->
-<div id="igiModalOverlay" onclick="if(event.target===this)closeModal()" style="display:none;position:fixed;inset:0;z-index:2000;backg
+<div id="igiModalOverlay" onclick="if(event.target===this)closeModal()" style="display:none;position:fixed;inset:0;z-index:2000;background:rgba(0,0,0,.65);align-items:center;justify-content:center;opacity:0;transition:opacity .18s;">
+ <div id="igiModalBox" style="background:var(--surface);border:1px solid var(--border);border-radius:var(--r-card);padding:24px;width:min(440px,90%);box-shadow:0 24px 60px rgba(0,0,0,.6);transform:scale(.95);transition:transform .18s;"></div>
+</div>
