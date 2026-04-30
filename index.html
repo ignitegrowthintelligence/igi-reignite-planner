@@ -372,17 +372,12 @@
       <!-- ── Geography Filter (shared by all three modes) ── -->
       <div class="card p-4 mb-4 rebuild-discovery-controls">
         <div style="font-size:.7rem;font-weight:700;color:var(--accent);letter-spacing:.07em;text-transform:uppercase;margin-bottom:12px;">📍 Geography Filter <span style="font-size:.65rem;font-weight:400;color:var(--dim);text-transform:none;letter-spacing:0;">— used by all three modes below</span></div>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:start;">
-          <div>
-            <label style="font-size:.72rem;color:var(--dim);">Target ZIP Code</label>
-            <input id="zipInput" type="text" maxlength="5" placeholder="e.g. 13501"
-              style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:var(--r-btn);padding:8px 12px;color:var(--text);font-size:.85rem;margin-top:4px;outline:none;"
-              oninput="handleZipInput(this.value)"/>
-          </div>
-          <div id="geoDescDisplay" style="display:flex;align-items:center;gap:8px;padding:8px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--r-card);margin-top:20px;min-height:40px;">
-            <span style="font-size:.72rem;color:var(--dim);">Location:</span>
-            <span id="geoDescLabel" style="font-size:.82rem;color:var(--accent);font-weight:600;">Enter ZIP to detect</span>
-          </div>
+        <div>
+          <label style="font-size:.72rem;color:var(--dim);">Target ZIP Code</label>
+          <input id="zipInput" type="text" maxlength="5" placeholder="e.g. 13501"
+            style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:var(--r-btn);padding:8px 12px;color:var(--text);font-size:.85rem;margin-top:4px;outline:none;"
+            oninput="handleZipInput(this.value)"/>
+          <div id="geoDescLabel" style="font-size:.68rem;color:var(--accent);font-weight:600;margin-top:5px;min-height:14px;"></div>
         </div>
         <div style="margin-top:14px;">
           <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
@@ -402,7 +397,10 @@
       </div>
 
       <!-- ── Three Discovery Modes ── -->
-      <div style="display:grid;grid-template-columns:1fr 1fr 2fr;gap:12px;margin-bottom:16px;align-items:start;" class="rebuild-discovery-controls">
+      <div style="display:grid;grid-template-columns:1fr 2fr;gap:12px;margin-bottom:16px;align-items:start;" class="rebuild-discovery-controls">
+
+        <!-- Left column: Mode 1 + Mode 2 stacked -->
+        <div style="display:flex;flex-direction:column;gap:12px;">
 
         <!-- Mode 1: Find a Business -->
         <div class="card p-4" style="display:flex;flex-direction:column;gap:10px;">
@@ -439,7 +437,9 @@
           <div id="uploadStatus" style="font-size:.68rem;color:var(--dim);min-height:18px;"></div>
         </div>
 
-        <!-- Mode 3: Auto-Discover by Category -->
+        </div><!-- end left column -->
+
+        <!-- Mode 3: Auto-Discover by Category (right column) -->
         <div class="card p-4" style="display:flex;flex-direction:column;gap:10px;">
           <div>
             <div style="font-size:.72rem;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--accent);">🗺️ Auto-Discover</div>
