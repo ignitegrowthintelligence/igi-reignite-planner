@@ -710,7 +710,7 @@ function refreshPlanModal() {
     sc.innerHTML = [
       {label:'Total Accounts', value: totalAccounts, sub: 'Across all sections'},
       {label:'Total Opportunity', value: fmt(totalRev), sub: 'Est. revenue in plan'},
-      {label:'Close Now', value: (plan.close||[]).length, sub: fmt((plan.close||[]).reduce(function(s,a){return s+(a.rev||0);},0))},
+      {label:'Current Clients', value: (plan.close||[]).length+(plan.protect||[]).length+(plan.reclaim||[]).length, sub: fmt((plan.close||[]).reduce(function(s,a){return s+(a.rev||0);},0)+(plan.protect||[]).reduce(function(s,a){return s+(a.rev||a.rev26||0);},0)+(plan.reclaim||[]).reduce(function(s,a){return s+(a.rev||0);},0))},
       {label:'Rebuild Targets', value: (plan.rebuild||[]).length, sub: fmt((plan.rebuild||[]).reduce(function(s,a){return s+(a.estRev||a.rev||0);},0))}
     ].map(function(c) {
       return '<div class="bp-card">'
@@ -1285,7 +1285,7 @@ function exportPlanPdf() {
     +'<div class="cards">'
     +'<div class="card"><div class="card-label">Total Accounts</div><div class="card-value">'+totalAccounts+'</div><div class="card-sub">Across all sections</div></div>'
     +'<div class="card"><div class="card-label">Total Opportunity</div><div class="card-value">'+fmt2(totalRev)+'</div><div class="card-sub">Est. revenue in plan</div></div>'
-    +'<div class="card"><div class="card-label">Close Now</div><div class="card-value">'+(plan.close||[]).length+'</div><div class="card-sub">'+fmt2((plan.close||[]).reduce(function(s,a){return s+(a.rev||0);},0))+'</div></div>'
+    +'<div class="card"><div class="card-label">Current Clients</div><div class="card-value">'+((plan.close||[]).length+(plan.protect||[]).length+(plan.reclaim||[]).length)+'</div><div class="card-sub">'+fmt2((plan.close||[]).reduce(function(s,a){return s+(a.rev||0);},0)+(plan.protect||[]).reduce(function(s,a){return s+(a.rev||a.rev26||0);},0)+(plan.reclaim||[]).reduce(function(s,a){return s+(a.rev||0);},0))+'</div></div>'
     +'<div class="card"><div class="card-label">Rebuild Targets</div><div class="card-value">'+(plan.rebuild||[]).length+'</div><div class="card-sub">'+fmt2((plan.rebuild||[]).reduce(function(s,a){return s+(a.estRev||a.rev||0);},0))+'</div></div>'
     +'</div>'
     + sectionsHtml
