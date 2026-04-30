@@ -3546,6 +3546,16 @@ function _initCadenceTab(pk, safeKey, intelData) {
   });
 }
 
+function _resetCadence(pk, safeKey) {
+  if (!confirm('Reset the full call cadence for this prospect? All generated content and notes will be cleared.')) return;
+  var fresh = CADENCE_STEPS.map(function() { return { status:'pending', content:null, notes:'', completedAt:null }; });
+  window._cadenceData = window._cadenceData || {};
+  window._cadenceData[pk] = fresh;
+  db.collection('prospectCadence').doc(safeKey).set({ steps: fresh, updatedAt: new Date().toISOString() })
+    .catch(function(e) { console.warn('[CAD] reset save error:', e.message); });
+  _renderCadenceTab(pk, safeKey, window._currentIntelData || {}, fresh);
+}
+
 function _renderCadenceTab(pk, safeKey, intelData, steps) {
   if (window._activeCadencePk && window._activeCadencePk !== pk) return; // stale callback
   var panel = document.getElementById('intel-tab-cadence');
@@ -3574,7 +3584,10 @@ function _renderCadenceTab(pk, safeKey, intelData, steps) {
     if (d < CADENCE_STEPS.length - 1) html += '<div class="cad-line' + (isDone ? ' done' : '') + '"></div>';
   }
   html += '</div>';
-  html += '<div style="font-size:10px;color:rgba(255,255,255,0.28);margin-bottom:20px;margin-top:6px;">' + doneCount + ' of 7 attempts complete &nbsp;&bull;&nbsp; 10 business days</div>';
+  html += '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;margin-top:6px;">';
+  html += '<div style="font-size:10px;color:rgba(255,255,255,0.28);">' + doneCount + ' of 7 attempts complete &nbsp;&bull;&nbsp; 10 business days</div>';
+  html += '<button onclick="_resetCadence(\'' + pk + '\',\'' + safeKey + '\')" style="font-size:10px;color:rgba(255,255,255,0.28);background:none;border:1px solid rgba(255,255,255,0.12);border-radius:4px;padding:3px 9px;cursor:pointer;letter-spacing:0.04em;">&#8635; Reset</button>';
+  html += '</div>';
 
   // Step cards
   for (var s = 0; s < CADENCE_STEPS.length; s++) {
