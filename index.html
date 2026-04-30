@@ -342,7 +342,6 @@
         </div>
       </div>
       <!-- Summary cards -->
-      <div id="planSummaryCards" class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-5"></div>
       <!-- Plan sections -->
       <div id="planSections"></div>
     </div>
@@ -694,33 +693,6 @@ function refreshPlanModal() {
 
   var labels = {close:'🔴 Close Now', protect:'🟢 Protect & Expand', reclaim:'🟡 Reclaim', rebuild:'🔵 Rebuild'};
   var sectionColors = {close:'var(--red)', protect:'var(--green)', reclaim:'var(--yellow)', rebuild:'var(--accent)'};
-
-  // Compute totals
-  var totalAccounts = 0, totalRev = 0;
-  Object.keys(plan).forEach(function(s) {
-    (plan[s]||[]).forEach(function(a) {
-      totalAccounts++;
-      totalRev += (a.rev || a.estRev || 0);
-    });
-  });
-
-  // Summary cards
-  var sc = document.getElementById('planSummaryCards');
-  if (sc) {
-    sc.innerHTML = [
-      {label:'Total Accounts', value: totalAccounts, sub: 'Across all sections'},
-      {label:'Total Opportunity', value: fmt(totalRev), sub: 'Est. revenue in plan'},
-      {label:'Current Clients', value: (plan.close||[]).length+(plan.protect||[]).length+(plan.reclaim||[]).length, sub: fmt((plan.close||[]).reduce(function(s,a){return s+(a.rev||0);},0)+(plan.protect||[]).reduce(function(s,a){return s+(a.rev||a.rev26||0);},0)+(plan.reclaim||[]).reduce(function(s,a){return s+(a.rev||0);},0))},
-      {label:'Rebuild Targets', value: (plan.rebuild||[]).length, sub: fmt((plan.rebuild||[]).reduce(function(s,a){return s+(a.estRev||a.rev||0);},0))}
-    ].map(function(c) {
-      return '<div class="bp-card">'
-        +'<div class="bp-card-top"><span class="bp-card-label">'+c.label+'</span></div>'
-        +'<div class="bp-card-body">'
-        +'<div class="bp-card-kpi">'+c.value+'</div>'
-        +'<div class="bp-card-sub">'+(c.sub||'&nbsp;')+'</div>'
-        +'</div></div>';
-    }).join('');
-  }
 
   // Section groups
   var ps = document.getElementById('planSections');
