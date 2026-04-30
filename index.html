@@ -1051,13 +1051,14 @@ function openEditDetailsModal(planId, planName, details) {
 
   box.innerHTML =
     '<div style="font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--accent);margin-bottom:4px;">Edit Details</div>'
-    +'<div style="font-size:.78rem;color:var(--dim);margin-bottom:18px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">'+_esc(planName)+'</div>'
+    +'<label style="'+labelStyle+'">Plan Name</label>'
+    +'<input id="ed-planName" type="text" value="'+_esc(planName)+'" placeholder="e.g. Albany Q2 2026" style="'+fieldStyle+'" />'
     +'<label style="'+labelStyle+'">AE Name</label>'
-    +'<input id="ed-aeName" type="text" value="'+_esc(aeName)+'" placeholder="e.g. Kim Jacobs" style="'+fieldStyle+'" />'
+    +'<input id="ed-aeName" type="text" value="'+_esc(aeName)+'" placeholder="e.g. Justin Abbott" style="'+fieldStyle+'" />'
     +'<label style="'+labelStyle+'">Market(s) <span style="font-weight:400;text-transform:none;letter-spacing:0;color:rgba(var(--dim-rgb),.7);font-size:.63rem;">— separate multiple with commas</span></label>'
-    +'<input id="ed-markets" type="text" value="'+_esc(markets)+'" placeholder="e.g. Albany, Troy, Utica" style="'+fieldStyle+'" />'
+    +'<input id="ed-markets" type="text" value="'+_esc(markets)+'" placeholder="e.g. Albany, Utica, Buffalo" style="'+fieldStyle+'" />'
     +'<label style="'+labelStyle+'">Email</label>'
-    +'<input id="ed-email" type="email" value="'+_esc(email)+'" placeholder="e.g. kjacobs@townsquare.com" style="'+fieldStyle+'" />'
+    +'<input id="ed-email" type="email" value="'+_esc(email)+'" placeholder="e.g. Justin.Abbott@townsquaremedia.com" style="'+fieldStyle+'" />'
     +'<label style="'+labelStyle+'">Phone</label>'
     +'<input id="ed-phone" type="tel" value="'+_esc(phone)+'" placeholder="e.g. (518) 555-0123" style="'+fieldStyle+'margin-bottom:20px;" />'
     +'<div style="display:flex;gap:10px;justify-content:flex-end;">'
@@ -1066,6 +1067,7 @@ function openEditDetailsModal(planId, planName, details) {
     +'</div>';
 
   box.querySelector('#ed-save-btn').onclick = function() {
+    var newPlanName = (document.getElementById('ed-planName').value || '').trim();
     var marketsRaw = (document.getElementById('ed-markets').value || '').split(',')
       .map(function(m){ return m.trim(); }).filter(Boolean);
     var updated = {
@@ -1076,8 +1078,17 @@ function openEditDetailsModal(planId, planName, details) {
     };
     var btn = document.getElementById('ed-save-btn');
     if (btn) { btn.disabled = true; btn.textContent = 'Saving\u2026'; }
-    db.collection('plans').doc(planId).update({ details: updated })
+    var firestoreUpdate = { details: updated };
+    if (newPlanName) firestoreUpdate.name = newPlanName;
+    db.collection('plans').doc(planId).update(firestoreUpdate)
       .then(function() {
+        if (newPlanName && state.loadedPlanId === planId) {
+          state.loadedPlanName = newPlanName;
+          var mi = document.getElementById('marketInput');
+          if (mi) mi.textContent = newPlanName;
+          var ml = document.getElementById('marketLabel');
+          if (ml) ml.textContent = newPlanName;
+        }
         closeModal();
         loadAllPlans();
       })
@@ -1089,7 +1100,7 @@ function openEditDetailsModal(planId, planName, details) {
 
   overlay.style.display = 'flex';
   requestAnimationFrame(function(){ overlay.style.opacity='1'; box.style.transform='scale(1)'; });
-  setTimeout(function(){ var inp=document.getElementById('ed-aeName'); if(inp) inp.focus(); }, 80);
+  setTimeout(function(){ var inp=document.getElementById('ed-planName'); if(inp) inp.focus(); }, 80);
 }
 
 function _renderLibraryList(library) {
