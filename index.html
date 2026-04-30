@@ -985,6 +985,7 @@ async function loadPlanFromFirestore(planId) {
   savePlanLocal();
   updatePlanFab();
   syncUpdatePlanBtn();
+  refreshGlobalSummaryCards();
   return data;
 }
 
@@ -1285,6 +1286,49 @@ function exportPlanPdf() {
 }
 
 // ─── SUMMARY CARDS ────────────────────────────────────────────────────────────
+function refreshGlobalSummaryCards() {
+  var closeCount   = (state.close    || []).length;
+  var protectCount = (state.protect  || []).length;
+  var reclaimCount = (state.reclaimAll || []).length;
+
+  var rb = state.rebuild || {};
+  var rbMerged = rb._merged || [];
+  var rebuildCount = rbMerged.length
+    || ((rb.uploaded || []).length + (rb.discovered || []).length);
+
+  var currentClients = closeCount + protectCount + reclaimCount;
+  var totalAccounts  = currentClients + rebuildCount;
+
+  var closeRev   = (state.close    || []).reduce(function(s,d){ return s+(d.rev||0); }, 0);
+  var protectRev = (state.protect  || []).reduce(function(s,c){ return s+(c.rev||c.rev26||0); }, 0);
+  var reclaimRev = (state.reclaimAll || []).reduce(function(s,c){ return s+(c.rev||0); }, 0);
+  var rebuildRev = rbMerged.reduce(function(s,p){ return s+(p.estRev||p.rev||0); }, 0);
+  var totalRev   = closeRev + protectRev + reclaimRev + rebuildRev;
+
+  updateSummaryCards([
+    {
+      label: 'Total Accounts',
+      value: totalAccounts || '—',
+      sub:   totalAccounts ? 'Across all tabs' : 'Upload files to begin'
+    },
+    {
+      label: 'Total Opportunity',
+      value: totalRev ? fmt(totalRev) : '—',
+      sub:   totalRev ? 'Est. revenue potential' : 'No data yet'
+    },
+    {
+      label: 'Current Clients',
+      value: currentClients || '—',
+      sub:   currentClients ? 'Close · Protect · Reclaim' : 'No data yet'
+    },
+    {
+      label: 'Rebuild Targets',
+      value: rebuildCount || '—',
+      sub:   rebuildCount ? 'Net new prospects' : 'Not yet loaded'
+    }
+  ]);
+}
+
 function updateSummaryCards(cards) {
   document.getElementById('summaryCards').innerHTML = cards.map(function(c) {
     return '<div class="bp-card">'
@@ -1350,12 +1394,6 @@ function parseClose(rows, fname) {
       });
     }
   }
-  updateSummaryCards([
-    {label:'Budget',value:fmt(budget),sub:'Total goal'},
-    {label:'Booked',value:fmt(booked),sub:budget?pct(booked/budget*100)+' of budget':''},
-    {label:'Pipeline',value:fmt(pitched),sub:'Pending close'},
-    {label:'Deals',value:deals.length,sub:'Returning accounts'}
-  ]);
   var closeContent = document.getElementById('close-content');
   closeContent.innerHTML = '<div style="padding:20px;text-align:center;color:var(--dim);font-size:.82rem;" id="close-enrich-status">Enriching accounts with business data\u2026 0 of ' + deals.length + '</div>';
   enrichAccountsWithPlaces(deals, function(cur, total) {
@@ -1369,6 +1407,7 @@ function parseClose(rows, fname) {
     enriched.sort(function(a, b) { return b.score - a.score; });
     state.close = enriched;
     state.closeMeta = { budget: budget, booked: booked, pitched: pitched, fname: fname };
+    refreshGlobalSummaryCards();
     renderClose(enriched, budget, booked, pitched, fname);
   });
   return;
@@ -1408,6 +1447,7 @@ function clearTab(section) {
   if (state.loadedPlanId) {
     updatePlanInFirestore();
   }
+  refreshGlobalSummaryCards();
 }
 
 function renderClose(deals, budget, booked, pitched, fname) {
@@ -1525,13 +1565,7 @@ function parseRevenueReport(rows, fname) {
 
     renderProtect(protectClients, fname);
     renderReclaim();
-
-    updateSummaryCards([
-      { label: 'Active Clients', value: protectClients.length, sub: 'On Protect & Expand' },
-      { label: 'Lapsed Clients', value: reclaimClients.length, sub: 'On Reclaim' },
-      { label: '2026 Revenue', value: fmt(protectClients.reduce(function(s, c) { return s + c.rev26; }, 0)), sub: 'Active base' },
-      { label: 'Reclaim Opportunity', value: fmt(reclaimClients.reduce(function(s, c) { return s + c.rev; }, 0)), sub: 'Peak former spend' }
-    ]);
+    refreshGlobalSummaryCards();
   });
   return;
 }
@@ -1577,12 +1611,7 @@ function renderProtect(clients, extraNote) {
   var total25=clients.reduce(function(s,c){return s+c.rev25;},0);
   var ign26=0; if(hasIgnite) clients.forEach(function(c){ var d=state.protectIgnite[c.adv]; if(d) ign26+=d.ign26; });
   var bcast26=hasIgnite?total26-ign26:null;
-  updateSummaryCards([
-    {label:"Active Clients",value:clients.length,sub:"Current advertisers"},
-    {label:"2026 Total",value:fmt(total26),sub:"Current pace"},
-    {label:"2026 Ignite",value:hasIgnite?fmt(ign26):"Upload Ignite file",sub:hasIgnite?pct(total26?ign26/total26*100:null)+" of total":""},
-    {label:"2026 Broadcast",value:hasIgnite?fmt(bcast26):"Upload Ignite file",sub:hasIgnite?pct(total26?bcast26/total26*100:null)+" of total":""}
-  ]);
+  refreshGlobalSummaryCards();
   document.getElementById("protect-content").innerHTML =
     "<input type=\"text\" class=\"tab-search\" data-table=\"protect-table\" placeholder=\"Search accounts...\" oninput=\"filterTable(this)\" style=\"background:var(--surface2);border:1px solid var(--border);border-radius:var(--r-btn);color:var(--text);font-size:.8rem;width:100%;padding:7px 12px;margin-bottom:10px;outline:none;\"/>"
     +"<div style=\"margin-bottom:12px;font-size:.75rem;color:var(--dim);\">"+clients.length+" active clients"+(hasIgnite?" - Ignite/Broadcast split loaded":"")+"</div>"
@@ -2711,12 +2740,7 @@ async function discoverProspects() {
  + '</span>'
  + ' <span style="color:var(--dim);font-size:.72rem;">· Results from cache · ' + daysAgoLabel + '</span>';
 
- updateSummaryCards([
- { label:'Prospects Found', value:display.length, sub:restoredProspects.length > 60 ? 'Top 60 of '+restoredProspects.length : 'All results' },
- { label:'Avg IGI Score', value:avgScore, sub:'Across all results' },
- { label:'Categories', value:new Set(display.map(function(p){ return p.cat; })).size, sub:'Business types found' },
- { label:'Search Radius', value:radiusMi+' mi', sub:'From '+center.city }
- ]);
+ refreshGlobalSummaryCards();
 
  btn.disabled = false; btn.style.opacity = '1';
  return;
@@ -2936,12 +2960,7 @@ async function discoverProspects() {
  + ' · Powered by Google Places</span>'
  + ' <span style="color:var(--dim);font-size:.72rem;">· Fresh results saved to cache</span>';
 
- updateSummaryCards([
- { label:'Prospects Found', value:display.length, sub:allProspects.length > 60 ? 'Top 60 of '+allProspects.length : 'All results' },
- { label:'Avg IGI Score', value:avgScore, sub:'Across all results' },
- { label:'Categories', value:new Set(display.map(function(p){ return p.cat; })).size, sub:'Business types found' },
- { label:'Search Radius', value:radiusMi+' mi', sub:'From '+center.city }
- ]);
+ refreshGlobalSummaryCards();
 
  btn.disabled = false; btn.style.opacity = '1';
 }
@@ -3092,12 +3111,7 @@ function renderRebuild(prospects, radius) {
   var uploadedCount = (state.rebuild && state.rebuild.uploaded) ? state.rebuild.uploaded.length : 0;
   var discoveredCount = (state.rebuild && state.rebuild.discovered) ? state.rebuild.discovered.length : 0;
   var bothCount = prospects.filter(function(p){ return p.source === 'both'; }).length;
-  updateSummaryCards([
-    {label:'Prospects',value:prospects.length,sub:radius>0&&state.geoCenter?'Within '+radius+' miles':'All prospects'},
-    {label:'Uploaded',value:uploadedCount,sub:uploadedCount>0?'From your list':'Not yet loaded'},
-    {label:'Discovered',value:discoveredCount,sub:discoveredCount>0?'Via auto-discover':'Not yet loaded'},
-    {label:'In Both',value:bothCount,sub:bothCount>0?'Verified targets':'Not yet loaded'}
-  ]);
+  refreshGlobalSummaryCards();
   var locInfo=radius>0&&state.geoCenter?' within '+radius+' mi of '+state.geoCenter.zip:'';
   document.getElementById('rebuild-content').innerHTML =
     '<input type="text" class="tab-search" data-table="rebuild-table" placeholder="Search accounts..." oninput="filterTable(this)" style="background:var(--surface2);border:1px solid var(--border);border-radius:var(--r-btn);color:var(--text);font-size:.8rem;width:100%;padding:7px 12px;margin-bottom:10px;outline:none;"/>'
@@ -4852,12 +4866,7 @@ document.addEventListener('keydown', function(e) {
     if (o && o.style.display !== 'none') closeModal();
   }
 });
-updateSummaryCards([
-  {label:'Upload Files',value:'↑',sub:'Start by uploading a file in any tab'},
-  {label:'IGI Score',value:'Auto',sub:'Powered by Ignite Growth Intelligence'},
-  {label:'Geography',value:'ZIP+Radius',sub:'Rebuild tab - filter by distance'},
-  {label:'Market',value:'Enter name',sub:'Top-right corner'}
-]);
+refreshGlobalSummaryCards();
 checkSharedMode().then(function(isShared) {
   if (!isShared) {
     // Normal mode
