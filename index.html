@@ -133,13 +133,14 @@
 .intel-vit-l { font-size:10px; color:rgba(255,255,255,0.28); letter-spacing:0.07em; text-transform:uppercase; }
 .intel-vit-v { font-size:13px; color:#fff; margin-top:3px; font-weight:500; }
 .intel-vit-v.red { color:#EF4136; }
-/* Tab navigation */
-.intel-tab-bar { background:#191919; border-bottom:1px solid rgba(255,255,255,0.07); display:flex; align-items:center; padding:0; overflow-x:auto; }
+/* Tab navigation + persistent actions — single centered bar */
+.intel-tab-bar { background:#191919; border-bottom:1px solid rgba(255,255,255,0.07); display:flex; align-items:center; justify-content:center; padding:0 20px; overflow-x:auto; gap:0; }
 .intel-tab { font-size:12px; font-weight:600; color:rgba(255,255,255,0.38); padding:13px 24px; border:none; background:none; cursor:pointer; border-bottom:2px solid transparent; font-family:inherit; white-space:nowrap; transition:color .15s,border-color .15s; letter-spacing:0.01em; }
 .intel-tab.active { color:#fff; border-bottom-color:#EF4136; }
 .intel-tab:hover:not(.active) { color:rgba(255,255,255,0.65); }
-/* Persistent action bar */
-.intel-persistent { max-width:900px; margin:0 auto; padding:10px 20px; display:flex; gap:8px; justify-content:flex-end; border-bottom:1px solid rgba(255,255,255,0.04); }
+.intel-tab-divider { width:1px; height:18px; background:rgba(255,255,255,0.1); margin:0 10px; flex-shrink:0; align-self:center; }
+/* Persistent actions — inline in tab bar */
+.intel-persistent { display:flex; gap:8px; align-items:center; padding:8px 0; margin:0; border:none; }
 /* Main content */
 .intel-content { max-width:900px; margin:0 auto; padding:24px 20px 56px; }
 .intel-tab-panel { display:none; }
@@ -211,8 +212,8 @@
 .intel-preview-card { background:#191919; border:1px solid rgba(255,255,255,0.06); border-radius:8px; padding:14px 16px; opacity:0.4; }
 .intel-preview-lbl { font-size:9px; font-weight:700; letter-spacing:0.08em; text-transform:uppercase; color:rgba(255,255,255,0.3); margin-bottom:8px; }
 /* Persistent action buttons */
-.intel-disc-btn { display:inline-flex; align-items:center; gap:6px; padding:7px 14px; background:rgba(239,65,54,0.1); border:1px solid rgba(239,65,54,0.25); border-radius:5px; font-size:11px; color:#EF4136; font-weight:600; cursor:pointer; text-decoration:none; font-family:inherit; }
-.intel-disc-btn:hover { background:rgba(239,65,54,0.16); }
+.intel-disc-btn { display:inline-flex; align-items:center; gap:5px; padding:6px 12px; background:rgba(239,65,54,0.1); border:1px solid rgba(239,65,54,0.25); border-radius:4px; font-size:11px; color:#EF4136; font-weight:600; cursor:pointer; text-decoration:none; font-family:inherit; white-space:nowrap; }
+.intel-disc-btn:hover { background:rgba(239,65,54,0.18); }
 /* IGI Score rows */
 .intel-sr { display:flex; justify-content:space-between; align-items:flex-start; padding:8px 0; border-bottom:1px solid rgba(255,255,255,0.05); }
 .intel-sr:last-child { border-bottom:none; }
@@ -3416,8 +3417,9 @@ function _buildProspectPageHTML(section, acct) {
     + '<button class="intel-tab active" onclick="_switchIntelTab(\'precall\')">Pre-Call</button>'
     + '<button class="intel-tab" onclick="_switchIntelTab(\'oncall\')">On the Call</button>'
     + '<button class="intel-tab" onclick="_switchIntelTab(\'research\')">Know the Business</button>'
-    + '</div>'
+    + '<div class="intel-tab-divider"></div>'
     + '<div class="intel-persistent" id="intel-persistent-actions"></div>'
+    + '</div>'
     + '<div class="intel-content">'
     + '<div id="intel-tab-precall" class="intel-tab-panel active"></div>'
     + '<div id="intel-tab-oncall" class="intel-tab-panel"></div>'
