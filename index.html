@@ -435,6 +435,7 @@
 const state = { close:null, protect:null, reclaimAll:null, reclaimIgnite:null, protectIgnite:null, rebuild:null, geoCenter:null, loadedPlanName:null, loadedPlanId:null };
 const plan  = { close:[], protect:[], reclaim:[], rebuild:[] };
 const _acctReg = {}; let _regIdx = 0;
+var _modalCloseTimer = null;
 const zipCache = {};
 
 // ─── IGI SCORE PANEL ────────────────────────────────────────────────────────────
@@ -2467,6 +2468,7 @@ function updateCurrentPlan() {
 }
 
 function showNamePlanModal(onConfirm) {
+  if (_modalCloseTimer) { clearTimeout(_modalCloseTimer); _modalCloseTimer = null; }
   var overlay = document.getElementById('igiModalOverlay');
   var box = document.getElementById('igiModalBox');
   box.innerHTML =
@@ -2500,7 +2502,7 @@ function startNewPlan() {
         title: 'Unsaved Changes',
         body: 'You have unsaved changes to <strong style="color:#fff;">"' + state.loadedPlanName + '"</strong>. What would you like to do?',
         buttons: [
-          { label: 'Update Plan', style: 'primary', action: function() { closeModal(); updateCurrentPlan(); _launchNamePlanModal(); } },
+          { label: 'Update Plan', style: 'primary', action: function() { closeModal(); updatePlanInFirestore().then(function() { _launchNamePlanModal(); }).catch(function() { _launchNamePlanModal(); }); } },
           { label: 'Discard', style: 'danger', action: function() { closeModal(); _launchNamePlanModal(); } },
           { label: 'Cancel', style: 'secondary', action: closeModal }
         ]
@@ -2543,6 +2545,7 @@ function _launchNamePlanModal() {
 
 // ─── MODAL ENGINE ─────────────────────────────────────────────────────────────
 function showModal(opts) {
+  if (_modalCloseTimer) { clearTimeout(_modalCloseTimer); _modalCloseTimer = null; }
   var overlay = document.getElementById('igiModalOverlay');
   var box = document.getElementById('igiModalBox');
   var btnStyles = {
@@ -2566,9 +2569,13 @@ function showModal(opts) {
 }
 function closeModal() {
   var overlay = document.getElementById('igiModalOverlay');
-  overlay.style.opacity='0';
-  overlay.querySelector('#igiModalBox').style.transform='scale(.95)';
-  setTimeout(function(){ overlay.style.display='none'; }, 180);
+  overlay.style.opacity = '0';
+  overlay.querySelector('#igiModalBox').style.transform = 'scale(.95)';
+  if (_modalCloseTimer) clearTimeout(_modalCloseTimer);
+  _modalCloseTimer = setTimeout(function() {
+    overlay.style.display = 'none';
+    _modalCloseTimer = null;
+  }, 180);
 }
 
 // ─── CALL PREP CARD ──────────────────────────────────────────────────────────
