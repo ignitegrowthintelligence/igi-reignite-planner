@@ -3692,9 +3692,16 @@ function _saveCadenceStep(pk, idx, markComplete) {
   if (notesEl) steps[idx].notes = notesEl.value;
   if (markComplete) { steps[idx].status = 'completed'; steps[idx].completedAt = new Date().toISOString(); }
   else if (steps[idx].status !== 'completed') { steps[idx].status = 'generated'; }
+  var _saveTimeout = setTimeout(function() {
+    if (statusEl && statusEl.textContent === 'Saving…') {
+      statusEl.textContent = 'Error: Firestore write timed out — check security rules for prospectCadence collection';
+      statusEl.style.color = '#EF4136';
+    }
+  }, 10000);
   db.collection('prospectCadence').doc(safeKey).set({ steps: steps, updatedAt: new Date().toISOString() }, { merge: true })
     .then(function() {
-      if (statusEl) statusEl.textContent = markComplete ? '✓ Complete!' : 'Saved';
+      clearTimeout(_saveTimeout);
+      if (statusEl) { statusEl.textContent = markComplete ? '✓ Complete!' : 'Saved'; statusEl.style.color = ''; }
       setTimeout(function() { if (statusEl) statusEl.textContent = ''; }, 2000);
       if (markComplete) {
         _renderCadenceTab(pk, safeKey, window._currentIntelData || {}, steps);
@@ -3705,7 +3712,11 @@ function _saveCadenceStep(pk, idx, markComplete) {
         }
       }
     })
-    .catch(function(e) { if (statusEl) statusEl.textContent = 'Error: ' + e.message; });
+    .catch(function(e) {
+      clearTimeout(_saveTimeout);
+      if (statusEl) { statusEl.textContent = 'Error: ' + e.message; statusEl.style.color = '#EF4136'; }
+      console.error('[CAD save]', e);
+    });
 }
 
 function _generateCadenceStep(pk, idx) {
