@@ -880,6 +880,7 @@ async function updatePlanInFirestore() {
 }
 
 async function loadPlanFromFirestore(planId) {
+  try { localStorage.removeItem('reignite_plan'); } catch(e) {}
   var snap = await db.collection('plans').doc(planId).get();
   if (!snap.exists) { console.warn('Plan not found:', planId); return null; }
   var data = snap.data();
@@ -4834,7 +4835,7 @@ function _buildScoreBreakdownWithFlash(a, containerId) {
 }
 
 // ─── INIT ─────────────────────────────────────────────────────────────────────
-loadPlanLocal();
+try { localStorage.removeItem('reignite_plan'); } catch(e) {}
 buildCategoryFilters();
 syncUpdatePlanBtn();
 document.addEventListener('keydown', function(e) {
