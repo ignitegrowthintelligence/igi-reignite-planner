@@ -224,9 +224,9 @@
     <div style="display:flex;align-items:center;gap:6px;" id="ribbonActions">
       <span style="width:6px;height:6px;background:#15803d;border-radius:50%;display:inline-block;flex-shrink:0;"></span>
       <span style="font-size:.68rem;color:rgba(255,255,255,.3);margin-right:6px;">Live</span>
-      <input id="marketInput" type="text" placeholder="Market (e.g. Utica, NY)"
-        style="background:#1F1F23;border:1px solid rgba(255,255,255,.12);border-radius:var(--r-btn);padding:5px 10px;color:#fff;font-size:.75rem;width:190px;outline:none;font-family:'Inter',sans-serif;"
-        oninput="document.getElementById('marketLabel').textContent=this.value||'Ignite Growth Intelligence'"/>
+      <span id="marketInput"
+        style="display:inline-block;max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:.75rem;font-weight:600;color:rgba(255,255,255,.55);font-family:'Inter',sans-serif;padding:5px 2px;cursor:default;"
+        title="Plan name"></span>
       <button id="ribbonNewPlan" onclick="startNewPlan()" style="background:#1F1F23;border:1px solid rgba(255,255,255,.12);color:rgba(255,255,255,.7);border-radius:var(--r-btn);padding:5px 12px;font-size:.72rem;font-weight:600;cursor:pointer;white-space:nowrap;font-family:'Inter',sans-serif;transition:all .15s;" onmouseover="this.style.borderColor='rgba(239,65,54,.5)';this.style.color='#fff'" onmouseout="this.style.borderColor='rgba(255,255,255,.12)';this.style.color='rgba(255,255,255,.7)'">+ New Plan</button>
       <button id="ribbonSavedPlans" onclick="switchTab('library')" style="background:#1F1F23;border:1px solid rgba(255,255,255,.12);color:rgba(255,255,255,.7);border-radius:var(--r-btn);padding:5px 12px;font-size:.72rem;font-weight:600;cursor:pointer;white-space:nowrap;font-family:'Inter',sans-serif;transition:all .15s;" onmouseover="this.style.borderColor='rgba(239,65,54,.5)';this.style.color='#fff'" onmouseout="this.style.borderColor='rgba(255,255,255,.12)';this.style.color='rgba(255,255,255,.7)'">Saved Plans</button>
       <a id="ribbonCommandCenter" href="https://ignitegrowthintelligence.github.io/igi-command-center/" target="_blank"
@@ -687,7 +687,7 @@ function updatePlanFab() {
 }
 function refreshPlanModal() {
   // Update market label
-  var market = document.getElementById('marketInput').value || 'Your Market';
+  var market = document.getElementById('marketInput').textContent.trim() || 'Your Market';
   var ml = document.getElementById('planDashMarket');
   if (ml) ml.textContent = market;
   document.getElementById('planUrlBar').style.display='none';
@@ -836,7 +836,7 @@ function _stripHeavyFields(arr) {
 
 function _currentPlanSnapshot() {
   return JSON.stringify({
-    market: document.getElementById('marketInput').value || '',
+    market: document.getElementById('marketInput').textContent.trim() || '',
     plan: plan,
     uploadedData: {
       close: state.close || [],
@@ -873,7 +873,7 @@ async function savePlanToFirestore(name) {
   state.loadedPlanId = ref.id;
   state.loadedPlanName = name;
   state.lastSavedData = _currentPlanSnapshot();
-  document.getElementById('marketInput').value = name;
+  document.getElementById('marketInput').textContent = name;
   document.getElementById('marketLabel').textContent = name;
   syncUpdatePlanBtn();
   return ref.id;
@@ -945,7 +945,7 @@ async function loadPlanFromFirestore(planId) {
   state.loadedPlanId = planId;
   state.loadedPlanName = data.name || '';
   state.lastSavedData = _currentPlanSnapshot();
-  document.getElementById('marketInput').value = data.name || '';
+  document.getElementById('marketInput').textContent = data.name || '';
   document.getElementById('marketLabel').textContent = data.name || 'IGNITE GROWTH INTELLIGENCE';
 
   // Re-score before rendering
@@ -1020,6 +1020,77 @@ async function deletePlanFromFirestore(planId, name) {
   });
 }
 
+function _openEditDetails(btn) {
+  var planId = btn.dataset.planId;
+  if (!planId) return;
+  db.collection('plans').doc(planId).get().then(function(snap) {
+    if (!snap.exists) return;
+    var d = snap.data().details || {};
+    openEditDetailsModal(planId, snap.data().name || '', d);
+  });
+}
+
+function openEditDetailsModal(planId, planName, details) {
+  if (_modalCloseTimer) { clearTimeout(_modalCloseTimer); _modalCloseTimer = null; }
+  var overlay = document.getElementById('igiModalOverlay');
+  var box = document.getElementById('igiModalBox');
+  if (!box) return;
+
+  var aeName = details.aeName || '';
+  var markets = Array.isArray(details.markets) ? details.markets.join(', ') : (details.markets || '');
+  var email = details.email || '';
+  var phone = details.phone || '';
+
+  var fieldStyle = 'width:100%;background:var(--surface2);border:1px solid var(--border);'
+    + 'border-radius:var(--r-btn);padding:8px 11px;color:var(--text);font-size:.83rem;'
+    + 'outline:none;font-family:inherit;margin-bottom:14px;box-sizing:border-box;';
+
+  var labelStyle = 'display:block;font-size:.65rem;font-weight:700;text-transform:uppercase;'
+    + 'letter-spacing:.08em;color:var(--dim);margin-bottom:5px;';
+
+  box.innerHTML =
+    '<div style="font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--accent);margin-bottom:4px;">Edit Details</div>'
+    +'<div style="font-size:.78rem;color:var(--dim);margin-bottom:18px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">'+_esc(planName)+'</div>'
+    +'<label style="'+labelStyle+'">AE Name</label>'
+    +'<input id="ed-aeName" type="text" value="'+_esc(aeName)+'" placeholder="e.g. Kim Jacobs" style="'+fieldStyle+'" />'
+    +'<label style="'+labelStyle+'">Market(s) <span style="font-weight:400;text-transform:none;letter-spacing:0;color:rgba(var(--dim-rgb),.7);font-size:.63rem;">— separate multiple with commas</span></label>'
+    +'<input id="ed-markets" type="text" value="'+_esc(markets)+'" placeholder="e.g. Albany, Troy, Utica" style="'+fieldStyle+'" />'
+    +'<label style="'+labelStyle+'">Email</label>'
+    +'<input id="ed-email" type="email" value="'+_esc(email)+'" placeholder="e.g. kjacobs@townsquare.com" style="'+fieldStyle+'" />'
+    +'<label style="'+labelStyle+'">Phone</label>'
+    +'<input id="ed-phone" type="tel" value="'+_esc(phone)+'" placeholder="e.g. (518) 555-0123" style="'+fieldStyle+'margin-bottom:20px;" />'
+    +'<div style="display:flex;gap:10px;justify-content:flex-end;">'
+    +'<button onclick="closeModal()" style="background:var(--surface2);border:1px solid var(--border);color:var(--dim);border-radius:var(--r-btn);padding:8px 18px;font-size:.8rem;cursor:pointer;">Cancel</button>'
+    +'<button id="ed-save-btn" style="background:var(--accent);color:#fff;border:none;border-radius:var(--r-btn);padding:8px 18px;font-size:.8rem;font-weight:700;cursor:pointer;">Save</button>'
+    +'</div>';
+
+  box.querySelector('#ed-save-btn').onclick = function() {
+    var marketsRaw = (document.getElementById('ed-markets').value || '').split(',')
+      .map(function(m){ return m.trim(); }).filter(Boolean);
+    var updated = {
+      aeName: (document.getElementById('ed-aeName').value || '').trim(),
+      markets: marketsRaw,
+      email: (document.getElementById('ed-email').value || '').trim(),
+      phone: (document.getElementById('ed-phone').value || '').trim()
+    };
+    var btn = document.getElementById('ed-save-btn');
+    if (btn) { btn.disabled = true; btn.textContent = 'Saving\u2026'; }
+    db.collection('plans').doc(planId).update({ details: updated })
+      .then(function() {
+        closeModal();
+        loadAllPlans();
+      })
+      .catch(function(e) {
+        if (btn) { btn.disabled = false; btn.textContent = 'Save'; }
+        console.warn('[IGI] Edit details save failed:', e.message);
+      });
+  };
+
+  overlay.style.display = 'flex';
+  requestAnimationFrame(function(){ overlay.style.opacity='1'; box.style.transform='scale(1)'; });
+  setTimeout(function(){ var inp=document.getElementById('ed-aeName'); if(inp) inp.focus(); }, 80);
+}
+
 function _renderLibraryList(library) {
   var list = document.getElementById('libraryList');
   if (!list) return;
@@ -1049,7 +1120,14 @@ function _renderLibraryList(library) {
       return '<div class="card p-4" style="border:1px solid var(--border);transition:border-color .2s;" onmouseover="this.style.borderColor=\'var(--accent-border)\'" onmouseout="this.style.borderColor=\'var(--border)\'" >'
         +'<div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;">'
         +'<div style="flex:1;cursor:pointer;" onclick="loadPlanFromFirestore(\''+entry.id+'\').then(function(){ switchTab(\'plan\'); refreshPlanModal(); })" >'
-        +'<div style="font-weight:800;font-size:1rem;color:var(--text);margin-bottom:4px;">'+(entry.name||'Untitled')+'</div>'
+        +'<div style="font-weight:800;font-size:1rem;color:var(--text);margin-bottom:2px;">'+(entry.name||'Untitled')+'</div>'
+        +(entry.details && (entry.details.aeName || (entry.details.markets && entry.details.markets.length))
+          ? '<div style="font-size:.7rem;color:var(--dim);margin-bottom:3px;">'
+            +(entry.details.aeName ? '<span style="color:var(--text);">'+_esc(entry.details.aeName)+'</span>' : '')
+            +(entry.details.aeName && entry.details.markets && entry.details.markets.length ? ' &nbsp;&middot;&nbsp; ' : '')
+            +(entry.details.markets && entry.details.markets.length ? _esc(entry.details.markets.join(', ')) : '')
+            +'</div>'
+          : '')
         +'<div style="font-size:.72rem;color:var(--dim);">'+created+(sameDate||!updated?'':' &nbsp;&middot;&nbsp; Updated '+updated)+'</div>'
         +'<div style="display:flex;gap:16px;margin-top:10px;flex-wrap:wrap;">'
         +'<span style="font-size:.72rem;color:var(--text);"><span style="color:var(--accent);font-weight:700;">'+total+'</span> accounts</span>'
@@ -1060,7 +1138,8 @@ function _renderLibraryList(library) {
         +(sc.rebuild?'<span style="font-size:.68rem;color:var(--dim);">&#128309; '+sc.rebuild+' Rebuild</span>':'')
         +'</div>'
         +'</div>'
-        +'<div style="display:flex;gap:8px;flex-shrink:0;">'
+        +'<div style="display:flex;gap:8px;flex-shrink:0;align-items:center;">'
+        +'<button class="edit-details-btn" data-plan-id="'+entry.id+'" onclick="event.stopPropagation();_openEditDetails(this)" style="background:var(--surface2);border:1px solid var(--border);color:var(--dim);border-radius:var(--r-btn);padding:6px 10px;font-size:.72rem;cursor:pointer;">Edit Details</button>'
         +'<button onclick="navigator.clipboard.writeText(\''+shareUrl+'\').then(function(){var b=event.target;b.textContent=\'Copied!\';setTimeout(function(){b.textContent=\'Copy Link\';},2000);})" style="background:var(--surface2);border:1px solid var(--border);color:var(--dim);border-radius:var(--r-btn);padding:6px 10px;font-size:.72rem;cursor:pointer;">Copy Link</button>'
         +'<button onclick="loadPlanFromFirestore(\''+entry.id+'\').then(function(){ switchTab(\'plan\'); refreshPlanModal(); })" style="background:var(--accent-dim);border:1px solid var(--accent-border);color:var(--accent);border-radius:var(--r-btn);padding:6px 12px;font-size:.75rem;font-weight:700;cursor:pointer;">Load</button>'
         +'<button onclick="event.stopPropagation();deletePlanFromFirestore(\''+entry.id+'\',\''+safeName+'\')" style="background:rgba(248,113,113,.1);border:1px solid rgba(248,113,113,.3);color:var(--red);border-radius:var(--r-btn);padding:6px 10px;font-size:.75rem;cursor:pointer;" title="Delete">&#128465;</button>'
@@ -1129,7 +1208,7 @@ async function checkSharedMode() {
   return true;
 }
 function exportPlan() {
-  var market=document.getElementById('marketInput').value||'Market';
+  var market=document.getElementById('marketInput').textContent.trim()||'Market';
   var labels={close:'Close Now',protect:'Protect & Expand',reclaim:'Reclaim',rebuild:'Rebuild'};
   var csv='Section,Account,Category,Estimated Revenue,Score,Next Step\n';
   Object.entries(labels).forEach(function(entry){
@@ -1144,7 +1223,7 @@ function exportPlan() {
 }
 
 function exportPlanPdf() {
-  var market = document.getElementById('marketInput').value || 'Market';
+  var market = document.getElementById('marketInput').textContent.trim() || 'Market';
   var labels = {close:'Close Now', protect:'Protect & Expand', reclaim:'Reclaim', rebuild:'Rebuild'};
   var sectionColors = {close:'#f87171', protect:'#34d399', reclaim:'#fbbf24', rebuild:'#EF4136'};
   var totalAccounts = 0, totalRev = 0;
@@ -3127,7 +3206,7 @@ function _launchNamePlanModal() {
 
     state.loadedPlanName = name;
     state.loadedPlanId = null;
-    document.getElementById('marketInput').value = name;
+    document.getElementById('marketInput').textContent = name;
     document.getElementById('marketLabel').textContent = name;
     savePlanLocal();
     updatePlanFab();
