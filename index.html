@@ -406,8 +406,11 @@
             </div>
             <input type="range" id="radiusSlider" class="range-slider" min="5" max="75" value="25" step="5"
               oninput="document.getElementById('radiusLabel').textContent=this.value+' miles';document.getElementById('radiusWarn').style.display=this.value>50?'block':'none';filterRebuild()"/>
-            <div style="display:flex;justify-content:space-between;font-size:.65rem;color:var(--dim);margin-top:2px;">
-              <span>5 mi</span><span>25</span><span>50</span><span>75 mi</span>
+            <div style="position:relative;height:16px;margin-top:2px;font-size:.65rem;color:var(--dim);">
+              <span style="position:absolute;left:9px;">5 mi</span>
+              <span style="position:absolute;left:calc(28.57% + 3.86px);transform:translateX(-50%);">25</span>
+              <span style="position:absolute;left:calc(64.29% - 2.57px);transform:translateX(-50%);">50</span>
+              <span style="position:absolute;right:9px;">75 mi</span>
             </div>
             <div id="radiusWarn" style="display:none;margin-top:4px;font-size:.65rem;color:var(--yellow);">&#9888; Large radius + many categories = slow discovery. Select specific categories above first.</div>
           </div>
