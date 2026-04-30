@@ -3416,14 +3416,12 @@ function _buildProspectPageHTML(section, acct) {
     + '<div class="intel-tab-bar">'
     + '<button class="intel-tab active" onclick="_switchIntelTab(\'precall\')">Pre-Call</button>'
     + '<button class="intel-tab" onclick="_switchIntelTab(\'oncall\')">On the Call</button>'
-    + '<button class="intel-tab" onclick="_switchIntelTab(\'research\')">Know the Business</button>'
     + '<div class="intel-tab-divider"></div>'
     + '<div class="intel-persistent" id="intel-persistent-actions"></div>'
     + '</div>'
     + '<div class="intel-content">'
     + '<div id="intel-tab-precall" class="intel-tab-panel active"></div>'
     + '<div id="intel-tab-oncall" class="intel-tab-panel"></div>'
-    + '<div id="intel-tab-research" class="intel-tab-panel"></div>'
     + '</div>'
     + '<div class="intel-modal-overlay" id="intel-modal-overlay" onclick="if(event.target===this)_closeIntelModal()">'
     + '<div class="intel-modal-card">'
@@ -3435,12 +3433,12 @@ function _buildProspectPageHTML(section, acct) {
 }
 
 function _switchIntelTab(name) {
-  ['precall','oncall','research'].forEach(function(t) {
+  ['precall','oncall'].forEach(function(t) {
     var el = document.getElementById('intel-tab-' + t);
     if (el) { el.style.display = t === name ? '' : 'none'; el.classList.toggle('active', t === name); }
   });
   document.querySelectorAll('.intel-tab').forEach(function(btn, i) {
-    var names = ['precall','oncall','research'];
+    var names = ['precall','oncall'];
     btn.classList.toggle('active', names[i] === name);
   });
 }
@@ -3508,11 +3506,9 @@ function _renderIntelPreState(acct, profileKey) {
 
   var preCallEl  = document.getElementById('intel-tab-precall');
   var onCallEl   = document.getElementById('intel-tab-oncall');
-  var researchEl = document.getElementById('intel-tab-research');
   var persistEl  = document.getElementById('intel-persistent-actions');
   if (preCallEl)  preCallEl.innerHTML  = preCallHTML;
   if (onCallEl)   onCallEl.innerHTML   = lockedHTML;
-  if (researchEl) researchEl.innerHTML = lockedHTML;
   if (persistEl)  persistEl.innerHTML  = '';
   _switchIntelTab('precall');
 }
@@ -3584,17 +3580,17 @@ function _renderIntelPostState(data, acct) {
       + '</div>';
   }
 
-  // Best Meeting Angle
+  // ── ON THE CALL TAB ───────────────────────────────────────────────────────
+  var onCallHTML = '';
+
+  // Best Meeting Angle (top of On the Call)
   if (angle) {
-    preCallHTML += '<div class="intel-sl">Best meeting angle</div>'
+    onCallHTML += '<div class="intel-sl" style="margin-top:0;">Best meeting angle</div>'
       + '<div id="intel-angle-box-' + _pk + '" class="intel-angle-box">'
       + '<div class="intel-angle-q">&#8220;' + _esc(angle) + '&#8221;</div>'
       + (hook ? '<div class="intel-angle-s">' + _esc(hook) + '</div>' : '')
       + '</div>';
   }
-
-  // ── ON THE CALL TAB ───────────────────────────────────────────────────────
-  var onCallHTML = '';
 
   // Scripts
   if (wts.phone || wts.walkin) {
@@ -3658,7 +3654,7 @@ function _renderIntelPostState(data, acct) {
       + '</div>';
   }
 
-  // ── KNOW THE BUSINESS TAB ─────────────────────────────────────────────────
+  // ── KNOW THE BUSINESS (appended to Pre-Call) ─────────────────────────────
   var researchHTML = '';
 
   // Marketing Summary
@@ -3765,11 +3761,9 @@ function _renderIntelPostState(data, acct) {
   // ── POPULATE PANELS ───────────────────────────────────────────────────────
   var preCallEl  = document.getElementById('intel-tab-precall');
   var onCallEl   = document.getElementById('intel-tab-oncall');
-  var researchEl = document.getElementById('intel-tab-research');
   var persistEl  = document.getElementById('intel-persistent-actions');
-  if (preCallEl)  preCallEl.innerHTML  = preCallHTML;
+  if (preCallEl)  preCallEl.innerHTML  = preCallHTML + researchHTML;
   if (onCallEl)   onCallEl.innerHTML   = onCallHTML;
-  if (researchEl) researchEl.innerHTML = researchHTML;
   if (persistEl)  persistEl.innerHTML  = persistHTML;
   _switchIntelTab('precall');
 }
