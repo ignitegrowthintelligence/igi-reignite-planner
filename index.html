@@ -3534,9 +3534,18 @@ function _initCadenceTab(pk, safeKey, intelData) {
   panel.innerHTML = '<div style="text-align:center;padding:48px 20px;color:rgba(255,255,255,0.25);font-size:13px;">Loading cadence…</div>';
   db.collection('prospectCadence').doc(safeKey).get().then(function(doc) {
     if (window._activeCadencePk !== pk) return; // prospect changed while loading
-    var steps = (doc.exists && doc.data().steps && doc.data().steps.length === 7)
+    var raw = (doc.exists && doc.data().steps && doc.data().steps.length === 7)
       ? doc.data().steps
       : CADENCE_STEPS.map(function() { return { status:'pending', content:null, notes:'', completedAt:null }; });
+    // Sanitize: replace undefined with null so Firestore writes never fail
+    var steps = raw.map(function(s) {
+      return {
+        status:      (s && s.status      !== undefined) ? s.status      : 'pending',
+        content:     (s && s.content     !== undefined) ? s.content     : null,
+        notes:       (s && s.notes       !== undefined) ? s.notes       : '',
+        completedAt: (s && s.completedAt !== undefined) ? s.completedAt : null
+      };
+    });
     window._cadenceData = window._cadenceData || {};
     window._cadenceData[pk] = steps;
     _renderCadenceTab(pk, safeKey, intelData, steps);
@@ -3586,7 +3595,7 @@ function _renderCadenceTab(pk, safeKey, intelData, steps) {
   html += '</div>';
   html += '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;margin-top:6px;">';
   html += '<div style="font-size:10px;color:rgba(255,255,255,0.28);">' + doneCount + ' of 7 attempts complete &nbsp;&bull;&nbsp; 10 business days</div>';
-  html += '<button onclick="_resetCadence(\'' + pk + '\',\'' + safeKey + '\')" style="font-size:10px;color:rgba(255,255,255,0.28);background:none;border:1px solid rgba(255,255,255,0.12);border-radius:4px;padding:3px 9px;cursor:pointer;letter-spacing:0.04em;">&#8635; Reset</button>';
+  html += '<button onclick="_resetCadence(\'' + pk + '\',\'' + safeKey + '\')" style="font-size:10px;color:rgba(255,255,255,0.5);background:none;border:1px solid rgba(255,255,255,0.25);border-radius:4px;padding:3px 9px;cursor:pointer;letter-spacing:0.04em;">&#8635; Reset Cadence</button>';
   html += '</div>';
 
   // Step cards
@@ -3723,7 +3732,8 @@ function _saveCadenceStep(pk, idx, markComplete) {
       statusEl.style.color = '#EF4136';
     }
   }, 10000);
-  db.collection('prospectCadence').doc(safeKey).set({ steps: steps, updatedAt: new Date().toISOString() }, { merge: true })
+  var stepsToSave = JSON.parse(JSON.stringify(steps, function(k,v){ return v === undefined ? null : v; }));
+  db.collection('prospectCadence').doc(safeKey).set({ steps: stepsToSave, updatedAt: new Date().toISOString() }, { merge: true })
     .then(function() {
       clearTimeout(_saveTimeout);
       if (statusEl) { statusEl.textContent = markComplete ? '✓ Complete!' : 'Saved'; statusEl.style.color = ''; }
@@ -3777,7 +3787,8 @@ function _generateCadenceStep(pk, idx) {
     steps[idx].content = result.content;
     steps[idx].status = 'generated';
     window._cadenceData[pk] = steps;
-    db.collection('prospectCadence').doc(safeKey).set({ steps: steps, updatedAt: new Date().toISOString() }, { merge: true })
+    var genStepsToSave = JSON.parse(JSON.stringify(steps, function(k,v){ return v === undefined ? null : v; }));
+    db.collection('prospectCadence').doc(safeKey).set({ steps: genStepsToSave, updatedAt: new Date().toISOString() }, { merge: true })
       .catch(function(e) { console.warn('[CAD] save error:', e.message); });
     _renderCadenceTab(pk, safeKey, window._currentIntelData || {}, steps);
   })
