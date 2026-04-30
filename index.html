@@ -624,7 +624,7 @@ function sortTable(tableId, colIdx, dtype) {
 
 // ─── TAB SWITCHING ────────────────────────────────────────────────────────────
 function switchTab(t) {
-  ['close','protect','reclaim','rebuild','plan'].forEach(function(id) {
+  ['close','protect','reclaim','rebuild','plan','library'].forEach(function(id) {
     const p = document.getElementById('panel-'+id);
     const b = document.getElementById('tab-'+id);
     if (p) p.classList.toggle('hidden', id!==t);
