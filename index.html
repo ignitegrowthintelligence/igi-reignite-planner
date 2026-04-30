@@ -3530,8 +3530,10 @@ var CADENCE_STEPS = [
 function _initCadenceTab(pk, safeKey, intelData) {
   var panel = document.getElementById('intel-tab-cadence');
   if (!panel) return;
+  window._activeCadencePk = pk; // track which prospect owns the cadence panel
   panel.innerHTML = '<div style="text-align:center;padding:48px 20px;color:rgba(255,255,255,0.25);font-size:13px;">Loading cadence…</div>';
   db.collection('prospectCadence').doc(safeKey).get().then(function(doc) {
+    if (window._activeCadencePk !== pk) return; // prospect changed while loading
     var steps = (doc.exists && doc.data().steps && doc.data().steps.length === 7)
       ? doc.data().steps
       : CADENCE_STEPS.map(function() { return { status:'pending', content:null, notes:'', completedAt:null }; });
@@ -3539,11 +3541,13 @@ function _initCadenceTab(pk, safeKey, intelData) {
     window._cadenceData[pk] = steps;
     _renderCadenceTab(pk, safeKey, intelData, steps);
   }).catch(function(e) {
+    if (window._activeCadencePk !== pk) return;
     panel.innerHTML = '<div style="color:#EF4136;padding:20px;font-size:12px;">Error loading cadence: ' + e.message + '</div>';
   });
 }
 
 function _renderCadenceTab(pk, safeKey, intelData, steps) {
+  if (window._activeCadencePk && window._activeCadencePk !== pk) return; // stale callback
   var panel = document.getElementById('intel-tab-cadence');
   if (!panel) return;
   // Ensure steps array always has 7 entries (guard against race with async init)
@@ -3754,6 +3758,7 @@ function _generateCadenceStep(pk, idx) {
   })
   .then(function(r) { return r.json(); })
   .then(function(result) {
+    if (window._activeCadencePk !== pk) return; // prospect changed while generating
     if (!result.success) throw new Error(result.error || 'Generation failed');
     if (!steps[idx]) steps[idx] = {};
     steps[idx].content = result.content;
@@ -3764,6 +3769,7 @@ function _generateCadenceStep(pk, idx) {
     _renderCadenceTab(pk, safeKey, window._currentIntelData || {}, steps);
   })
   .catch(function(e) {
+    if (window._activeCadencePk !== pk) return;
     if (btn) { btn.disabled = false; btn.textContent = '⚡ Generate Step ' + (idx + 1); }
     var statusEl = document.getElementById('cad-status-' + pk + '-' + idx);
     if (statusEl) statusEl.textContent = 'Error: ' + e.message;
