@@ -85,6 +85,7 @@
     /* ── Table - dark theme ── */
     .bp-table{width:100%;border-collapse:collapse;}
     .bp-table thead th{background:var(--dark-deep);color:rgba(255,255,255,.32);font-size:.65rem;font-weight:600;letter-spacing:.08em;text-transform:uppercase;padding:10px 12px;border-bottom:1px solid rgba(239,65,54,.5);white-space:nowrap;}
+    .bp-table thead th[onclick]:hover{color:rgba(255,255,255,.7);background:rgba(239,65,54,.06);}
     .bp-table thead th.accent{color:var(--accent);}
     .bp-table tbody{background:var(--dark-bg);}
     .bp-table tbody tr{border-bottom:1px solid rgba(255,255,255,.04);}
@@ -540,6 +541,51 @@ function tierBadge(s) {
   return '<span style="color:var(--dim);font-size:.65rem;">Low Priority</span>';
 }
 
+// ─── TABLE SORTING ───────────────────────────────────────────────────────────
+var _sortState = {};
+
+function _sortVal(cell) {
+  if (!cell) return '';
+  if (cell.dataset && cell.dataset.sort !== undefined) return String(cell.dataset.sort);
+  var badge = cell.querySelector('.score-badge');
+  if (badge) return badge.textContent.trim();
+  var inp = cell.querySelector('input[type="text"]');
+  if (inp) return inp.value;
+  var strong = cell.querySelector('strong');
+  if (strong) return strong.textContent.trim();
+  return cell.textContent.trim();
+}
+
+function sortTable(tableId, colIdx, dtype) {
+  var tbl = document.getElementById(tableId);
+  if (!tbl) return;
+  var prev = _sortState[tableId] || {};
+  var dir = (prev.col === colIdx) ? -prev.dir : 1;
+  _sortState[tableId] = { col: colIdx, dir: dir };
+  var tbody = tbl.querySelector('tbody');
+  var rows = Array.from(tbody.querySelectorAll('tr'));
+  rows.sort(function(a, b) {
+    var aCells = a.querySelectorAll('td'), bCells = b.querySelectorAll('td');
+    var aVal = _sortVal(aCells[colIdx]);
+    var bVal = _sortVal(bCells[colIdx]);
+    if (dtype === 'num' || dtype === 'currency') {
+      var an = parseFloat(aVal.replace(/[\$,%\s]/g,'').replace(/,/g,'')) || 0;
+      var bn = parseFloat(bVal.replace(/[\$,%\s]/g,'').replace(/,/g,'')) || 0;
+      return dir * (an - bn);
+    }
+    return dir * aVal.localeCompare(bVal, undefined, { sensitivity: 'base' });
+  });
+  rows.forEach(function(r) { tbody.appendChild(r); });
+  tbl.querySelectorAll('thead th').forEach(function(th, i) {
+    if (!th.dataset.label) th.dataset.label = th.textContent.replace(/\s*[▲▼]\s*$/, '').trim();
+    if (i === colIdx) {
+      th.innerHTML = th.dataset.label + ' <span style="color:var(--accent);font-size:.75em;">' + (dir === 1 ? '▲' : '▼') + '</span>';
+    } else if (th.dataset.label) {
+      th.innerHTML = th.dataset.label;
+    }
+  });
+}
+
 // ─── TAB SWITCHING ────────────────────────────────────────────────────────────
 function switchTab(t) {
   ['close','protect','reclaim','rebuild','plan','library'].forEach(function(id) {
@@ -656,11 +702,11 @@ function refreshPlanModal() {
       + '<div style="font-size:.78rem;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:'+sectionColors[s]+';">'+label+' <span style="color:var(--dim);font-weight:400;">('+items.length+')</span></div>'
       + '<div style="font-size:.78rem;font-weight:700;color:rgba(255,255,255,.75);">'+fmt(sectionRev)+'</div>'
       + '</div>'
-      + '<div class="mobile-scroll"><table class="bp-table"><thead><tr>'
-      + '<th class="text-left">Account</th>'
-      + '<th class="text-left hide-mobile">Category</th>'
-      + '<th class="text-right hide-mobile">Est. Revenue</th>'
-      + '<th class="text-right">IGI Score</th>'
+      + '<div class="mobile-scroll"><table id="focus-tbl-'+s+'" class="bp-table"><thead><tr>'
+      + '<th class="text-left" style="cursor:pointer;" data-label="Account" onclick="sortTable(\'focus-tbl-'+s+'\',0,\'text\')">Account</th>'
+      + '<th class="text-left hide-mobile" style="cursor:pointer;" data-label="Category" onclick="sortTable(\'focus-tbl-'+s+'\',1,\'text\')">Category</th>'
+      + '<th class="text-right hide-mobile" style="cursor:pointer;" data-label="Est. Revenue" onclick="sortTable(\'focus-tbl-'+s+'\',2,\'currency\')">Est. Revenue</th>'
+      + '<th class="text-right" style="cursor:pointer;" data-label="IGI Score" onclick="sortTable(\'focus-tbl-'+s+'\',3,\'num\')">IGI Score</th>'
       + '<th class="text-left" style="min-width:200px;">Next Step</th>'
       + '<th style="width:32px;"></th>'
       + '</tr></thead><tbody>';
@@ -1254,10 +1300,14 @@ function renderClose(deals, budget, booked, pitched, fname) {
     '<input type="text" class="tab-search" data-table="close-table" placeholder="Search accounts..." oninput="filterTable(this)" style="background:var(--surface2);border:1px solid var(--border);border-radius:var(--r-btn);color:var(--text);font-size:.8rem;width:100%;padding:7px 12px;margin-bottom:10px;outline:none;"/>'
     +'<div style="margin-bottom:12px;font-size:.75rem;color:var(--dim);">'+fname+' - '+deals.length+' opportunities</div>'
     +'<div class="mobile-scroll"><table id="close-table" class="bp-table"><thead><tr>'
-    +'<th style="width:32px;"></th><th class="text-left">Account</th>'
-    +'<th class="text-right accent">IGI Score</th><th class="text-right">Revenue</th>'
-    +'<th class="text-right hide-mobile">Confidence</th><th class="text-right hide-mobile">Days</th>'
-    +'<th class="text-left hide-mobile">Type</th><th class="text-left">Notes</th>'
+    +'<th style="width:32px;"></th>'
+    +'<th class="text-left" style="cursor:pointer;" data-label="Account" onclick="sortTable(\'close-table\',1,\'text\')">Account</th>'
+    +'<th class="text-right accent" style="cursor:pointer;" data-label="IGI Score" onclick="sortTable(\'close-table\',2,\'num\')">IGI Score</th>'
+    +'<th class="text-right" style="cursor:pointer;" data-label="Revenue" onclick="sortTable(\'close-table\',3,\'currency\')">Revenue</th>'
+    +'<th class="text-right hide-mobile" style="cursor:pointer;" data-label="Confidence" onclick="sortTable(\'close-table\',4,\'num\')">Confidence</th>'
+    +'<th class="text-right hide-mobile" style="cursor:pointer;" data-label="Days" onclick="sortTable(\'close-table\',5,\'num\')">Days</th>'
+    +'<th class="text-left hide-mobile" style="cursor:pointer;" data-label="Type" onclick="sortTable(\'close-table\',6,\'text\')">Type</th>'
+    +'<th class="text-left">Notes</th>'
     +'</tr></thead><tbody>'
     +deals.map(function(d){
       return '<tr>'+makeCheckbox('close',d)
@@ -1422,10 +1472,13 @@ function renderProtect(clients, extraNote) {
     "<input type=\"text\" class=\"tab-search\" data-table=\"protect-table\" placeholder=\"Search accounts...\" oninput=\"filterTable(this)\" style=\"background:var(--surface2);border:1px solid var(--border);border-radius:var(--r-btn);color:var(--text);font-size:.8rem;width:100%;padding:7px 12px;margin-bottom:10px;outline:none;\"/>"
     +"<div style=\"margin-bottom:12px;font-size:.75rem;color:var(--dim);\">"+clients.length+" active clients"+(hasIgnite?" - Ignite/Broadcast split loaded":"")+"</div>"
     +"<div class=\"mobile-scroll\"><table id=\"protect-table\" class=\"bp-table\"><thead><tr>"
-    +"<th style=\"width:32px;\"></th><th class=\"text-left\">Advertiser</th>"
-    +"<th class=\"text-left hide-mobile\">AE</th><th class=\"text-right accent\">IGI Score</th>"
-    +"<th class=\"text-right hide-mobile\">2025 Total</th><th class=\"text-right\">2026 Total</th>"
-    +(hasIgnite?"<th class=\"text-right hide-mobile\" style=\"color:var(--accent);\">Ignite</th><th class=\"text-right hide-mobile\" style=\"color:var(--orange);\">Broadcast</th>":"")
+    +"<th style=\"width:32px;\"></th>"
+    +"<th class=\"text-left\" style=\"cursor:pointer;\" data-label=\"Advertiser\" onclick=\"sortTable('protect-table',1,'text')\">Advertiser</th>"
+    +"<th class=\"text-left hide-mobile\" style=\"cursor:pointer;\" data-label=\"AE\" onclick=\"sortTable('protect-table',2,'text')\">AE</th>"
+    +"<th class=\"text-right accent\" style=\"cursor:pointer;\" data-label=\"IGI Score\" onclick=\"sortTable('protect-table',3,'num')\">IGI Score</th>"
+    +"<th class=\"text-right hide-mobile\" style=\"cursor:pointer;\" data-label=\"2025 Total\" onclick=\"sortTable('protect-table',4,'currency')\">2025 Total</th>"
+    +"<th class=\"text-right\" style=\"cursor:pointer;\" data-label=\"2026 Total\" onclick=\"sortTable('protect-table',5,'currency')\">2026 Total</th>"
+    +(hasIgnite?"<th class=\"text-right hide-mobile\" style=\"cursor:pointer;color:var(--accent);\" data-label=\"Ignite\" onclick=\"sortTable('protect-table',6,'currency')\">Ignite</th><th class=\"text-right hide-mobile\" style=\"cursor:pointer;color:var(--orange);\" data-label=\"Broadcast\" onclick=\"sortTable('protect-table',7,'currency')\">Broadcast</th>":"")
     +"<th class=\"text-right hide-mobile\">Trend</th><th class=\"text-left hide-mobile\">Action</th>"
     +"</tr></thead><tbody>"
     +clients.map(function(c) {
@@ -1512,15 +1565,15 @@ function renderReclaim() {
     +'</div>'
     +'<div class="mobile-scroll"><table id="reclaim-table" class="bp-table"><thead><tr>'
     +'<th style="width:32px;"></th>'
-    +'<th class="text-left">Advertiser</th>'
-    +'<th class="text-right accent">IGI Score</th>'
-    +'<th class="text-left" style="min-width:90px;white-space:nowrap;">Bucket</th>'
-    +(hasAll?'<th class="text-right hide-mobile" style="color:var(--dim);">All Rev 2023</th>':'')
-    +(hasAll?'<th class="text-right hide-mobile" style="color:var(--dim);">All Rev 2024</th>':'')
-    +(hasAll?'<th class="text-right" style="color:var(--dim);">All Rev 2025</th>':'')
-    +(hasIgnite?'<th class="text-right hide-mobile" style="color:var(--accent);font-size:.65rem;">IGN 2023</th>':'')
-    +(hasIgnite?'<th class="text-right hide-mobile" style="color:var(--accent);font-size:.65rem;">IGN 2024</th>':'')
-    +(hasIgnite?'<th class="text-right" style="color:var(--accent);font-size:.65rem;">IGN 2025</th>':'')
+    +'<th class="text-left" style="cursor:pointer;" data-label="Advertiser" onclick="sortTable(\'reclaim-table\',1,\'text\')">Advertiser</th>'
+    +'<th class="text-right accent" style="cursor:pointer;" data-label="IGI Score" onclick="sortTable(\'reclaim-table\',2,\'num\')">IGI Score</th>'
+    +'<th class="text-left" style="cursor:pointer;min-width:90px;white-space:nowrap;" data-label="Bucket" onclick="sortTable(\'reclaim-table\',3,\'text\')">Bucket</th>'
+    +(hasAll?'<th class="text-right hide-mobile" style="cursor:pointer;color:var(--dim);" data-label="All Rev 2023" onclick="sortTable(\'reclaim-table\',' + (4) + ',\'currency\')">All Rev 2023</th>':'')
+    +(hasAll?'<th class="text-right hide-mobile" style="cursor:pointer;color:var(--dim);" data-label="All Rev 2024" onclick="sortTable(\'reclaim-table\',' + (5) + ',\'currency\')">All Rev 2024</th>':'')
+    +(hasAll?'<th class="text-right" style="cursor:pointer;color:var(--dim);" data-label="All Rev 2025" onclick="sortTable(\'reclaim-table\',' + (6) + ',\'currency\')">All Rev 2025</th>':'')
+    +(hasIgnite?'<th class="text-right hide-mobile" style="cursor:pointer;color:var(--accent);font-size:.65rem;" data-label="IGN 2023" onclick="sortTable(\'reclaim-table\',' + (hasAll?7:4) + ',\'currency\')">IGN 2023</th>':'')
+    +(hasIgnite?'<th class="text-right hide-mobile" style="cursor:pointer;color:var(--accent);font-size:.65rem;" data-label="IGN 2024" onclick="sortTable(\'reclaim-table\',' + (hasAll?8:5) + ',\'currency\')">IGN 2024</th>':'')
+    +(hasIgnite?'<th class="text-right" style="cursor:pointer;color:var(--accent);font-size:.65rem;" data-label="IGN 2025" onclick="sortTable(\'reclaim-table\',' + (hasAll?9:6) + ',\'currency\')">IGN 2025</th>':'')
     +'</tr></thead><tbody>'
     +combined.map(function(c) {
       var bucket = c.bucket==='Reclaim Now'
@@ -2733,18 +2786,19 @@ function renderRebuild(prospects, radius) {
     '<input type="text" class="tab-search" data-table="rebuild-table" placeholder="Search accounts..." oninput="filterTable(this)" style="background:var(--surface2);border:1px solid var(--border);border-radius:var(--r-btn);color:var(--text);font-size:.8rem;width:100%;padding:7px 12px;margin-bottom:10px;outline:none;"/>'
     +'<div style="margin-bottom:12px;font-size:.75rem;color:var(--dim);">'+prospects.length+' rebuild targets'+locInfo+'</div>'
     +'<div class="mobile-scroll"><table id="rebuild-table" class="bp-table"><thead><tr>'
-    +'<th style="width:32px;"></th><th class="text-left">Advertiser Name</th>'
-    +'<th class="text-left">Category</th>'
+    +'<th style="width:32px;"></th>'
+    +'<th class="text-left" style="cursor:pointer;" data-label="Advertiser Name" onclick="sortTable(\'rebuild-table\',1,\'text\')">Advertiser Name</th>'
+    +'<th class="text-left" style="cursor:pointer;" data-label="Category" onclick="sortTable(\'rebuild-table\',2,\'text\')">Category</th>'
     +'<th class="text-left hide-mobile">Website</th>'
-    +'<th class="text-right accent" style="width:80px;">IGI Score</th>'
-    +'<th class="text-left hide-mobile">Tier</th>'
+    +'<th class="text-right accent" style="cursor:pointer;width:80px;" data-label="IGI Score" onclick="sortTable(\'rebuild-table\',4,\'num\')">IGI Score</th>'
+    +'<th class="text-left hide-mobile" style="cursor:pointer;" data-label="Tier" onclick="sortTable(\'rebuild-table\',5,\'text\')">Tier</th>'
     +'</tr></thead><tbody>'
     +prospects.map(function(p){
       return '<tr>'+makeCheckbox('rebuild',p)
         +'<td><strong style="color:#fff;">'+p.name+'</strong>'
         +(p.source==='uploaded'?'<span style="font-size:.6rem;background:rgba(251,191,36,.12);color:var(--yellow);border:1px solid rgba(251,191,36,.3);border-radius:var(--r-btn);padding:1px 6px;margin-left:6px;">UPLOADED</span>':p.source==='discovered'?'<span style="font-size:.6rem;background:rgba(239,65,54,.12);color:var(--accent);border:1px solid var(--accent-border);border-radius:var(--r-btn);padding:1px 6px;margin-left:6px;">DISCOVERED</span>':p.source==='both'?'<span style="font-size:.6rem;background:rgba(52,211,153,.15);color:var(--green);border:1px solid rgba(52,211,153,.3);border-radius:var(--r-btn);padding:1px 6px;margin-left:6px;">✓ BOTH</span>':'')
         +'</td>'
-        +'<td style="color:var(--dim);font-size:.8rem;">'+(p.cat||'-')
+        +'<td data-sort="'+(p.cat||'-')+'" style="color:var(--dim);font-size:.8rem;">'+(p.cat||'-')
         +(p._searchLabel ? '<br><span style="font-size:.62rem;color:var(--dim);font-style:italic;">via '+p._searchLabel+'</span>' : '')
         +'</td>'
         +'<td class="hide-mobile" style="font-size:.75rem;">'
