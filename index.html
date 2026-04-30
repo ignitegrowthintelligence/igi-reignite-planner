@@ -577,9 +577,17 @@ function _findYearTotals(headers, rows, hRow) {
   headers.forEach(function(h, i) {
     if (String(h).toLowerCase().trim() === 'total') totals.push(i);
   });
-  result.col24 = totals[0] !== undefined ? totals[0] : -1;
-  result.col25 = totals[1] !== undefined ? totals[1] : -1;
-  result.col26 = totals[2] !== undefined ? totals[2] : -1;
+  // If 4 total columns, report covers 2023-2026; if 3, it covers 2024-2026
+  if (totals.length >= 4) {
+    result.col23 = totals[0];
+    result.col24 = totals[1];
+    result.col25 = totals[2];
+    result.col26 = totals[3];
+  } else {
+    result.col24 = totals[0] !== undefined ? totals[0] : -1;
+    result.col25 = totals[1] !== undefined ? totals[1] : -1;
+    result.col26 = totals[2] !== undefined ? totals[2] : -1;
+  }
   return result;
 }
 function scoreBadge(s, scoreData, containerId) {
