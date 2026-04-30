@@ -368,66 +368,102 @@
     <!-- REBUILD -->
     <div id="panel-rebuild" class="p-5 hidden">
       <div class="section-header">Rebuild - Net New Prospects</div>
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-5">
-        <div style="display:flex;flex-direction:column;gap:10px;">
-          <div class="upload-zone p-5 text-center rebuild-discovery-controls" onclick="document.getElementById('f-rebuild').click()"
-               ondragover="event.preventDefault();this.classList.add('drag')" ondragleave="this.classList.remove('drag')"
-               ondrop="event.preventDefault();this.classList.remove('drag');handleFile('rebuild',event.dataTransfer.files[0])">
-            <div style="font-size:1.3rem;margin-bottom:5px;">📄</div>
-            <div style="font-weight:600;font-size:.8rem;">Upload Your List</div>
-            <div style="font-size:.68rem;color:var(--dim);margin-top:3px;">CSV: Name, Category, City, Zip, Revenue</div>
-            <input type="file" id="f-rebuild" accept=".csv,.xlsx,.xls" style="display:none" onchange="handleFile('rebuild',this.files[0])"/>
+
+      <!-- ── Geography Filter (shared by all three modes) ── -->
+      <div class="card p-4 mb-4 rebuild-discovery-controls">
+        <div style="font-size:.7rem;font-weight:700;color:var(--accent);letter-spacing:.07em;text-transform:uppercase;margin-bottom:12px;">📍 Geography Filter <span style="font-size:.65rem;font-weight:400;color:var(--dim);text-transform:none;letter-spacing:0;">— used by all three modes below</span></div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:start;">
+          <div>
+            <label style="font-size:.72rem;color:var(--dim);">Target ZIP Code</label>
+            <input id="zipInput" type="text" maxlength="5" placeholder="e.g. 13501"
+              style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:var(--r-btn);padding:8px 12px;color:var(--text);font-size:.85rem;margin-top:4px;outline:none;"
+              oninput="handleZipInput(this.value)"/>
           </div>
-          <div class="rebuild-discovery-controls" style="text-align:center;font-size:.68rem;color:var(--dim);">or</div>
-          <button id="discoverBtn" onclick="discoverProspects()" class="rebuild-discovery-controls"
-            style="background:linear-gradient(135deg,rgba(239,65,54,.15),rgba(239,65,54,.08));border:1px solid var(--accent-border);border-radius:var(--r-btn);padding:14px;cursor:pointer;color:var(--accent);font-weight:700;font-size:.85rem;">
-            🔍 Auto-Discover Prospects
-            <div style="font-size:.68rem;font-weight:400;color:rgba(239,65,54,.7);margin-top:3px;">Set ZIP + radius, then tap to discover</div>
+          <div id="geoDescDisplay" style="display:flex;align-items:center;gap:8px;padding:8px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--r-card);margin-top:20px;min-height:40px;">
+            <span style="font-size:.72rem;color:var(--dim);">Location:</span>
+            <span id="geoDescLabel" style="font-size:.82rem;color:var(--accent);font-weight:600;">Enter ZIP to detect</span>
+          </div>
+        </div>
+        <div style="margin-top:14px;">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+            <label style="font-size:.72rem;color:var(--dim);">Radius</label>
+            <span id="radiusLabel" style="font-size:.85rem;font-weight:700;color:var(--accent);">25 miles</span>
+          </div>
+          <input type="range" id="radiusSlider" class="range-slider" min="5" max="75" value="25" step="5"
+            oninput="document.getElementById('radiusLabel').textContent=this.value+' miles';document.getElementById('radiusWarn').style.display=this.value>50?'block':'none';filterRebuild()"/>
+          <div style="position:relative;height:16px;margin-top:2px;font-size:.65rem;color:var(--dim);">
+            <span style="position:absolute;left:9px;">5 mi</span>
+            <span style="position:absolute;left:calc(28.57% + 3.86px);transform:translateX(-50%);">25</span>
+            <span style="position:absolute;left:calc(64.29% - 2.57px);transform:translateX(-50%);">50</span>
+            <span style="position:absolute;right:9px;">75 mi</span>
+          </div>
+          <div id="radiusWarn" style="display:none;margin-top:4px;font-size:.65rem;color:var(--yellow);">&#9888; Large radius + many categories = slow discovery. Select specific categories above first.</div>
+        </div>
+      </div>
+
+      <!-- ── Three Discovery Modes ── -->
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:16px;align-items:start;" class="rebuild-discovery-controls">
+
+        <!-- Mode 1: Find a Business -->
+        <div class="card p-4" style="display:flex;flex-direction:column;gap:10px;">
+          <div>
+            <div style="font-size:.72rem;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--accent);">🔍 Find a Business</div>
+            <div style="font-size:.67rem;color:var(--dim);margin-top:3px;">Type a name — we find it in Google Places</div>
+          </div>
+          <input id="singleNameInput" type="text" placeholder="e.g. Perfect Exteriors"
+            style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:var(--r-btn);padding:8px 12px;color:var(--text);font-size:.82rem;outline:none;box-sizing:border-box;"
+            onkeydown="if(event.key==='Enter')lookupSingleProspect()"/>
+          <button onclick="lookupSingleProspect()" id="lookupBtn"
+            style="width:100%;background:linear-gradient(135deg,rgba(239,65,54,.15),rgba(239,65,54,.08));border:1px solid var(--accent-border);border-radius:var(--r-btn);padding:9px;cursor:pointer;color:var(--accent);font-weight:700;font-size:.8rem;">
+            Find &amp; Add
           </button>
-          <div id="discoverStatus" class="rebuild-discovery-controls" style="font-size:.7rem;color:var(--dim);text-align:center;"></div>
+          <div id="lookupStatus" style="font-size:.68rem;color:var(--dim);min-height:18px;"></div>
         </div>
-        <div class="card p-4 md:col-span-2 rebuild-discovery-controls">
-          <div style="font-size:.7rem;font-weight:700;color:var(--accent);letter-spacing:.07em;text-transform:uppercase;margin-bottom:12px;">Geography Filter</div>
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label style="font-size:.72rem;color:var(--dim);">Target ZIP Code</label>
-              <input id="zipInput" type="text" maxlength="5" placeholder="e.g. 13501"
-                style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:var(--r-btn);padding:8px 12px;color:var(--text);font-size:.85rem;margin-top:4px;outline:none;"
-                oninput="handleZipInput(this.value)"/>
-            </div>
-            <div id="geoDescDisplay" style="display:flex;align-items:center;gap:8px;padding:8px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--r-card);margin-top:20px;min-height:40px;">
-              <span style="font-size:.72rem;color:var(--dim);">Location:</span>
-              <span id="geoDescLabel" style="font-size:.82rem;color:var(--accent);font-weight:600;">Enter ZIP to detect</span>
-            </div>
+
+        <!-- Mode 2: Upload a List -->
+        <div class="card p-4" style="display:flex;flex-direction:column;gap:10px;">
+          <div>
+            <div style="font-size:.72rem;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--accent);">📋 Upload a List</div>
+            <div style="font-size:.67rem;color:var(--dim);margin-top:3px;">We look up each name in Google Places</div>
           </div>
-          <div style="margin-top:14px;">
-            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
-              <label style="font-size:.72rem;color:var(--dim);">Radius</label>
-              <span id="radiusLabel" style="font-size:.85rem;font-weight:700;color:var(--accent);">25 miles</span>
-            </div>
-            <input type="range" id="radiusSlider" class="range-slider" min="5" max="75" value="25" step="5"
-              oninput="document.getElementById('radiusLabel').textContent=this.value+' miles';document.getElementById('radiusWarn').style.display=this.value>50?'block':'none';filterRebuild()"/>
-            <div style="position:relative;height:16px;margin-top:2px;font-size:.65rem;color:var(--dim);">
-              <span style="position:absolute;left:9px;">5 mi</span>
-              <span style="position:absolute;left:calc(28.57% + 3.86px);transform:translateX(-50%);">25</span>
-              <span style="position:absolute;left:calc(64.29% - 2.57px);transform:translateX(-50%);">50</span>
-              <span style="position:absolute;right:9px;">75 mi</span>
-            </div>
-            <div id="radiusWarn" style="display:none;margin-top:4px;font-size:.65rem;color:var(--yellow);">&#9888; Large radius + many categories = slow discovery. Select specific categories above first.</div>
+          <div class="upload-zone p-4 text-center" style="cursor:pointer;flex:1;"
+            onclick="document.getElementById('f-rebuild').click()"
+            ondragover="event.preventDefault();this.classList.add('drag')"
+            ondragleave="this.classList.remove('drag')"
+            ondrop="event.preventDefault();this.classList.remove('drag');handleRebuildUpload(event.dataTransfer.files[0])">
+            <div style="font-size:1.1rem;margin-bottom:4px;">📄</div>
+            <div style="font-weight:600;font-size:.78rem;">Drop or click to upload</div>
+            <div style="font-size:.65rem;color:var(--dim);margin-top:3px;">Excel or CSV &nbsp;·&nbsp; <strong style="color:var(--text);">Name</strong>, Zip (optional)</div>
           </div>
+          <input type="file" id="f-rebuild" accept=".csv,.xlsx,.xls" style="display:none" onchange="handleRebuildUpload(this.files[0])"/>
+          <div id="uploadStatus" style="font-size:.68rem;color:var(--dim);min-height:18px;"></div>
         </div>
+
+        <!-- Mode 3: Auto-Discover by Category -->
+        <div class="card p-4" style="display:flex;flex-direction:column;gap:10px;">
+          <div>
+            <div style="font-size:.72rem;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--accent);">🗺️ Auto-Discover</div>
+            <div style="font-size:.67rem;color:var(--dim);margin-top:3px;">Search by category across your area</div>
+          </div>
+          <div id="categoryFilterPanel">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
+              <div style="font-size:.67rem;font-weight:700;color:var(--dim);letter-spacing:.06em;text-transform:uppercase;">Categories <span style="font-weight:400;">(up to 3)</span></div>
+              <span id="catSelectionCount" style="font-size:.67rem;color:var(--dim);white-space:nowrap;">Select up to 3</span>
+            </div>
+            <div id="catLimitWarn" style="display:none;font-size:.66rem;color:var(--yellow);margin-bottom:6px;padding:4px 8px;background:rgba(251,191,36,.08);border:1px solid rgba(251,191,36,.25);border-radius:var(--r-btn);">&#9888; Max 3 — uncheck one to add another</div>
+            <div id="categoryCheckboxes"></div>
+            <div id="secondaryTagsPanel" style="display:none;margin-top:8px;"></div>
+          </div>
+          <button id="discoverBtn" onclick="discoverProspects()"
+            style="width:100%;background:linear-gradient(135deg,rgba(239,65,54,.15),rgba(239,65,54,.08));border:1px solid var(--accent-border);border-radius:var(--r-btn);padding:9px;cursor:pointer;color:var(--accent);font-weight:700;font-size:.8rem;margin-top:4px;">
+            Discover Prospects
+          </button>
+          <div id="discoverStatus" style="font-size:.68rem;color:var(--dim);min-height:18px;"></div>
+        </div>
+
       </div>
-      <div style="margin-bottom:16px;" class="rebuild-discovery-controls">
-        <div id="categoryFilterPanel">
-          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
-            <div style="font-size:.68rem;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:var(--accent);">Target Categories <span style="font-size:.65rem;color:var(--dim);font-weight:400;text-transform:none;letter-spacing:0;">&mdash; select up to 3 before discovering</span></div>
-            <span id="catSelectionCount" style="font-size:.68rem;color:var(--dim);white-space:nowrap;">Select up to 3</span>
-          </div>
-          <div id="catLimitWarn" style="display:none;font-size:.68rem;color:var(--yellow);margin-bottom:8px;padding:5px 10px;background:rgba(251,191,36,.08);border:1px solid rgba(251,191,36,.25);border-radius:var(--r-btn);">&#9888; Maximum 3 categories selected &mdash; uncheck one to select another</div>
-          <div id="categoryCheckboxes"></div>
-          <div id="secondaryTagsPanel" style="display:none;margin-top:10px;"></div>
-        </div>
-      </div>
+
+      <!-- ── Unified Results ── -->
       <div id="rebuild-content"></div>
     </div>
   </div>
@@ -1608,6 +1644,200 @@ function renderReclaim() {
     +'</tbody></table></div>';
 }
 
+// ─── REBUILD: MODE 1 — Single Name Lookup ────────────────────────────────────
+async function lookupSingleProspect() {
+  var nameEl = document.getElementById('singleNameInput');
+  var statusEl = document.getElementById('lookupStatus');
+  var btn = document.getElementById('lookupBtn');
+  var name = nameEl ? nameEl.value.trim() : '';
+  if (!name) { if (statusEl) statusEl.textContent = 'Enter a business name first.'; return; }
+
+  // Ensure we have a geo center
+  var zip = document.getElementById('zipInput').value.replace(/\D/g,'');
+  if (!state.geoCenter || state.geoCenter.zip !== zip) {
+    if (zip.length !== 5) { if (statusEl) statusEl.textContent = 'Enter a ZIP code first.'; return; }
+    if (statusEl) statusEl.innerHTML = '<span style="color:var(--accent);">Looking up location...</span>';
+    try {
+      var rz = await fetch('https://nominatim.openstreetmap.org/search?postalcode='+zip+'&country=US&format=json&limit=1');
+      var dz = await rz.json();
+      if (!dz||!dz[0]) { if (statusEl) statusEl.textContent = 'ZIP not found.'; return; }
+      state.geoCenter = {lat:parseFloat(dz[0].lat),lng:parseFloat(dz[0].lon),zip:zip,city:dz[0].display_name.split(',')[0].trim()};
+      var lbl = document.getElementById('geoDescLabel'); if (lbl) lbl.textContent = state.geoCenter.city+', '+zip;
+    } catch(e) { if (statusEl) statusEl.textContent = 'ZIP lookup failed.'; return; }
+  }
+
+  if (btn) { btn.disabled = true; btn.style.opacity = '.5'; }
+  if (statusEl) statusEl.innerHTML = '<span style="color:var(--accent);">Searching...</span>';
+
+  try {
+    var radiusMi = parseInt(document.getElementById('radiusSlider').value) || 25;
+    var radiusM = Math.min(Math.round(radiusMi * 1609.34), 50000);
+    var FIELDS = 'places.id,places.displayName,places.formattedAddress,places.location,places.types,places.primaryType,places.userRatingCount,places.rating,places.websiteUri,places.businessStatus,places.nationalPhoneNumber,places.regularOpeningHours';
+    var resp = await fetch('https://places.googleapis.com/v1/places:searchText', {
+      method: 'POST',
+      headers: { 'Content-Type':'application/json', 'X-Goog-Api-Key':GOOGLE_PLACES_KEY, 'X-Goog-FieldMask':FIELDS },
+      body: JSON.stringify({ textQuery:name, maxResultCount:1, locationBias:{ circle:{ center:{latitude:state.geoCenter.lat,longitude:state.geoCenter.lng}, radius:radiusM } } })
+    });
+    if (!resp.ok) throw new Error('HTTP '+resp.status);
+    var data = await resp.json();
+    var places = data.places || [];
+    if (!places.length) {
+      if (statusEl) statusEl.innerHTML = '<span style="color:var(--yellow);">No match found for "'+name+'"</span>';
+      if (btn) { btn.disabled=false; btn.style.opacity='1'; }
+      return;
+    }
+    var place = places[0];
+    var pid = place.id || '';
+    if (!state.rebuild) state.rebuild = { uploaded:[], discovered:[] };
+    var existing = state.rebuild.discovered || [];
+    if (pid && existing.some(function(p){ return p._places && p._places.id === pid; })) {
+      if (statusEl) statusEl.innerHTML = '<span style="color:var(--yellow);">Already in list: '+(place.displayName?place.displayName.text:name)+'</span>';
+      if (btn) { btn.disabled=false; btn.style.opacity='1'; }
+      return;
+    }
+    var foundName = place.displayName ? place.displayName.text : name;
+    var lat = place.location ? place.location.latitude : null;
+    var lng = place.location ? place.location.longitude : null;
+    var dist = (lat&&lng) ? haversine(state.geoCenter.lat,state.geoCenter.lng,lat,lng) : null;
+    var detected = detectCategoryFromPlace(place);
+    var prospect = {
+      name:foundName, cat:detected.category||'Unknown', _detectedType:place.primaryType||null,
+      _searchLabel:null, _discoveryMode:'lookup', city:state.geoCenter.city, dist:dist,
+      estRev:30000, rev:30000, source:'discovered', _tags:{}, _lat:lat, _lng:lng,
+      _website:place.websiteUri||null,
+      _places:{ id:pid||null, rating:place.rating||null, userRatingCount:place.userRatingCount||0,
+        websiteUri:place.websiteUri||'', businessStatus:place.businessStatus||'OPERATIONAL',
+        nationalPhoneNumber:place.nationalPhoneNumber||null, regularOpeningHours:place.regularOpeningHours||null }
+    };
+    prospect._rebuildId = 'rb-'+Math.random().toString(36).slice(2,9);
+    prospect.score = computeScore(prospect);
+    state.rebuild.discovered = existing.concat([prospect]);
+    mergeAndRenderRebuild();
+    if (nameEl) nameEl.value = '';
+    if (statusEl) statusEl.innerHTML = '<span style="color:var(--green);">&#10003; Added: '+foundName+' &middot; IGI Score: '+Math.round(prospect.score)+'</span>';
+  } catch(e) {
+    if (statusEl) statusEl.innerHTML = '<span style="color:var(--red);">Error: '+e.message+'</span>';
+  }
+  if (btn) { btn.disabled=false; btn.style.opacity='1'; }
+}
+
+// ─── REBUILD: MODE 2 — Bulk Upload Lookup ────────────────────────────────────
+async function handleRebuildUpload(file) {
+  if (!file) return;
+  var reader = new FileReader();
+  reader.onload = async function(e) {
+    try {
+      var wb = XLSX.read(e.target.result, {type:'array', raw:false});
+      var ws = wb.Sheets[wb.SheetNames[0]];
+      var rows = XLSX.utils.sheet_to_json(ws, {header:1, defval:''});
+      // Find header row
+      var hRow = 0;
+      for (var i = 0; i < Math.min(5,rows.length); i++) {
+        if (rows[i].join('').toLowerCase().includes('name')) { hRow=i; break; }
+      }
+      var headers = (rows[hRow]||[]).map(function(h){ return String(h).toLowerCase(); });
+      function col(k){ return headers.findIndex(function(h){ return h.includes(k); }); }
+      var cName = col('name') >= 0 ? col('name') : 0;
+      var cZip  = col('zip')  >= 0 ? col('zip')  : -1;
+      var uploadRows = [];
+      for (var i = hRow+1; i < rows.length; i++) {
+        var r = rows[i];
+        if (!r||!r[cName]||!String(r[cName]).trim()) continue;
+        var rowZip = cZip >= 0 ? String(r[cZip]||'').replace(/\D/g,'') : '';
+        if (rowZip.length !== 5) rowZip = '';
+        uploadRows.push({ name:String(r[cName]).trim(), zip:rowZip });
+      }
+      if (!uploadRows.length) { alert('No names found in file.'); return; }
+
+      var statusEl = document.getElementById('uploadStatus');
+      var inp = document.getElementById('f-rebuild'); if (inp) inp.value='';
+
+      // Ensure default center
+      var defaultCenter = state.geoCenter;
+      var defaultZip = document.getElementById('zipInput').value.replace(/\D/g,'');
+      if (defaultZip.length===5 && (!defaultCenter || defaultCenter.zip!==defaultZip)) {
+        try {
+          var r0 = await fetch('https://nominatim.openstreetmap.org/search?postalcode='+defaultZip+'&country=US&format=json&limit=1');
+          var d0 = await r0.json();
+          if (d0&&d0[0]) {
+            defaultCenter = {lat:parseFloat(d0[0].lat),lng:parseFloat(d0[0].lon),zip:defaultZip,city:d0[0].display_name.split(',')[0].trim()};
+            state.geoCenter = defaultCenter;
+            var lbl=document.getElementById('geoDescLabel'); if(lbl) lbl.textContent=defaultCenter.city+', '+defaultZip;
+          }
+        } catch(e) {}
+      }
+
+      var zipCache = {};
+      var FIELDS = 'places.id,places.displayName,places.formattedAddress,places.location,places.types,places.primaryType,places.userRatingCount,places.rating,places.websiteUri,places.businessStatus,places.nationalPhoneNumber,places.regularOpeningHours';
+      var found = [], notFound = [];
+
+      for (var i = 0; i < uploadRows.length; i++) {
+        var row = uploadRows[i];
+        if (statusEl) statusEl.innerHTML = '<span style="color:var(--accent);">Looking up '+(i+1)+' of '+uploadRows.length+': '+row.name+'</span>';
+        var center = defaultCenter;
+        if (row.zip && row.zip !== (defaultCenter?defaultCenter.zip:'')) {
+          if (zipCache[row.zip]) {
+            center = zipCache[row.zip];
+          } else {
+            try {
+              var rz2 = await fetch('https://nominatim.openstreetmap.org/search?postalcode='+row.zip+'&country=US&format=json&limit=1');
+              var dz2 = await rz2.json();
+              if (dz2&&dz2[0]) {
+                center = {lat:parseFloat(dz2[0].lat),lng:parseFloat(dz2[0].lon),zip:row.zip,city:dz2[0].display_name.split(',')[0].trim()};
+                zipCache[row.zip] = center;
+              }
+            } catch(e) {}
+          }
+        }
+        if (!center) { notFound.push(row.name); continue; }
+        try {
+          var resp2 = await fetch('https://places.googleapis.com/v1/places:searchText', {
+            method:'POST',
+            headers:{'Content-Type':'application/json','X-Goog-Api-Key':GOOGLE_PLACES_KEY,'X-Goog-FieldMask':FIELDS},
+            body:JSON.stringify({ textQuery:row.name, maxResultCount:1,
+              locationBias:{ circle:{ center:{latitude:center.lat,longitude:center.lng}, radius:40234 } } })
+          });
+          if (!resp2.ok) throw new Error('HTTP '+resp2.status);
+          var data2 = await resp2.json();
+          var places2 = data2.places || [];
+          if (!places2.length) { notFound.push(row.name); continue; }
+          var place2 = places2[0];
+          var pid2 = place2.id || '';
+          var foundName2 = place2.displayName ? place2.displayName.text : row.name;
+          var lat2 = place2.location ? place2.location.latitude : null;
+          var lng2 = place2.location ? place2.location.longitude : null;
+          var dist2 = (lat2&&lng2&&defaultCenter) ? haversine(defaultCenter.lat,defaultCenter.lng,lat2,lng2) : null;
+          var detected2 = detectCategoryFromPlace(place2);
+          var p2 = {
+            name:foundName2, cat:detected2.category||'Unknown', _detectedType:place2.primaryType||null,
+            _searchLabel:null, _discoveryMode:'upload', city:center.city, dist:dist2,
+            estRev:30000, rev:30000, source:'discovered', _tags:{}, _lat:lat2, _lng:lng2,
+            _website:place2.websiteUri||null,
+            _places:{ id:pid2||null, rating:place2.rating||null, userRatingCount:place2.userRatingCount||0,
+              websiteUri:place2.websiteUri||'', businessStatus:place2.businessStatus||'OPERATIONAL',
+              nationalPhoneNumber:place2.nationalPhoneNumber||null, regularOpeningHours:place2.regularOpeningHours||null }
+          };
+          p2._rebuildId = 'rb-'+Math.random().toString(36).slice(2,9);
+          p2.score = computeScore(p2);
+          found.push(p2);
+        } catch(e) { notFound.push(row.name); }
+      }
+
+      if (!state.rebuild) state.rebuild = { uploaded:[], discovered:[] };
+      var existing2 = state.rebuild.discovered || [];
+      var existingIds = new Set(existing2.map(function(p){ return p._places&&p._places.id; }).filter(Boolean));
+      var newOnes = found.filter(function(p){ return !p._places||!p._places.id||!existingIds.has(p._places.id); });
+      state.rebuild.discovered = existing2.concat(newOnes);
+      activeCategories = new Set(['All']); buildCategoryFilters(); mergeAndRenderRebuild();
+      var msg = '<span style="color:var(--green);">&#10003; Added '+newOnes.length+' of '+uploadRows.length;
+      if (notFound.length) msg += ' &middot; '+notFound.length+' not found';
+      msg += '</span>';
+      if (statusEl) statusEl.innerHTML = msg;
+    } catch(err) { alert('Error reading file: '+err.message); }
+  };
+  reader.readAsArrayBuffer(file);
+}
+
 // ─── REBUILD (upload) ─────────────────────────────────────────────────────────
 function parseRebuild(rows, fname) {
   var hRow=0;
@@ -2378,7 +2608,11 @@ async function discoverProspects() {
  var display = restoredProspects.slice(0, 60);
 
  if (!state.rebuild) state.rebuild = { uploaded:[], discovered:[] };
- state.rebuild.discovered = display;
+ // Preserve Mode 1 (lookup) and Mode 2 (upload) prospects across Mode 3 refresh
+ var pinned = (state.rebuild.discovered || []).filter(function(p){ return p._discoveryMode && p._discoveryMode !== 'category'; });
+ var newIds = new Set(display.map(function(p){ return p._places && p._places.id; }).filter(Boolean));
+ var pinnedFiltered = pinned.filter(function(p){ return !p._places || !p._places.id || !newIds.has(p._places.id); });
+ state.rebuild.discovered = pinnedFiltered.concat(display);
 
  activeCategories = new Set(['All']);
  activeSecondaries = {};
@@ -2603,7 +2837,11 @@ async function discoverProspects() {
  }
 
  if (!state.rebuild) state.rebuild = { uploaded:[], discovered:[] };
- state.rebuild.discovered = display;
+ // Preserve Mode 1 (lookup) and Mode 2 (upload) prospects across Mode 3 refresh
+ var pinned2 = (state.rebuild.discovered || []).filter(function(p){ return p._discoveryMode && p._discoveryMode !== 'category'; });
+ var newIds2 = new Set(display.map(function(p){ return p._places && p._places.id; }).filter(Boolean));
+ var pinnedFiltered2 = pinned2.filter(function(p){ return !p._places || !p._places.id || !newIds2.has(p._places.id); });
+ state.rebuild.discovered = pinnedFiltered2.concat(display);
 
  activeCategories = new Set(['All']);
  activeSecondaries = {};
@@ -2796,7 +3034,15 @@ function renderRebuild(prospects, radius) {
     +prospects.map(function(p){
       return '<tr>'+makeCheckbox('rebuild',p)
         +'<td><strong style="color:#fff;">'+p.name+'</strong>'
-        +(p.source==='uploaded'?'<span style="font-size:.6rem;background:rgba(251,191,36,.12);color:var(--yellow);border:1px solid rgba(251,191,36,.3);border-radius:var(--r-btn);padding:1px 6px;margin-left:6px;">UPLOADED</span>':p.source==='discovered'?'<span style="font-size:.6rem;background:rgba(239,65,54,.12);color:var(--accent);border:1px solid var(--accent-border);border-radius:var(--r-btn);padding:1px 6px;margin-left:6px;">DISCOVERED</span>':p.source==='both'?'<span style="font-size:.6rem;background:rgba(52,211,153,.15);color:var(--green);border:1px solid rgba(52,211,153,.3);border-radius:var(--r-btn);padding:1px 6px;margin-left:6px;">✓ BOTH</span>':'')
+        +(p._discoveryMode==='lookup'
+          ?'<span style="font-size:.6rem;background:rgba(59,130,246,.12);color:#60a5fa;border:1px solid rgba(59,130,246,.3);border-radius:var(--r-btn);padding:1px 6px;margin-left:6px;">SEARCHED</span>'
+          :p._discoveryMode==='upload'
+          ?'<span style="font-size:.6rem;background:rgba(251,191,36,.12);color:var(--yellow);border:1px solid rgba(251,191,36,.3);border-radius:var(--r-btn);padding:1px 6px;margin-left:6px;">IMPORTED</span>'
+          :p._discoveryMode==='category'
+          ?'<span style="font-size:.6rem;background:rgba(239,65,54,.12);color:var(--accent);border:1px solid var(--accent-border);border-radius:var(--r-btn);padding:1px 6px;margin-left:6px;">DISCOVERED</span>'
+          :p.source==='uploaded'?'<span style="font-size:.6rem;background:rgba(251,191,36,.12);color:var(--yellow);border:1px solid rgba(251,191,36,.3);border-radius:var(--r-btn);padding:1px 6px;margin-left:6px;">UPLOADED</span>'
+          :p.source==='discovered'?'<span style="font-size:.6rem;background:rgba(239,65,54,.12);color:var(--accent);border:1px solid var(--accent-border);border-radius:var(--r-btn);padding:1px 6px;margin-left:6px;">DISCOVERED</span>'
+          :p.source==='both'?'<span style="font-size:.6rem;background:rgba(52,211,153,.15);color:var(--green);border:1px solid rgba(52,211,153,.3);border-radius:var(--r-btn);padding:1px 6px;margin-left:6px;">✓ BOTH</span>':'')
         +'</td>'
         +'<td data-sort="'+(p.cat||'-')+'" style="color:var(--dim);font-size:.8rem;">'+(p.cat||'-')
         +(p._searchLabel ? '<br><span style="font-size:.62rem;color:var(--dim);font-style:italic;">via '+p._searchLabel+'</span>' : '')
