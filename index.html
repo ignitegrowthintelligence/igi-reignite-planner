@@ -233,6 +233,51 @@
 .intel-modal-title { font-size:10px; font-weight:700; letter-spacing:0.1em; text-transform:uppercase; color:#EF4136; margin-bottom:16px; padding-bottom:10px; border-bottom:1px solid rgba(239,65,54,0.18); }
 .intel-modal-close { position:absolute; top:10px; right:12px; background:none; border:none; color:rgba(255,255,255,0.35); font-size:16px; cursor:pointer; line-height:1; padding:4px 8px; font-family:inherit; }
 .intel-modal-close:hover { color:#fff; }
+
+/* ── Call Cadence Tab ─────────────────────────────────────────────────────── */
+.cad-progress { display:flex; align-items:center; margin-bottom:10px; }
+.cad-dot { width:26px; height:26px; border-radius:50%; background:#191919; border:2px solid rgba(255,255,255,0.15); display:flex; align-items:center; justify-content:center; font-size:9px; font-weight:700; color:rgba(255,255,255,0.35); flex-shrink:0; }
+.cad-dot.active { border-color:#EF4136; color:#EF4136; }
+.cad-dot.done { background:#EF4136; border-color:#EF4136; color:#fff; }
+.cad-line { flex:1; height:2px; background:rgba(255,255,255,0.07); }
+.cad-line.done { background:#EF4136; }
+.cad-card { background:#191919; border:1px solid rgba(255,255,255,0.08); border-radius:8px; margin-bottom:10px; box-shadow:0 2px 8px rgba(0,0,0,0.22); overflow:hidden; }
+.cad-card.active { border-color:rgba(239,65,54,0.38); }
+.cad-card.done { opacity:0.72; }
+.cad-hdr { display:flex; align-items:center; gap:10px; padding:13px 16px; cursor:pointer; user-select:none; }
+.cad-hdr:hover { background:rgba(255,255,255,0.025); }
+.cad-check { width:18px; height:18px; border-radius:50%; border:2px solid rgba(255,255,255,0.18); flex-shrink:0; display:flex; align-items:center; justify-content:center; font-size:9px; color:rgba(255,255,255,0.3); }
+.cad-check.done { background:#EF4136; border-color:#EF4136; color:#fff; }
+.cad-day-lbl { font-size:9px; font-weight:700; color:rgba(255,255,255,0.28); letter-spacing:0.07em; text-transform:uppercase; flex-shrink:0; min-width:30px; }
+.cad-badge { font-size:8px; font-weight:700; letter-spacing:0.08em; padding:2px 7px; border-radius:3px; flex-shrink:0; text-transform:uppercase; }
+.cad-badge.email { background:rgba(96,165,250,0.1); color:#60a5fa; border:1px solid rgba(96,165,250,0.22); }
+.cad-badge.phone { background:rgba(74,222,128,0.1); color:#4ade80; border:1px solid rgba(74,222,128,0.22); }
+.cad-badge.linkedin { background:rgba(147,197,253,0.1); color:#93c5fd; border:1px solid rgba(147,197,253,0.22); }
+.cad-badge.final { background:rgba(239,65,54,0.1); color:#EF4136; border:1px solid rgba(239,65,54,0.25); }
+.cad-title { font-size:13px; font-weight:600; color:#fff; flex:1; }
+.cad-meta { font-size:10px; color:rgba(255,255,255,0.22); flex-shrink:0; }
+.cad-chev { font-size:9px; color:rgba(255,255,255,0.2); transition:transform .18s; flex-shrink:0; }
+.cad-chev.open { transform:rotate(90deg); }
+.cad-body { padding:0 16px 18px; display:none; }
+.cad-body.open { display:block; }
+.cad-fl { font-size:9px; font-weight:700; letter-spacing:0.09em; text-transform:uppercase; color:rgba(255,255,255,0.28); margin-bottom:5px; margin-top:14px; }
+.cad-fl:first-child { margin-top:0; }
+.cad-input { width:100%; background:#111113; border:1px solid rgba(255,255,255,0.12); border-radius:5px; padding:8px 12px; font-size:13px; color:#fff; font-family:inherit; outline:none; box-sizing:border-box; }
+.cad-input:focus { border-color:rgba(239,65,54,0.4); }
+.cad-ta { width:100%; background:#111113; border:1px solid rgba(255,255,255,0.12); border-radius:5px; padding:8px 12px; font-size:13px; color:rgba(255,255,255,0.78); font-family:inherit; outline:none; resize:vertical; min-height:82px; line-height:1.65; box-sizing:border-box; }
+.cad-ta:focus { border-color:rgba(239,65,54,0.4); }
+.cad-notes-ta { width:100%; background:rgba(251,191,36,0.04); border:1px solid rgba(251,191,36,0.2); border-radius:5px; padding:8px 12px; font-size:12px; color:rgba(255,255,255,0.62); font-family:inherit; outline:none; resize:vertical; min-height:58px; line-height:1.55; box-sizing:border-box; }
+.cad-notes-ta:focus { border-color:rgba(251,191,36,0.38); }
+.cad-divider { height:1px; background:rgba(255,255,255,0.06); margin:14px 0; }
+.cad-actions { display:flex; gap:8px; align-items:center; margin-top:14px; flex-wrap:wrap; }
+.cad-gen-btn { background:#EF4136; border:none; border-radius:5px; padding:8px 18px; font-size:12px; font-weight:700; color:#fff; font-family:inherit; cursor:pointer; }
+.cad-gen-btn:disabled { opacity:0.45; cursor:not-allowed; }
+.cad-regen-btn { background:rgba(239,65,54,0.1); border:1px solid rgba(239,65,54,0.3); border-radius:5px; padding:8px 14px; font-size:12px; font-weight:600; color:#EF4136; font-family:inherit; cursor:pointer; }
+.cad-regen-btn:disabled { opacity:0.45; cursor:not-allowed; }
+.cad-save-btn { background:rgba(255,255,255,0.07); border:1px solid rgba(255,255,255,0.13); border-radius:5px; padding:8px 14px; font-size:12px; font-weight:600; color:rgba(255,255,255,0.6); font-family:inherit; cursor:pointer; }
+.cad-complete-btn { background:rgba(74,222,128,0.1); border:1px solid rgba(74,222,128,0.28); border-radius:5px; padding:8px 14px; font-size:12px; font-weight:600; color:#4ade80; font-family:inherit; cursor:pointer; }
+.cad-done-badge { font-size:10px; color:#4ade80; font-weight:600; }
+.cad-status-msg { font-size:10px; color:rgba(255,255,255,0.28); }
   </style>
 </head>
 <body class="min-h-screen">
@@ -3441,12 +3486,14 @@ function _buildProspectPageHTML(section, acct) {
     + '<div class="intel-tab-bar">'
     + '<button class="intel-tab active" onclick="_switchIntelTab(\'precall\')">Pre-Call</button>'
     + '<button class="intel-tab" onclick="_switchIntelTab(\'oncall\')">On the Call</button>'
+    + '<button class="intel-tab" onclick="_switchIntelTab(\'cadence\')">Call Cadence</button>'
     + '<div class="intel-tab-divider"></div>'
     + '<div class="intel-persistent" id="intel-persistent-actions"></div>'
     + '</div>'
     + '<div class="intel-content">'
     + '<div id="intel-tab-precall" class="intel-tab-panel active"></div>'
     + '<div id="intel-tab-oncall" class="intel-tab-panel"></div>'
+    + '<div id="intel-tab-cadence" class="intel-tab-panel"></div>'
     + '</div>'
     + '<div class="intel-modal-overlay" id="intel-modal-overlay" onclick="if(event.target===this)_closeIntelModal()">'
     + '<div class="intel-modal-card">'
@@ -3458,13 +3505,236 @@ function _buildProspectPageHTML(section, acct) {
 }
 
 function _switchIntelTab(name) {
-  ['precall','oncall'].forEach(function(t) {
+  ['precall','oncall','cadence'].forEach(function(t) {
     var el = document.getElementById('intel-tab-' + t);
     if (el) { el.style.display = t === name ? '' : 'none'; el.classList.toggle('active', t === name); }
   });
   document.querySelectorAll('.intel-tab').forEach(function(btn, i) {
-    var names = ['precall','oncall'];
+    var names = ['precall','oncall','cadence'];
     btn.classList.toggle('active', names[i] === name);
+  });
+}
+
+
+// ── CALL CADENCE ─────────────────────────────────────────────────────────────
+var CADENCE_STEPS = [
+  { day:1,  type:'email',          label:'Introductory Email',          desc:'VBR + prospect insights',       badge:'email'   },
+  { day:2,  type:'phone',          label:'Follow-Up Call',              desc:'Reference your Day 1 email',    badge:'phone'   },
+  { day:3,  type:'email',          label:'Email #2 — Success Story',    desc:'Industry-relevant story',        badge:'email'   },
+  { day:5,  type:'linkedin',       label:'LinkedIn Engage',              desc:'Brief connection or comment',    badge:'linkedin'},
+  { day:7,  type:'phone',          label:'Follow-Up Call #2',           desc:'Reiterate VBR and urgency',      badge:'phone'   },
+  { day:9,  type:'email',          label:'Email #3 — Value + Referral', desc:'Key value + referral ask',       badge:'email'   },
+  { day:10, type:'phone_and_email', label:'Final Attempt + Break-up',   desc:'Last call + humorous break-up', badge:'final'   },
+];
+
+function _initCadenceTab(pk, safeKey, intelData) {
+  var panel = document.getElementById('intel-tab-cadence');
+  if (!panel) return;
+  panel.innerHTML = '<div style="text-align:center;padding:48px 20px;color:rgba(255,255,255,0.25);font-size:13px;">Loading cadence…</div>';
+  db.collection('prospectCadence').doc(safeKey).get().then(function(doc) {
+    var steps = (doc.exists && doc.data().steps && doc.data().steps.length === 7)
+      ? doc.data().steps
+      : CADENCE_STEPS.map(function() { return { status:'pending', content:null, notes:'', completedAt:null }; });
+    window._cadenceData = window._cadenceData || {};
+    window._cadenceData[pk] = steps;
+    _renderCadenceTab(pk, safeKey, intelData, steps);
+  }).catch(function(e) {
+    panel.innerHTML = '<div style="color:#EF4136;padding:20px;font-size:12px;">Error loading cadence: ' + e.message + '</div>';
+  });
+}
+
+function _renderCadenceTab(pk, safeKey, intelData, steps) {
+  var panel = document.getElementById('intel-tab-cadence');
+  if (!panel) return;
+  var doneCount = steps.filter(function(s){ return s.status === 'completed'; }).length;
+  var activeIdx = -1;
+  for (var i = 0; i < steps.length; i++) { if (steps[i].status !== 'completed') { activeIdx = i; break; } }
+  if (activeIdx === -1) activeIdx = steps.length - 1;
+
+  var html = '';
+
+  // Progress dots
+  html += '<div class="cad-progress">';
+  for (var d = 0; d < CADENCE_STEPS.length; d++) {
+    var isDone = steps[d].status === 'completed';
+    var isAct  = d === activeIdx;
+    html += '<div class="cad-dot' + (isDone ? ' done' : isAct ? ' active' : '') + '">' + (isDone ? '&#10003;' : (d + 1)) + '</div>';
+    if (d < CADENCE_STEPS.length - 1) html += '<div class="cad-line' + (isDone ? ' done' : '') + '"></div>';
+  }
+  html += '</div>';
+  html += '<div style="font-size:10px;color:rgba(255,255,255,0.28);margin-bottom:20px;margin-top:6px;">' + doneCount + ' of 7 attempts complete &nbsp;&bull;&nbsp; 10 business days</div>';
+
+  // Step cards
+  for (var s = 0; s < CADENCE_STEPS.length; s++) {
+    html += _renderCadenceCard(pk, s, steps[s], s === activeIdx, doneCount);
+  }
+  panel.innerHTML = html;
+}
+
+function _renderCadenceCard(pk, idx, stepData, isActive, doneCount) {
+  var step    = CADENCE_STEPS[idx];
+  var isDone  = stepData.status === 'completed';
+  var isGen   = stepData.status === 'generated' || isDone;
+  var isOpen  = isActive && !isDone;
+  var isLocked = idx > 0 && doneCount < idx && !isGen; // locked if prior step not done
+
+  var html = '<div class="cad-card' + (isActive && !isDone ? ' active' : '') + (isDone ? ' done' : '') + '" id="cad-card-' + pk + '-' + idx + '">';
+
+  // Header
+  html += '<div class="cad-hdr" onclick="_toggleCadenceStep(\'' + pk + '\',' + idx + ')">';
+  html += '<div class="cad-check' + (isDone ? ' done' : '') + '">' + (isDone ? '&#10003;' : '') + '</div>';
+  html += '<div class="cad-day-lbl">Day ' + step.day + '</div>';
+  html += '<span class="cad-badge ' + step.badge + '">' + step.badge.replace('linkedin','LI').toUpperCase() + '</span>';
+  html += '<div class="cad-title">' + step.label + '</div>';
+  if (isDone && stepData.completedAt) {
+    try { html += '<div class="cad-meta">' + new Date(stepData.completedAt).toLocaleDateString('en-US',{month:'short',day:'numeric'}) + '</div>'; } catch(e) {}
+  }
+  html += '<div class="cad-chev' + (isOpen ? ' open' : '') + '" id="cad-chev-' + pk + '-' + idx + '">&#9658;</div>';
+  html += '</div>';
+
+  // Body
+  html += '<div class="cad-body' + (isOpen ? ' open' : '') + '" id="cad-body-' + pk + '-' + idx + '">';
+
+  if (!isGen) {
+    // Not generated yet
+    html += '<div style="font-size:12px;color:rgba(255,255,255,0.32);margin-bottom:14px;line-height:1.55;">' + step.desc + '</div>';
+    if (isLocked) {
+      html += '<div style="font-size:11px;color:rgba(255,255,255,0.2);padding:10px 0;">Complete the previous step to unlock this one.</div>';
+    } else {
+      html += '<button class="cad-gen-btn" id="cad-genbtn-' + pk + '-' + idx + '" onclick="_generateCadenceStep(\'' + pk + '\',' + idx + ')">&#9889; Generate Step ' + (idx + 1) + '</button>';
+    }
+  } else {
+    // Content available — editable fields
+    html += _renderCadenceFields(pk, idx, step.type, stepData.content || {});
+
+    // Notes
+    html += '<div class="cad-divider"></div>';
+    html += '<div style="font-size:9px;font-weight:700;letter-spacing:0.09em;text-transform:uppercase;color:rgba(251,191,36,0.75);margin-bottom:4px;">Notes from this step</div>';
+    html += '<div style="font-size:10px;color:rgba(255,255,255,0.25);margin-bottom:7px;line-height:1.5;">What happened? Any response? Context that should inform the next step.</div>';
+    html += '<textarea class="cad-notes-ta" id="cad-notes-' + pk + '-' + idx + '" placeholder="e.g. Left voicemail — mentioned their spring sale event. Email opened twice, no reply.">' + _esc(stepData.notes || '') + '</textarea>';
+
+    // Actions
+    html += '<div class="cad-actions">';
+    if (!isDone) {
+      html += '<button class="cad-regen-btn" id="cad-genbtn-' + pk + '-' + idx + '" onclick="_generateCadenceStep(\'' + pk + '\',' + idx + '\')">&#8635; Re-generate</button>';
+      html += '<button class="cad-save-btn" onclick="_saveCadenceStep(\'' + pk + '\',' + idx + ',false)">Save</button>';
+      html += '<button class="cad-complete-btn" onclick="_saveCadenceStep(\'' + pk + '\',' + idx + ',true)">&#10003; Mark Complete</button>';
+    } else {
+      html += '<span class="cad-done-badge">&#10003; Completed' + (stepData.completedAt ? ' ' + (function(){ try { return new Date(stepData.completedAt).toLocaleDateString('en-US',{month:'short',day:'numeric'}); } catch(e){ return ''; } })() : '') + '</span>';
+      html += '<button class="cad-save-btn" onclick="_saveCadenceStep(\'' + pk + '\',' + idx + ',false)">Save edits</button>';
+    }
+    html += '<span class="cad-status-msg" id="cad-status-' + pk + '-' + idx + '"></span>';
+    html += '</div>';
+  }
+
+  html += '</div></div>';
+  return html;
+}
+
+function _renderCadenceFields(pk, idx, type, content) {
+  var h = '';
+  var V = function(id) { return ' id="' + id + '-' + pk + '-' + idx + '"'; };
+  if (type === 'email') {
+    h += '<div class="cad-fl">Subject line</div>';
+    h += '<input class="cad-input"' + V('cad-subject') + ' type="text" value="' + _esc(content.subject || '') + '">';
+    h += '<div class="cad-fl">Email body</div>';
+    h += '<textarea class="cad-ta" style="min-height:130px;"' + V('cad-body') + '>' + _esc(content.body || '') + '</textarea>';
+  } else if (type === 'phone') {
+    h += '<div class="cad-fl">Call script</div>';
+    h += '<textarea class="cad-ta"' + V('cad-script') + '>' + _esc(content.script || '') + '</textarea>';
+    h += '<div class="cad-fl">Voicemail (if no answer)</div>';
+    h += '<textarea class="cad-ta"' + V('cad-voicemail') + '>' + _esc(content.voicemail || '') + '</textarea>';
+  } else if (type === 'linkedin') {
+    h += '<div class="cad-fl">Message <span style="color:rgba(255,255,255,0.2);font-weight:400;">&le;150 chars</span></div>';
+    h += '<input class="cad-input"' + V('cad-msg') + ' type="text" maxlength="200" value="' + _esc(content.message || '') + '">';
+  } else if (type === 'phone_and_email') {
+    h += '<div class="cad-fl">Final call script</div>';
+    h += '<textarea class="cad-ta"' + V('cad-script') + '>' + _esc(content.script || '') + '</textarea>';
+    h += '<div class="cad-fl">Voicemail</div>';
+    h += '<textarea class="cad-ta"' + V('cad-voicemail') + '>' + _esc(content.voicemail || '') + '</textarea>';
+    h += '<div class="cad-divider"></div>';
+    h += '<div style="font-size:9px;font-weight:700;letter-spacing:0.09em;text-transform:uppercase;color:#EF4136;margin-bottom:10px;">Break-up Email</div>';
+    h += '<div class="cad-fl">Subject</div>';
+    h += '<input class="cad-input"' + V('cad-subject') + ' type="text" value="' + _esc(content.breakupSubject || '') + '">';
+    h += '<div class="cad-fl">Email body</div>';
+    h += '<textarea class="cad-ta" style="min-height:130px;"' + V('cad-body') + '>' + _esc(content.breakupBody || '') + '</textarea>';
+  }
+  return h;
+}
+
+function _toggleCadenceStep(pk, idx) {
+  var body = document.getElementById('cad-body-' + pk + '-' + idx);
+  var chev = document.getElementById('cad-chev-' + pk + '-' + idx);
+  if (!body) return;
+  var open = body.classList.contains('open');
+  body.classList.toggle('open', !open);
+  if (chev) chev.classList.toggle('open', !open);
+}
+
+function _collectCadenceContent(pk, idx) {
+  var type = CADENCE_STEPS[idx].type;
+  var g = function(pfx) { var el = document.getElementById(pfx + '-' + pk + '-' + idx); return el ? el.value : ''; };
+  if (type === 'email')          return { subject: g('cad-subject'), body: g('cad-body') };
+  if (type === 'phone')          return { script: g('cad-script'), voicemail: g('cad-voicemail') };
+  if (type === 'linkedin')       return { message: g('cad-msg') };
+  if (type === 'phone_and_email') return { script: g('cad-script'), voicemail: g('cad-voicemail'), breakupSubject: g('cad-subject'), breakupBody: g('cad-body') };
+  return {};
+}
+
+function _saveCadenceStep(pk, idx, markComplete) {
+  var safeKey = pk.replace(/[^a-z0-9\-_]/gi, '-').slice(0, 80);
+  var statusEl = document.getElementById('cad-status-' + pk + '-' + idx);
+  if (statusEl) statusEl.textContent = 'Saving…';
+  var steps = (window._cadenceData && window._cadenceData[pk]) || [];
+  if (!steps[idx]) return;
+  steps[idx].content = _collectCadenceContent(pk, idx);
+  var notesEl = document.getElementById('cad-notes-' + pk + '-' + idx);
+  if (notesEl) steps[idx].notes = notesEl.value;
+  if (markComplete) { steps[idx].status = 'completed'; steps[idx].completedAt = new Date().toISOString(); }
+  else if (steps[idx].status !== 'completed') { steps[idx].status = 'generated'; }
+  db.collection('prospectCadence').doc(safeKey).set({ steps: steps, updatedAt: new Date().toISOString() }, { merge: true })
+    .then(function() {
+      if (statusEl) statusEl.textContent = markComplete ? '✓ Complete!' : 'Saved';
+      setTimeout(function() { if (statusEl) statusEl.textContent = ''; }, 2000);
+      if (markComplete) _renderCadenceTab(pk, safeKey, window._currentIntelData || {}, steps);
+    })
+    .catch(function(e) { if (statusEl) statusEl.textContent = 'Error: ' + e.message; });
+}
+
+function _generateCadenceStep(pk, idx) {
+  var safeKey = pk.replace(/[^a-z0-9\-_]/gi, '-').slice(0, 80);
+  var btn = document.getElementById('cad-genbtn-' + pk + '-' + idx);
+  if (btn) { btn.disabled = true; btn.textContent = 'Generating…'; }
+  var steps = (window._cadenceData && window._cadenceData[pk]) || [];
+  var intel = window._currentIntelData || {};
+  var priorSteps = steps.slice(0, idx).map(function(s, i) {
+    return { stepNum: i + 1, day: CADENCE_STEPS[i].day, type: CADENCE_STEPS[i].type, label: CADENCE_STEPS[i].label, status: s.status, notes: s.notes || '' };
+  });
+  var intelSummary = {
+    businessName: intel.businessName || '', industry: intel.industry || '', domain: intel.domain || '',
+    bestMeetingAngle: intel.bestMeetingAngle || '', meetingHook: intel.meetingHook || '',
+    whyWorthCalling: intel.whyWorthCalling || [], marketSummary: intel.marketSummary || {}
+  };
+  fetch('https://generate-prospect-intel-922690493850.us-central1.run.app/cadence', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ profileKey: safeKey, stepIndex: idx, intel: intelSummary, priorSteps: priorSteps })
+  })
+  .then(function(r) { return r.json(); })
+  .then(function(result) {
+    if (!result.success) throw new Error(result.error || 'Generation failed');
+    if (!steps[idx]) steps[idx] = {};
+    steps[idx].content = result.content;
+    steps[idx].status = 'generated';
+    window._cadenceData[pk] = steps;
+    db.collection('prospectCadence').doc(safeKey).set({ steps: steps, updatedAt: new Date().toISOString() }, { merge: true })
+      .catch(function(e) { console.warn('[CAD] save error:', e.message); });
+    _renderCadenceTab(pk, safeKey, window._currentIntelData || {}, steps);
+  })
+  .catch(function(e) {
+    if (btn) { btn.disabled = false; btn.textContent = '⚡ Generate Step ' + (idx + 1); }
+    var statusEl = document.getElementById('cad-status-' + pk + '-' + idx);
+    if (statusEl) statusEl.textContent = 'Error: ' + e.message;
   });
 }
 
@@ -3531,9 +3801,11 @@ function _renderIntelPreState(acct, profileKey) {
 
   var preCallEl  = document.getElementById('intel-tab-precall');
   var onCallEl   = document.getElementById('intel-tab-oncall');
+  var cadenceEl  = document.getElementById('intel-tab-cadence');
   var persistEl  = document.getElementById('intel-persistent-actions');
   if (preCallEl)  preCallEl.innerHTML  = preCallHTML;
   if (onCallEl)   onCallEl.innerHTML   = lockedHTML;
+  if (cadenceEl)  cadenceEl.innerHTML  = '<div style="text-align:center;padding:60px 20px;color:rgba(255,255,255,0.18);font-size:13px;">&#128274; Generate Intel to unlock cadence</div>';
   if (persistEl)  persistEl.innerHTML  = '';
   _switchIntelTab('precall');
 }
@@ -3784,6 +4056,7 @@ function _renderIntelPostState(data, acct) {
     + '<button class="intel-disc-btn" style="font-family:inherit;" onclick="_rebuildIntel(\'' + _pk + '\')">Re-run IGI Intel &#8635;</button>';
 
   // ── POPULATE PANELS ───────────────────────────────────────────────────────
+  window._currentIntelData = d;
   var preCallEl  = document.getElementById('intel-tab-precall');
   var onCallEl   = document.getElementById('intel-tab-oncall');
   var persistEl  = document.getElementById('intel-persistent-actions');
@@ -3791,6 +4064,9 @@ function _renderIntelPostState(data, acct) {
   if (onCallEl)   onCallEl.innerHTML   = onCallHTML;
   if (persistEl)  persistEl.innerHTML  = persistHTML;
   _switchIntelTab('precall');
+  // Init cadence tab (async Firestore load)
+  var _cadSafeKey = _pk.replace(/[^a-z0-9\-_]/gi, '-').slice(0, 80);
+  _initCadenceTab(_pk, _cadSafeKey, d);
 }
 
 function _initPersonalizationVersions(pk, safeKey, baseData) {
@@ -4958,19 +5234,4 @@ checkSharedMode().then(function(isShared) {
   <div style="padding:12px 20px;border-top:1px solid var(--border);flex-shrink:0;text-align:center;">
     <div style="font-size:.62rem;color:var(--dim);letter-spacing:.04em;">Powered by <span style="color:var(--accent);font-weight:700;">Ignite Growth Intelligence</span> &middot; IGI Score</div>
   </div>
-</div>
-
-<div id="igi-prospect-page"
- style="display:none; position:fixed; top:0; left:0; right:0; bottom:0;
- overflow-y:auto; background:var(--bg); z-index:50;">
-</div>
-
-<!-- Call Prep Card Modal -->
-<div id="callPrepOverlay" onclick="if(event.target===this)closeCallPrep()" style="display:none;position:fixed;inset:0;z-index:2100;background:rgba(0,0,0,.72);align-items:center;justify-content:center;opacity:0;transition:opacity .18s;padding:16px;">
-  <div id="callPrepBox" style="background:var(--surface);border:1px solid var(--accent-border);border-radius:var(--r-card);width:min(720px,100%);max-height:90vh;overflow-y:auto;box-shadow:0 28px 70px rgba(0,0,0,.7);transform:scale(.95);transition:transform .18s;"></div>
-</div>
-
-<!-- Plan Management Modal -->
-<div id="igiModalOverlay" onclick="if(event.target===this)closeModal()" style="display:none;position:fixed;inset:0;z-index:2000;background:rgba(0,0,0,.65);align-items:center;justify-content:center;opacity:0;transition:opacity .18s;">
- <div id="igiModalBox" style="background:var(--surface);border:1px solid var(--border);border-radius:var(--r-card);padding:24px;width:min(440px,90%);box-shadow:0 24px 60px rgba(0,0,0,.6);transform:scale(.95);transition:transform .18s;"></div>
-</div>
+</
