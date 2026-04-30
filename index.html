@@ -421,6 +421,7 @@
           </div>
           <div id="catLimitWarn" style="display:none;font-size:.68rem;color:var(--yellow);margin-bottom:8px;padding:5px 10px;background:rgba(251,191,36,.08);border:1px solid rgba(251,191,36,.25);border-radius:var(--r-btn);">&#9888; Maximum 3 categories selected &mdash; uncheck one to select another</div>
           <div id="categoryCheckboxes"></div>
+          <div id="secondaryTagsPanel" style="display:none;margin-top:10px;"></div>
         </div>
       </div>
       <div id="rebuild-content"></div>
@@ -1580,36 +1581,197 @@ function parseRebuild(rows, fname) {
 const GOOGLE_PLACES_KEY = 'AIzaSyD8bC6HVmYrb6MudvcXW92Q5OYpvnoxytY';
 const CATEGORY_CONFIG = {
  // HIGH PRIORITY
- 'Banks/Financial': { tier:'High Priority', types:['bank'], searchQuery:'bank credit union' },
- 'Plumbing': { tier:'High Priority', types:['plumber'], searchQuery:'plumber' },
- 'HVAC': { tier:'High Priority', types:['hvac_contractor'], searchQuery:'HVAC contractor' },
+ 'Banks/Financial': { tier:'High Priority', types:['bank'], searchQuery:'bank credit union',
+   secondaries:[
+     { label:'Credit Unions',      query:'credit union member banking',                   type:'bank' },
+     { label:'Mortgage Brokers',   query:'mortgage broker home loan lender',              type:null },
+     { label:'Financial Advisors', query:'financial advisor wealth management',           type:null },
+     { label:'Tax Services',       query:'tax preparation CPA accountant',                type:'accounting' },
+     { label:'Insurance Finance',  query:'financial planning life insurance annuity',     type:'insurance_agency' }
+   ]
+ },
+ 'Plumbing': { tier:'High Priority', types:['plumber'], searchQuery:'plumber',
+   secondaries:[
+     { label:'Drain & Sewer',     query:'drain cleaning sewer repair rooter',            type:'plumber' },
+     { label:'Water Heater',      query:'water heater installation replacement',          type:'plumber' },
+     { label:'Emergency Plumber', query:'emergency plumber 24 hour plumbing',            type:'plumber' },
+     { label:'Water Treatment',   query:'water softener filtration treatment',            type:'plumber' },
+     { label:'Pipe Repair',       query:'pipe repair repipe repiping contractor',         type:'plumber' }
+   ]
+ },
+ 'HVAC': { tier:'High Priority', types:['hvac_contractor'], searchQuery:'HVAC contractor',
+   secondaries:[
+     { label:'Heating & Furnace', query:'furnace repair heating contractor',              type:'hvac_contractor' },
+     { label:'Air Conditioning',  query:'air conditioning AC repair installation',        type:'hvac_contractor' }
+   ]
+ },
  'Gambling/Casinos': { tier:'High Priority', types:['casino'], searchQuery:'casino' },
- 'Attorney/Legal': { tier:'High Priority', types:['lawyer'], searchQuery:'attorney lawyer law firm' },
- 'Auto Dealers': { tier:'High Priority', types:['car_dealer'], searchQuery:'auto dealer car dealer' },
- 'Hospital': { tier:'High Priority', types:['hospital'], searchQuery:'hospital medical center' },
- 'Furniture Stores': { tier:'High Priority', types:['furniture_store'], searchQuery:'furniture store' },
- 'University/College': { tier:'High Priority', types:['university'], searchQuery:'university college' },
+ 'Attorney/Legal': { tier:'High Priority', types:['lawyer'], searchQuery:'attorney lawyer law firm',
+   secondaries:[
+     { label:'Personal Injury',   query:'personal injury attorney lawyer',                type:'lawyer' },
+     { label:'Family Law',        query:'family law attorney divorce lawyer',             type:'lawyer' },
+     { label:'Criminal Defense',  query:'criminal defense attorney DUI lawyer',          type:'lawyer' },
+     { label:'Estate Planning',   query:'estate planning attorney probate lawyer',        type:'lawyer' },
+     { label:'Immigration Law',   query:'immigration attorney visa lawyer',               type:'lawyer' }
+   ]
+ },
+ 'Auto Dealers': { tier:'High Priority', types:['car_dealer'], searchQuery:'auto dealer car dealer',
+   secondaries:[
+     { label:'Used Car Dealers',   query:'used car dealer pre-owned vehicles',           type:'car_dealer' },
+     { label:'Luxury Auto',        query:'luxury car dealer BMW Mercedes Audi',          type:'car_dealer' },
+     { label:'Truck Dealers',      query:'truck dealer pickup trucks commercial',         type:'car_dealer' },
+     { label:'Motorcycle Dealers', query:'motorcycle dealer Harley Honda Kawasaki',      type:'bicycle_store' },
+     { label:'Electric Vehicle',   query:'electric vehicle dealer Tesla EV',             type:'car_dealer' }
+   ]
+ },
+ 'Hospital': { tier:'High Priority', types:[], searchQuery:'hospital medical center health system regional hospital',
+   secondaries:[
+     { label:'Medical Centers',     query:'medical center health system',                 type:'medical_clinic' },
+     { label:'Urgent Care',         query:'urgent care walk-in clinic',                   type:'medical_clinic' },
+     { label:'Specialty Clinics',   query:'specialty clinic orthopedic spine heart',      type:'medical_clinic' },
+     { label:"Children's Hospital", query:"children's hospital pediatric center",         type:'hospital' },
+     { label:'Regional Hospital',   query:'regional hospital community hospital',         type:'hospital' }
+   ]
+ },
+ 'Furniture Stores': { tier:'High Priority', types:['furniture_store'], searchQuery:'furniture store',
+   secondaries:[
+     { label:'Mattress Stores',   query:'mattress store sleep shop',                     type:'furniture_store' },
+     { label:'Appliance Stores',  query:'appliance store kitchen bath fixtures',         type:'home_goods_store' },
+     { label:'Home Décor',        query:'home decor interior design store',              type:'home_goods_store' },
+     { label:'Office Furniture',  query:'office furniture commercial interiors',         type:'furniture_store' }
+   ]
+ },
+ 'University/College': { tier:'High Priority', types:['university'], searchQuery:'university college',
+   secondaries:[
+     { label:'Community College', query:'community college technical college',           type:'university' }
+   ]
+ },
  // CORE
- 'Med Spa': { tier:'Core', types:['spa'], searchQuery:'medical spa' },
- 'Dentists': { tier:'Core', types:['dentist'], searchQuery:'dentist dental' },
- 'Recreational Vehicle':{ tier:'Core', types:['rv_dealer'], searchQuery:'RV dealer recreational vehicle' },
- 'Real Estate': { tier:'Core', types:['real_estate_agency'], searchQuery:'real estate agency' },
- 'Home Repair/Hardware':{ tier:'Core', types:['hardware_store'], searchQuery:'hardware store home improvement' },
- 'Insurance': { tier:'Core', types:['insurance_agency'], searchQuery:'insurance agency' },
- 'Contractors/Builders':{ tier:'Core', types:['general_contractor'],searchQuery:'general contractor builder' },
- 'Carpet/Flooring': { tier:'Core', types:['flooring_store'], searchQuery:'flooring carpet tile store' },
- 'Cleaning Services': { tier:'Core', types:[], searchQuery:'cleaning service janitorial' },
- 'Doctors/Clinics': { tier:'Core', types:['doctor'], searchQuery:'medical clinic doctor physician' },
+ 'Med Spa': { tier:'Core', types:['spa'], searchQuery:'medical spa',
+   secondaries:[
+     { label:'Botox & Fillers',       query:'botox filler injection cosmetic',           type:'beauty_salon' },
+     { label:'Laser Hair Removal',    query:'laser hair removal IPL treatment',          type:'beauty_salon' },
+     { label:'CoolSculpting & Body',  query:'CoolSculpting body contouring fat removal', type:'beauty_salon' },
+     { label:'IV Therapy & Wellness', query:'IV therapy hydration wellness drip',        type:'beauty_salon' },
+     { label:'Skin Care Clinics',     query:'skin care clinic facials chemical peel',    type:'beauty_salon' }
+   ]
+ },
+ 'Dentists': { tier:'Core', types:['dentist'], searchQuery:'dentist dental',
+   secondaries:[
+     { label:'Orthodontists',      query:'orthodontist braces Invisalign',               type:'dentist' },
+     { label:'Oral Surgeons',      query:'oral surgeon wisdom teeth implants',           type:'dentist' },
+     { label:'Cosmetic Dentistry', query:'cosmetic dentist veneers teeth whitening',     type:'dentist' },
+     { label:'Pediatric Dentists', query:'pediatric dentist children kids dental',       type:'dentist' }
+   ]
+ },
+ 'Recreational Vehicle':{ tier:'Core', types:['rv_dealer'], searchQuery:'RV dealer recreational vehicle',
+   secondaries:[
+     { label:'Boat Dealers',       query:'boat dealer marine dealer watercraft',         type:'car_dealer' },
+     { label:'ATV & Powersports',  query:'ATV dealer powersports side-by-side',         type:'car_dealer' },
+     { label:'Marine Services',    query:'boat repair marine service storage',           type:'car_repair' },
+     { label:'Snowmobile Dealers', query:'snowmobile dealer winter sports',             type:'car_dealer' }
+   ]
+ },
+ 'Real Estate': { tier:'Core', types:['real_estate_agency'], searchQuery:'real estate agency',
+   secondaries:[
+     { label:'Property Management',    query:'property management rental management',    type:'real_estate_agency' },
+     { label:'Commercial Real Estate', query:'commercial real estate broker office',     type:'real_estate_agency' },
+     { label:'New Home Builders',      query:'new home builder construction development',type:'general_contractor' }
+   ]
+ },
+ 'Home Repair/Hardware':{ tier:'Core', types:['hardware_store'], searchQuery:'hardware store home improvement',
+   secondaries:[
+     { label:'Electricians',    query:'electrician electrical contractor wiring',        type:'electrician' },
+     { label:'Garage Doors',    query:'garage door repair installation opener',          type:'general_contractor' },
+     { label:'Windows & Doors', query:'window replacement door installation',            type:'general_contractor' },
+     { label:'Pest Control',    query:'pest control exterminator termite',               type:'general_contractor' }
+   ]
+ },
+ 'Insurance': { tier:'Core', types:['insurance_agency'], searchQuery:'insurance agency',
+   secondaries:[
+     { label:'Auto Insurance', query:'auto insurance car insurance agency',             type:'insurance_agency' },
+     { label:'Home Insurance', query:'home insurance homeowners renters',               type:'insurance_agency' },
+     { label:'Life Insurance', query:'life insurance whole term universal',             type:'insurance_agency' }
+   ]
+ },
+ 'Contractors/Builders':{ tier:'Core', types:['general_contractor'],searchQuery:'general contractor builder',
+   secondaries:[
+     { label:'Roofing',               query:'roofing contractor roof repair replacement',type:'roofing_contractor' },
+     { label:'Siding & Exterior',     query:'siding installation vinyl James Hardie',   type:'general_contractor' },
+     { label:'Kitchen & Bath Remodel',query:'kitchen remodel bathroom renovation',      type:'general_contractor' },
+     { label:'Deck & Patio',          query:'deck builder patio outdoor living',        type:'general_contractor' }
+   ]
+ },
+ 'Carpet/Flooring': { tier:'Core', types:['flooring_store'], searchQuery:'flooring carpet tile store',
+   secondaries:[
+     { label:'Hardwood Flooring', query:'hardwood floor installation refinishing',      type:null }
+   ]
+ },
+ 'Cleaning Services': { tier:'Core', types:[], searchQuery:'cleaning service janitorial',
+   secondaries:[
+     { label:'Maid Service',    query:'maid service house cleaning residential',         type:'laundry' },
+     { label:'Carpet Cleaning', query:'carpet cleaning upholstery steam clean',         type:'laundry' },
+     { label:'Window Cleaning', query:'window cleaning service commercial',             type:'laundry' }
+   ]
+ },
+ 'Doctors/Clinics': { tier:'Core', types:['doctor'], searchQuery:'medical clinic doctor physician',
+   secondaries:[
+     { label:'Urgent Care',   query:'urgent care walk-in clinic primary care',          type:'medical_clinic' },
+     { label:'Dermatology',   query:'dermatologist skin care clinic',                   type:'doctor' },
+     { label:'Orthopedics',   query:'orthopedic surgeon sports medicine',               type:'doctor' },
+     { label:'Mental Health', query:'therapist counselor mental health clinic',         type:'doctor' },
+     { label:'Chiropractic',  query:'chiropractor chiropractic care spine',             type:'physiotherapist' }
+   ]
+ },
  // OPPORTUNISTIC
- 'Eye Care': { tier:'Opportunistic', types:['optician'], searchQuery:'eye doctor optometrist optician' },
+ 'Eye Care': { tier:'Opportunistic', types:['optician'], searchQuery:'eye doctor optometrist optician',
+   secondaries:[
+     { label:'Ophthalmologists', query:'ophthalmologist eye doctor surgery',            type:'doctor' },
+     { label:'LASIK Surgery',    query:'LASIK laser eye surgery vision correction',      type:'doctor' },
+     { label:'Eyeglass Stores',  query:'eyeglass store optical frames contacts',        type:'optician' }
+   ]
+ },
  'Employment/Recruiting': { tier:'Opportunistic', types:['employment_agency'], searchQuery:'staffing agency recruiting' },
- 'Health/Fitness': { tier:'Opportunistic', types:['gym'], searchQuery:'gym fitness center health club' },
- 'Lawn/Garden': { tier:'Opportunistic', types:['landscaper'], searchQuery:'landscaping lawn care' },
- 'Auto Repair': { tier:'Opportunistic', types:['car_repair'], searchQuery:'auto repair shop mechanic' },
+ 'Health/Fitness': { tier:'Opportunistic', types:['gym'], searchQuery:'gym fitness center health club',
+   secondaries:[
+     { label:'Yoga & Pilates',      query:'yoga studio pilates barre class',            type:'gym' },
+     { label:'CrossFit & Bootcamp', query:'CrossFit gym bootcamp fitness class',        type:'gym' },
+     { label:'Martial Arts',        query:'martial arts karate jiu jitsu MMA',          type:'gym' },
+     { label:'Personal Training',   query:'personal trainer private fitness coaching',  type:'gym' },
+     { label:'Swimming & Aquatics', query:'swim school aquatics center pool',           type:'gym' }
+   ]
+ },
+ 'Lawn/Garden': { tier:'Opportunistic', types:['landscaper'], searchQuery:'landscaping lawn care',
+   secondaries:[
+     { label:'Tree Service',   query:'tree service removal trimming arborist',          type:null },
+     { label:'Pool Services',  query:'pool service cleaning maintenance repair',        type:null },
+     { label:'Garden Centers', query:'garden center nursery plants landscaping',        type:'florist' }
+   ]
+ },
+ 'Auto Repair': { tier:'Opportunistic', types:['car_repair'], searchQuery:'auto repair shop mechanic',
+   secondaries:[
+     { label:'Tire Shops',          query:'tire shop tire store alignment',             type:'car_repair' },
+     { label:'Auto Body & Collision',query:'auto body shop collision repair paint',     type:'car_repair' },
+     { label:'Oil Change & Lube',   query:'oil change quick lube service center',       type:'car_repair' },
+     { label:'Transmission Repair', query:'transmission repair rebuild service',        type:'car_repair' },
+     { label:'Brake Repair',        query:'brake repair rotor pad replacement',         type:'car_repair' }
+   ]
+ },
  'Hotel/Resort': { tier:'Opportunistic', types:['lodging'], searchQuery:'hotel resort inn' },
- 'Senior Living': { tier:'Opportunistic', types:['nursing_home'], searchQuery:'senior living assisted living' },
+ 'Senior Living': { tier:'Opportunistic', types:['nursing_home'], searchQuery:'senior living assisted living',
+   secondaries:[
+     { label:'Memory Care',        query:"memory care dementia Alzheimer's facility",   type:'nursing_home' },
+     { label:'Independent Living', query:'independent living retirement community',      type:'nursing_home' },
+     { label:'Home Care Services', query:'home care senior aide in-home caregiver',     type:null },
+     { label:'Adult Day Care',     query:'adult day care senior program activity',       type:'nursing_home' }
+   ]
+ },
  'Casual Dining': { tier:'Opportunistic', types:['restaurant'], searchQuery:'restaurant casual dining' },
- 'Salons/Personal Care': { tier:'Opportunistic', types:['beauty_salon'], searchQuery:'salon hair beauty barber' },
+ 'Salons/Personal Care': { tier:'Opportunistic', types:['beauty_salon'], searchQuery:'salon hair beauty barber',
+   secondaries:[
+     { label:'Massage Therapy', query:'massage therapy spa deep tissue',                type:'spa' }
+   ]
+ },
 };
 const CATEGORY_SCORES = {
  // High Priority - 30pts
@@ -2053,11 +2215,14 @@ async function filterRebuild() {
 }
 
 // Build a stable cache key from the search parameters
-function buildDiscoveryCacheKey(zip, catsToQuery, radiusMi) {
+function buildDiscoveryCacheKey(zip, catsToQuery, radiusMi, secondariesToQuery) {
  var catPart = catsToQuery.length === Object.keys(CATEGORY_CONFIG).length
  ? 'ALL'
  : catsToQuery.slice().sort().join('|');
- return zip + '_' + catPart + '_' + radiusMi + 'mi';
+ var secPart = (secondariesToQuery && secondariesToQuery.length)
+ ? '_sec_' + secondariesToQuery.map(function(s){ return s.parentCat+'.'+s.label; }).sort().join('+')
+ : '';
+ return 'v2_' + zip + '_' + catPart + secPart + '_' + radiusMi + 'mi';
 }
 
 // Try to load discovery results from Firestore cache
@@ -2126,8 +2291,22 @@ async function discoverProspects() {
  : Array.from(activeCategories).filter(function(c){ return CATEGORY_CONFIG[c]; });
  if (!catsToQuery.length) catsToQuery = Object.keys(CATEGORY_CONFIG);
 
+ // Build list of active secondary searches
+ var secondariesToQuery = [];
+ Object.keys(activeSecondaries).forEach(function(parentCat) {
+   var secSet = activeSecondaries[parentCat];
+   if (!secSet || !secSet.size) return;
+   var cfg = CATEGORY_CONFIG[parentCat];
+   if (!cfg || !cfg.secondaries) return;
+   cfg.secondaries.forEach(function(sec) {
+     if (secSet.has(sec.label)) {
+       secondariesToQuery.push({ parentCat:parentCat, label:sec.label, query:sec.query, type:sec.type });
+     }
+   });
+ });
+
  // ── Cache check ──────────────────────────────────────────────
- var cacheKey = buildDiscoveryCacheKey(zip, catsToQuery, radiusMi);
+ var cacheKey = buildDiscoveryCacheKey(zip, catsToQuery, radiusMi, secondariesToQuery);
  status.innerHTML = '<span style="color:var(--accent);">Checking cache...</span>';
 
  var cached = await loadDiscoveryCache(cacheKey);
@@ -2146,6 +2325,7 @@ async function discoverProspects() {
  state.rebuild.discovered = display;
 
  activeCategories = new Set(['All']);
+ activeSecondaries = {};
  buildCategoryFilters();
  mergeAndRenderRebuild();
 
@@ -2246,6 +2426,8 @@ async function discoverProspects() {
  var prospect = {
  name: name,
  cat: cat,
+ _detectedType: place.primaryType || null,
+ _searchLabel: null,
  city: center.city,
  dist: dist,
  estRev: 30000,
@@ -2276,6 +2458,80 @@ async function discoverProspects() {
  }
  }
 
+ // ── Secondary category searches ─────────────────────────────
+ var PLACES_FIELDS = 'places.id,places.displayName,places.formattedAddress,places.location,places.types,places.primaryType,places.userRatingCount,places.rating,places.websiteUri,places.businessStatus,places.nationalPhoneNumber,places.regularOpeningHours';
+ for (var si = 0; si < secondariesToQuery.length; si++) {
+   var sec = secondariesToQuery[si];
+   status.innerHTML = '<span style="color:var(--accent);">Expanding → ' + sec.label + ' (' + (si+1) + ' of ' + secondariesToQuery.length + ')...</span>';
+   try {
+     var sbody = {
+       textQuery: sec.query,
+       maxResultCount: 20,
+       locationBias: { circle: { center: { latitude:center.lat, longitude:center.lng }, radius:radiusM } }
+     };
+     if (sec.type) sbody.includedType = sec.type;
+     var sresp = await fetch('https://places.googleapis.com/v1/places:searchText', {
+       method: 'POST',
+       headers: { 'Content-Type':'application/json', 'X-Goog-Api-Key':GOOGLE_PLACES_KEY, 'X-Goog-FieldMask':PLACES_FIELDS },
+       body: JSON.stringify(sbody)
+     });
+     if (!sresp.ok) {
+       if (sresp.status === 400 && sbody.includedType) {
+         delete sbody.includedType;
+         sresp = await fetch('https://places.googleapis.com/v1/places:searchText', {
+           method: 'POST',
+           headers: { 'Content-Type':'application/json', 'X-Goog-Api-Key':GOOGLE_PLACES_KEY, 'X-Goog-FieldMask':PLACES_FIELDS },
+           body: JSON.stringify(sbody)
+         });
+         if (!sresp.ok) throw new Error('HTTP ' + sresp.status);
+       } else { throw new Error('HTTP ' + sresp.status); }
+     }
+     var sdata = await sresp.json();
+     (sdata.places || []).forEach(function(place) {
+       var pid = place.id || '';
+       var name = place.displayName ? place.displayName.text : '';
+       if (!name || name.length < 2) return;
+       if (place.businessStatus === 'CLOSED_PERMANENTLY') return;
+       if (pid && seenIds.has(pid)) return; // deduplicate
+       if (pid) seenIds.add(pid);
+       var lat = place.location ? place.location.latitude : null;
+       var lng = place.location ? place.location.longitude : null;
+       var dist = (lat && lng) ? haversine(center.lat, center.lng, lat, lng) : null;
+       if (dist !== null && dist > radiusMi) return;
+       var sprospect = {
+         name: name,
+         cat: sec.parentCat,
+         _detectedType: place.primaryType || null,
+         _searchLabel: sec.label,
+         city: center.city,
+         dist: dist,
+         estRev: 30000,
+         rev: 30000,
+         source: 'discovered',
+         _tags: {},
+         _lat: lat,
+         _lng: lng,
+         _website: place.websiteUri || null,
+         _places: {
+           id: pid || null,
+           rating: place.rating || null,
+           userRatingCount: place.userRatingCount || 0,
+           websiteUri: place.websiteUri || '',
+           businessStatus: place.businessStatus || 'OPERATIONAL',
+           nationalPhoneNumber: place.nationalPhoneNumber || null,
+           regularOpeningHours: place.regularOpeningHours || null
+         }
+       };
+       sprospect._rebuildId = 'rb-'+Math.random().toString(36).slice(2,9);
+       sprospect.score = computeScore(sprospect);
+       allProspects.push(sprospect);
+     });
+   } catch(e) {
+     console.warn('[IGI] Secondary ' + sec.label + ' search failed:', e.message);
+   }
+ }
+ // ── End secondary searches ───────────────────────────────────
+
  // Save fresh results to cache (fire-and-forget, non-blocking)
  if (allProspects.length > 0) {
  saveDiscoveryCache(cacheKey, zip, catsToQuery, radiusMi, allProspects);
@@ -2294,6 +2550,7 @@ async function discoverProspects() {
  state.rebuild.discovered = display;
 
  activeCategories = new Set(['All']);
+ activeSecondaries = {};
  buildCategoryFilters();
  mergeAndRenderRebuild();
 
@@ -2318,9 +2575,61 @@ async function discoverProspects() {
 
 var FILTER_CATEGORIES = Object.keys(CATEGORY_CONFIG);
 var activeCategories = new Set();
+var activeSecondaries = {}; // { cat: Set of secondary labels }
 
 
 var _accordionOpen = {};
+
+function renderSecondaryTags() {
+ var panel = document.getElementById('secondaryTagsPanel');
+ if (!panel) return;
+ var selectedCats = activeCategories.has('All') ? [] :
+   Array.from(activeCategories).filter(function(c){
+     return CATEGORY_CONFIG[c] && CATEGORY_CONFIG[c].secondaries && CATEGORY_CONFIG[c].secondaries.length;
+   });
+ if (!selectedCats.length) {
+   panel.style.display = 'none';
+   panel.innerHTML = '';
+   return;
+ }
+ panel.style.display = 'block';
+ panel.innerHTML =
+   '<div style="margin-bottom:6px;">'
+   + '<div style="font-size:.68rem;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:var(--accent);margin-bottom:4px;">Expand Search</div>'
+   + '<div style="font-size:.65rem;color:var(--dim);">Toggle tags to add additional searches within your selected categories</div>'
+   + '</div>'
+   + selectedCats.map(function(cat) {
+     var cfg = CATEGORY_CONFIG[cat];
+     var secSet = activeSecondaries[cat] || new Set();
+     var chips = cfg.secondaries.map(function(sec) {
+       var active = secSet.has(sec.label);
+       var safeLabel = sec.label.replace(/\\/g,"\\\\").replace(/'/g,"\\'");
+       var safeCat   = cat.replace(/\\/g,"\\\\").replace(/'/g,"\\'");
+       return '<button onclick="toggleSecondary(\''+ safeCat +'\',\''+ safeLabel +'\')" '
+         + 'style="display:inline-flex;align-items:center;gap:4px;padding:3px 11px;margin:2px 3px 2px 0;border-radius:12px;font-size:.68rem;cursor:pointer;transition:all .15s;'
+         + (active
+             ? 'background:rgba(239,65,54,.18);border:1px solid var(--accent);color:var(--accent);font-weight:700;'
+             : 'background:var(--surface2);border:1px solid var(--border);color:var(--dim);')
+         + '">'
+         + (active ? '&#10003; ' : '+ ') + sec.label
+         + '</button>';
+     }).join('');
+     return '<div style="margin-bottom:8px;">'
+       + '<div style="font-size:.72rem;color:var(--dim);margin-bottom:3px;">+ Expand <strong style="color:var(--text);">' + cat + '</strong></div>'
+       + '<div style="display:flex;flex-wrap:wrap;">' + chips + '</div>'
+       + '</div>';
+   }).join('');
+}
+
+function toggleSecondary(cat, label) {
+ if (!activeSecondaries[cat]) activeSecondaries[cat] = new Set();
+ if (activeSecondaries[cat].has(label)) {
+   activeSecondaries[cat].delete(label);
+ } else {
+   activeSecondaries[cat].add(label);
+ }
+ renderSecondaryTags();
+}
 
 function buildCategoryFilters() {
  var container = document.getElementById('categoryCheckboxes');
@@ -2378,6 +2687,7 @@ function buildCategoryFilters() {
  + items
  + '</div>';
  }).join('');
+ renderSecondaryTags();
 }
 
 function toggleCategoryFilter(cat, checked) {
@@ -2393,6 +2703,7 @@ function toggleCategoryFilter(cat, checked) {
  activeCategories.add(cat);
  } else {
  activeCategories.delete(cat);
+ if (activeSecondaries[cat]) activeSecondaries[cat] = new Set();
  }
  var warn = document.getElementById('catLimitWarn');
  if (warn) warn.style.display = 'none';
@@ -2430,7 +2741,9 @@ function renderRebuild(prospects, radius) {
         +'<td><strong style="color:#fff;">'+p.name+'</strong>'
         +(p.source==='uploaded'?'<span style="font-size:.6rem;background:rgba(251,191,36,.12);color:var(--yellow);border:1px solid rgba(251,191,36,.3);border-radius:var(--r-btn);padding:1px 6px;margin-left:6px;">UPLOADED</span>':p.source==='discovered'?'<span style="font-size:.6rem;background:rgba(239,65,54,.12);color:var(--accent);border:1px solid var(--accent-border);border-radius:var(--r-btn);padding:1px 6px;margin-left:6px;">DISCOVERED</span>':p.source==='both'?'<span style="font-size:.6rem;background:rgba(52,211,153,.15);color:var(--green);border:1px solid rgba(52,211,153,.3);border-radius:var(--r-btn);padding:1px 6px;margin-left:6px;">✓ BOTH</span>':'')
         +'</td>'
-        +'<td style="color:var(--dim);font-size:.8rem;">'+(p.cat||'-')+'</td>'
+        +'<td style="color:var(--dim);font-size:.8rem;">'+(p.cat||'-')
+        +(p._searchLabel ? '<br><span style="font-size:.62rem;color:var(--dim);font-style:italic;">via '+p._searchLabel+'</span>' : '')
+        +'</td>'
         +'<td class="hide-mobile" style="font-size:.75rem;">'
         +(p._website
         ? '<a href="'+p._website+'" target="_blank" rel="noopener" style="color:var(--accent);text-decoration:none;" title="'+p._website+'">↗ Visit</a>'
@@ -4229,9 +4542,4 @@ checkSharedMode().then(function(isShared) {
 </div>
 
 <!-- Plan Management Modal -->
-<div id="igiModalOverlay" onclick="if(event.target===this)closeModal()" style="display:none;position:fixed;inset:0;z-index:2000;background:rgba(0,0,0,.65);align-items:center;justify-content:center;opacity:0;transition:opacity .18s;">
-  <div id="igiModalBox" style="background:var(--surface);border:1px solid var(--accent-border);border-radius:var(--r-card);padding:28px 28px 24px;width:min(440px,92vw);box-shadow:0 24px 60px rgba(0,0,0,.6);transform:scale(.95);transition:transform .18s;"></div>
-</div>
-
-</body>
-</html>
+<div id="igiModalOverlay" onclick="if(event.target===this)closeModal()" style="display:none;position:fixed;inset:0;z-index:2000;backg
