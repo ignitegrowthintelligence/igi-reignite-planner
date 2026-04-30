@@ -1270,29 +1270,25 @@ function exportPlanPdf() {
 
 // ─── SUMMARY CARDS ────────────────────────────────────────────────────────────
 function refreshGlobalSummaryCards() {
-  var closeCount   = (state.close    || []).length;
-  var protectCount = (state.protect  || []).length;
-  var reclaimCount = (state.reclaimAll || []).length;
-
-  var rb = state.rebuild || {};
-  var rbMerged = rb._merged || [];
-  var rebuildCount = rbMerged.length
-    || ((rb.uploaded || []).length + (rb.discovered || []).length);
+  var closeCount   = (plan.close   || []).length;
+  var protectCount = (plan.protect || []).length;
+  var reclaimCount = (plan.reclaim || []).length;
+  var rebuildCount = (plan.rebuild || []).length;
 
   var currentClients = closeCount + protectCount + reclaimCount;
   var totalAccounts  = currentClients + rebuildCount;
 
-  var closeRev   = (state.close    || []).reduce(function(s,d){ return s+(d.rev||0); }, 0);
-  var protectRev = (state.protect  || []).reduce(function(s,c){ return s+(c.rev||c.rev26||0); }, 0);
-  var reclaimRev = (state.reclaimAll || []).reduce(function(s,c){ return s+(c.rev||0); }, 0);
-  var rebuildRev = rbMerged.reduce(function(s,p){ return s+(p.estRev||p.rev||0); }, 0);
+  var closeRev   = (plan.close   || []).reduce(function(s,a){ return s+(a.rev||0); }, 0);
+  var protectRev = (plan.protect || []).reduce(function(s,a){ return s+(a.rev||a.rev26||0); }, 0);
+  var reclaimRev = (plan.reclaim || []).reduce(function(s,a){ return s+(a.rev||0); }, 0);
+  var rebuildRev = (plan.rebuild || []).reduce(function(s,a){ return s+(a.estRev||a.rev||0); }, 0);
   var totalRev   = closeRev + protectRev + reclaimRev + rebuildRev;
 
   updateSummaryCards([
     {
       label: 'Total Accounts',
       value: totalAccounts || '—',
-      sub:   totalAccounts ? 'Across all tabs' : 'Upload files to begin'
+      sub:   totalAccounts ? 'Across all plan sections' : 'Add accounts to your plan'
     },
     {
       label: 'Total Opportunity',
