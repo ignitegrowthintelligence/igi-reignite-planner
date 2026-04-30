@@ -402,7 +402,7 @@
       </div>
 
       <!-- ── Three Discovery Modes ── -->
-      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:16px;align-items:start;" class="rebuild-discovery-controls">
+      <div style="display:grid;grid-template-columns:1fr 1fr 2fr;gap:12px;margin-bottom:16px;align-items:start;" class="rebuild-discovery-controls">
 
         <!-- Mode 1: Find a Business -->
         <div class="card p-4" style="display:flex;flex-direction:column;gap:10px;">
@@ -2952,7 +2952,7 @@ function buildCategoryFilters() {
  var selectedInTier = cats.filter(function(c){ return activeCategories.has(c); }).length;
  var tierBadge = selectedInTier > 0 ? ' <span style="background:rgba(239,65,54,.15);color:var(--accent);border:1px solid var(--accent-border);border-radius:var(--r-btn);padding:1px 7px;font-size:.65rem;font-weight:700;margin-left:6px;">' + selectedInTier + ' selected</span>' : '';
 
- var items = isOpen ? '<div style="display:grid;grid-template-columns:repeat(5,1fr);gap:2px;padding:6px 8px;">'
+ var items = isOpen ? '<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:2px;padding:6px 8px;">'
  + cats.map(function(cat) {
  var isActive = activeCategories.has(cat);
  var isDisabled = !isActive && atLimit;
