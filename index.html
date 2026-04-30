@@ -3546,9 +3546,16 @@ function _initCadenceTab(pk, safeKey, intelData) {
 function _renderCadenceTab(pk, safeKey, intelData, steps) {
   var panel = document.getElementById('intel-tab-cadence');
   if (!panel) return;
-  var doneCount = steps.filter(function(s){ return s.status === 'completed'; }).length;
+  // Ensure steps array always has 7 entries (guard against race with async init)
+  while (steps.length < CADENCE_STEPS.length) {
+    steps.push({ status: 'pending', content: null, notes: '', completedAt: null });
+  }
+  window._cadenceData = window._cadenceData || {};
+  window._cadenceData[pk] = steps;
+
+  var doneCount = steps.filter(function(s){ return s && s.status === 'completed'; }).length;
   var activeIdx = -1;
-  for (var i = 0; i < steps.length; i++) { if (steps[i].status !== 'completed') { activeIdx = i; break; } }
+  for (var i = 0; i < steps.length; i++) { if (!steps[i] || steps[i].status !== 'completed') { activeIdx = i; break; } }
   if (activeIdx === -1) activeIdx = steps.length - 1;
 
   var html = '';
@@ -3556,7 +3563,8 @@ function _renderCadenceTab(pk, safeKey, intelData, steps) {
   // Progress dots
   html += '<div class="cad-progress">';
   for (var d = 0; d < CADENCE_STEPS.length; d++) {
-    var isDone = steps[d].status === 'completed';
+    var sd = steps[d] || {};
+    var isDone = sd.status === 'completed';
     var isAct  = d === activeIdx;
     html += '<div class="cad-dot' + (isDone ? ' done' : isAct ? ' active' : '') + '">' + (isDone ? '&#10003;' : (d + 1)) + '</div>';
     if (d < CADENCE_STEPS.length - 1) html += '<div class="cad-line' + (isDone ? ' done' : '') + '"></div>';
@@ -3566,7 +3574,7 @@ function _renderCadenceTab(pk, safeKey, intelData, steps) {
 
   // Step cards
   for (var s = 0; s < CADENCE_STEPS.length; s++) {
-    html += _renderCadenceCard(pk, s, steps[s], s === activeIdx, doneCount);
+    html += _renderCadenceCard(pk, s, steps[s] || { status: 'pending', content: null, notes: '' }, s === activeIdx, doneCount);
   }
   panel.innerHTML = html;
 }
@@ -3724,6 +3732,12 @@ function _generateCadenceStep(pk, idx) {
   var btn = document.getElementById('cad-genbtn-' + pk + '-' + idx);
   if (btn) { btn.disabled = true; btn.textContent = 'Generating…'; }
   var steps = (window._cadenceData && window._cadenceData[pk]) || [];
+  // Ensure steps array always has 7 entries
+  while (steps.length < CADENCE_STEPS.length) {
+    steps.push({ status: 'pending', content: null, notes: '', completedAt: null });
+  }
+  window._cadenceData = window._cadenceData || {};
+  window._cadenceData[pk] = steps;
   var intel = window._currentIntelData || {};
   var priorSteps = steps.slice(0, idx).map(function(s, i) {
     return { stepNum: i + 1, day: CADENCE_STEPS[i].day, type: CADENCE_STEPS[i].type, label: CADENCE_STEPS[i].label, status: s.status, notes: s.notes || '' };
