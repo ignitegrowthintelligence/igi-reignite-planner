@@ -4921,4 +4921,35 @@ checkSharedMode().then(function(isShared) {
       <div style="font-size:.6rem;font-weight:600;text-transform:uppercase;letter-spacing:.12em;color:var(--accent);">IGI Score Breakdown</div>
       <button onclick="closeScorePanel()" style="background:var(--surface2);border:1px solid var(--border);color:var(--dim);border-radius:var(--r-btn);padding:5px 9px;cursor:pointer;font-size:.8rem;">&#x2715;</button>
     </div>
-    <div style="display:flex;align-items:flex-start;j
+    <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;padding:12px 20px 20px;">
+      <div style="flex:1;">
+        <div id="igiPanelName" style="font-weight:700;font-size:1.05rem;color:var(--text);line-height:1.3;"></div>
+        <div id="igiPanelSub" style="font-size:.72rem;color:var(--dim);margin-top:3px;"></div>
+      </div>
+      <div style="text-align:center;flex-shrink:0;background:var(--surface2);border:1px solid var(--border);border-radius:var(--r-card);padding:10px 14px;">
+        <div id="igiPanelScore" style="font-size:2.6rem;font-weight:900;line-height:1;"></div>
+        <div style="font-size:.58rem;color:var(--dim);letter-spacing:.1em;text-transform:uppercase;margin-top:3px;">IGI Score</div>
+      </div>
+    </div>
+  </div>
+  <div id="igiPanelDesc" style="padding:12px 20px;background:var(--surface2);border-bottom:1px solid var(--border);font-size:.72rem;color:var(--dim);flex-shrink:0;line-height:1.5;"></div>
+  <div id="igiPanelComponents" style="flex:1;overflow-y:auto;padding:18px 20px;"></div>
+  <div style="padding:12px 20px;border-top:1px solid var(--border);flex-shrink:0;text-align:center;">
+    <div style="font-size:.62rem;color:var(--dim);letter-spacing:.04em;">Powered by <span style="color:var(--accent);font-weight:700;">Ignite Growth Intelligence</span> &middot; IGI Score</div>
+  </div>
+</div>
+
+<div id="igi-prospect-page"
+ style="display:none; position:fixed; top:0; left:0; right:0; bottom:0;
+ overflow-y:auto; background:var(--bg); z-index:50;">
+</div>
+
+<!-- Call Prep Card Modal -->
+<div id="callPrepOverlay" onclick="if(event.target===this)closeCallPrep()" style="display:none;position:fixed;inset:0;z-index:2100;background:rgba(0,0,0,.72);align-items:center;justify-content:center;opacity:0;transition:opacity .18s;padding:16px;">
+  <div id="callPrepBox" style="background:var(--surface);border:1px solid var(--accent-border);border-radius:var(--r-card);width:min(720px,100%);max-height:90vh;overflow-y:auto;box-shadow:0 28px 70px rgba(0,0,0,.7);transform:scale(.95);transition:transform .18s;"></div>
+</div>
+
+<!-- Plan Management Modal -->
+<div id="igiModalOverlay" onclick="if(event.target===this)closeModal()" style="display:none;position:fixed;inset:0;z-index:2000;background:rgba(0,0,0,.65);align-items:center;justify-content:center;opacity:0;transition:opacity .18s;">
+ <div id="igiModalBox" style="background:var(--surface);border:1px solid var(--border);border-radius:var(--r-card);padding:24px;width:min(440px,90%);box-shadow:0 24px 60px rgba(0,0,0,.6);transform:scale(.95);transition:transform .18s;"></div>
+</div>
