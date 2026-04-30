@@ -351,6 +351,7 @@
           <span id="planUpdatedMsg" style="display:none;font-size:.72rem;color:var(--green);font-weight:700;transition:opacity .4s;">&#10003; Plan updated</span>
           <span id="shareUrlMsg" style="display:none;font-size:.72rem;color:var(--green);font-weight:700;transition:opacity .4s;">&#10003; Link copied</span>
           
+          <button id="savePlanBtn" onclick="manualSavePlan()" class="plan-edit-only" style="background:var(--accent);color:#000;border:none;border-radius:var(--r-btn);padding:7px 14px;font-size:.75rem;font-weight:700;cursor:pointer;">Save Plan</button>
           <button onclick="sharePlanUrl()" class="plan-edit-only" style="background:var(--accent-dim);border:1px solid var(--accent-border);color:var(--accent);border-radius:var(--r-btn);padding:7px 14px;font-size:.75rem;font-weight:700;cursor:pointer;">Share URL</button>
           <button onclick="exportPlan()" class="plan-edit-only" style="background:var(--accent-dim);border:1px solid var(--accent-border);color:var(--accent);border-radius:var(--r-btn);padding:7px 14px;font-size:.75rem;font-weight:700;cursor:pointer;">Export CSV</button>
           <button onclick="exportPlanPdf()" class="plan-edit-only" style="background:var(--accent-dim);border:1px solid var(--accent-border);color:var(--accent);border-radius:var(--r-btn);padding:7px 14px;font-size:.75rem;font-weight:700;cursor:pointer;">Export PDF</button>
@@ -3177,6 +3178,22 @@ function filterTable(input) {
 // ─── PLAN MANAGEMENT ─────────────────────────────────────────────────────────
 function syncUpdatePlanBtn() {
   // Update Plan button removed — auto-save handles all updates
+}
+
+async function manualSavePlan() {
+  var btn = document.getElementById('savePlanBtn');
+  if (!state.loadedPlanId) {
+    var name = state.loadedPlanName || (document.getElementById('marketInput').textContent.trim()) || 'My Plan';
+    if (btn) { btn.textContent = 'Saving…'; btn.disabled = true; }
+    await savePlanToFirestore(name);
+    if (btn) { btn.textContent = '✓ Saved'; btn.disabled = false; }
+    setTimeout(function(){ if (btn) btn.textContent = 'Save Plan'; }, 2000);
+    return;
+  }
+  if (btn) { btn.textContent = 'Saving…'; btn.disabled = true; }
+  await updatePlanInFirestore();
+  if (btn) { btn.textContent = '✓ Saved'; btn.disabled = false; }
+  setTimeout(function(){ if (btn) btn.textContent = 'Save Plan'; }, 2000);
 }
 
 function updateCurrentPlan() {
