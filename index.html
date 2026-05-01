@@ -390,7 +390,7 @@
       <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:20px;">
         <div>
           <div style="font-weight:700;font-size:1.1rem;color:var(--text);">Market Attack Plan</div>
-          <div id="planDashMarket" style="font-size:.72rem;color:var(--dim);margin-top:2px;">Enter market name in the top-right corner</div>
+rner</div>
         </div>
         <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;" id="planActionBtns">
           <span id="planUpdatedMsg" style="display:none;font-size:.72rem;color:var(--green);font-weight:700;transition:opacity .4s;">&#10003; Plan updated</span>
@@ -765,8 +765,7 @@ function updatePlanFab() {
 function refreshPlanModal() {
   // Update market label
   var market = document.getElementById('marketInput').textContent.trim() || 'Your Market';
-  var ml = document.getElementById('planDashMarket');
-  if (ml) ml.textContent = market;
+
   document.getElementById('planUrlBar').style.display='none';
 
   var labels = {close:'🔴 Close Now', protect:'🟢 Protect & Expand', reclaim:'🟡 Reclaim', rebuild:'🔵 Rebuild'};
@@ -924,7 +923,7 @@ async function savePlanToFirestore(name) {
   state.loadedPlanName = name;
   state.lastSavedData = _currentPlanSnapshot();
   document.getElementById('marketInput').textContent = name;
-  document.getElementById('marketLabel').textContent = name;
+  document.getElementById('marketLabel').textContent = 'Ignite Growth Intelligence';
   syncUpdatePlanBtn();
   return ref.id;
 }
@@ -997,7 +996,7 @@ async function loadPlanFromFirestore(planId) {
   state.loadedPlanName = data.name || '';
   state.lastSavedData = _currentPlanSnapshot();
   document.getElementById('marketInput').textContent = data.name || '';
-  document.getElementById('marketLabel').textContent = data.name || 'IGNITE GROWTH INTELLIGENCE';
+  document.getElementById('marketLabel').textContent = 'Ignite Growth Intelligence';
 
   // Re-score before rendering
   if (state.close && state.close.length) {
@@ -3295,7 +3294,7 @@ function _launchNamePlanModal() {
     state.loadedPlanName = name;
     state.loadedPlanId = null;
     document.getElementById('marketInput').textContent = name;
-    document.getElementById('marketLabel').textContent = name;
+    document.getElementById('marketLabel').textContent = 'Ignite Growth Intelligence';
     savePlanLocal();
     updatePlanFab();
     syncUpdatePlanBtn();
