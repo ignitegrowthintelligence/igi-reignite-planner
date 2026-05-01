@@ -236,7 +236,7 @@ async function callClaude(html, domain, pixels, apiKey, businessName, context) {
       context + '\n' +
       'IMPORTANT: You MUST incorporate the above personalization into bestMeetingAngle and both whatToSay scripts (phone and walkin). The sales rep typed this instruction specifically so it appears in the output they will use. Do not ignore it.\n\n' : '') +
     'Website HTML (truncated to 30,000 characters):\n' +
-    (html ? html.slice(0, 30000) : 'Website could not be fetched. Generate intel based on the domain name and industry inference only.');
+    (html ? html.slice(0, 15000) : 'Website could not be fetched. Generate intel based on the domain name and industry inference only.');
 
   console.log('[IGI] Calling Claude API for domain:', domain);
   const response = await fetch('https://api.anthropic.com/v1/messages', {
@@ -244,15 +244,16 @@ async function callClaude(html, domain, pixels, apiKey, businessName, context) {
     headers: {
       'x-api-key':         apiKey,
       'anthropic-version': '2023-06-01',
+      'anthropic-beta':    'prompt-caching-2024-07-31',
       'content-type':      'application/json',
     },
     body: JSON.stringify({
       model:      'claude-haiku-4-5-20251001',
       max_tokens: 4096,
-      system:     SYSTEM_PROMPT,
+      system:     [{ type: 'text', text: SYSTEM_PROMPT, cache_control: { type: 'ephemeral' } }],
       messages:   [{ role: 'user', content: userContent }],
     }),
-    signal: AbortSignal.timeout(25000),
+    signal: AbortSignal.timeout(55000),
   });
 
   if (!response.ok) {
@@ -269,6 +270,105 @@ async function callClaude(html, domain, pixels, apiKey, businessName, context) {
   const end   = text.lastIndexOf('}');
   if (start === -1 || end === -1) throw new Error('Claude response did not contain valid JSON');
 
+  return JSON.parse(text.slice(start, end + 1));
+}
+
+
+// ---------------------------------------------------------------------------
+// Cadence prompt + API call
+// ---------------------------------------------------------------------------
+const CADENCE_PROMPT = `You are a sales cadence writer for a local digital advertising sales team at Townsquare Ignite.
+
+Given prospect intel and any prior step notes, write the outreach content for the specific step requested.
+
+The 7-step cadence spans 10 business days:
+- Step 1 (Day 1): Introductory Email — Lead with a Valid Business Reason (VBR). Reference something specific and real about their business. End with a clear ask for 20 minutes.
+- Step 2 (Day 2): Phone Call — Reference the Day 1 email by name. Keep it under 30 seconds.
+- Step 3 (Day 3): Email #2 — Include a brief success story relevant to their industry or category. One specific example.
+- Step 4 (Day 5): LinkedIn — Brief connection message or comment. Under 150 characters. Casual and human.
+- Step 5 (Day 7): Phone Call #2 — Reiterate insights, VBR, and urgency. Reference any prior interaction.
+- Step 6 (Day 9): Email #3 — Highlight key value and include a referral or reference if possible.
+- Step 7 (Day 10): Final Phone Call + Break-up Email — State this is the last attempt. Break-up email should be warm, slightly humorous, specific to this business, and leave the door open.
+
+Critical rules:
+- NEVER mention pixels, GTM, tracking tags, remarketing, or ad tech in any customer-facing content
+- Sound like you know the business — not like you audited their website
+- Use the prospect's actual business name, services, and real details from the intel
+- If prior step notes are provided, reference them naturally — build on what happened
+- Emails: short paragraphs, conversational tone, clear single ask, 3-4 paragraphs max
+- Phone scripts: 20-30 seconds spoken naturally, no bullet points, natural language
+- Voicemails: 15-20 seconds, name + one specific business detail + callback ask
+- LinkedIn: under 150 characters, casual and direct
+- Break-up email: warm tone, light humor, specific to this business, leaves door open
+- Use [Your Name] as placeholder for the rep's name
+- Use [Your Phone] as placeholder for the callback number
+
+Return ONLY valid JSON. No markdown fences, no explanation.
+
+Email steps (1, 3, 6): {"type":"email","subject":"...","body":"..."}
+Phone steps (2, 5): {"type":"phone","script":"...","voicemail":"..."}
+LinkedIn step (4): {"type":"linkedin","message":"..."}
+Final step (7): {"type":"phone_and_email","script":"...","voicemail":"...","breakupSubject":"...","breakupBody":"..."}`;
+
+const CADENCE_STEPS_META = [
+  { day:1,  label:'Introductory Email' },
+  { day:2,  label:'Follow-Up Phone Call' },
+  { day:3,  label:'Email #2 — Success Story' },
+  { day:5,  label:'LinkedIn Engage' },
+  { day:7,  label:'Follow-Up Phone Call #2' },
+  { day:9,  label:'Email #3 — Value + Referral' },
+  { day:10, label:'Final Call + Break-up Email' },
+];
+
+async function callClaudeCadence(stepIndex, intel, priorSteps, apiKey) {
+  const step = CADENCE_STEPS_META[stepIndex];
+
+  const priorContext = priorSteps.length
+    ? 'Prior outreach steps:\n' + priorSteps.map(s =>
+        `Step ${s.stepNum} (Day ${s.day}, ${s.type}): ${s.label}` +
+        (s.notes ? `\n  Rep notes: ${s.notes}` : ' — no notes recorded') +
+        (s.status === 'completed' ? ' [COMPLETED]' : '')
+      ).join('\n')
+    : 'This is the first step — no prior outreach yet.';
+
+  const userContent =
+    `Business: ${intel.businessName || '(unknown)'}\n` +
+    `Industry: ${intel.industry || ''}\n` +
+    `Domain: ${intel.domain || ''}\n` +
+    `Best meeting angle: ${intel.bestMeetingAngle || ''}\n` +
+    `Meeting hook: ${intel.meetingHook || ''}\n` +
+    `Why worth calling:\n${(intel.whyWorthCalling || []).map(w => `- ${w.label||''}: ${w.detail||''}`).join('\n')}\n\n` +
+    `Market summary: ${(intel.marketSummary && intel.marketSummary.headline) || ''}\n\n` +
+    priorContext + '\n\n' +
+    `Generate content for: Step ${stepIndex + 1} — Day ${step.day} — ${step.label}`;
+
+  const response = await fetch('https://api.anthropic.com/v1/messages', {
+    method: 'POST',
+    headers: {
+      'x-api-key': apiKey,
+      'anthropic-version': '2023-06-01',
+      'anthropic-beta':    'prompt-caching-2024-07-31',
+      'content-type': 'application/json',
+    },
+    body: JSON.stringify({
+      model: 'claude-haiku-4-5-20251001',
+      max_tokens: 1024,
+      system: [{ type: 'text', text: CADENCE_PROMPT, cache_control: { type: 'ephemeral' } }],
+      messages: [{ role: 'user', content: userContent }],
+    }),
+    signal: AbortSignal.timeout(30000),
+  });
+
+  if (!response.ok) {
+    const body = await response.text();
+    throw new Error('Claude API error ' + response.status + ': ' + body.slice(0, 200));
+  }
+
+  const data = await response.json();
+  const text = data.content[0].text;
+  const start = text.indexOf('{');
+  const end   = text.lastIndexOf('}');
+  if (start === -1 || end === -1) throw new Error('No JSON in cadence response');
   return JSON.parse(text.slice(start, end + 1));
 }
 
@@ -334,6 +434,33 @@ app.post('/', async (req, res) => {
   } catch (err) {
     console.error('[IGI] Error for', domain, '-', err.message);
     return res.status(500).json({ error: err.message || 'Intel generation failed' });
+  }
+});
+
+
+// ---------------------------------------------------------------------------
+// POST /cadence  –  generate one cadence step
+// ---------------------------------------------------------------------------
+app.post('/cadence', async (req, res) => {
+  const { stepIndex, intel, priorSteps, profileKey } = req.body || {};
+
+  if (typeof stepIndex !== 'number' || stepIndex < 0 || stepIndex > 6) {
+    return res.status(400).json({ error: 'stepIndex must be 0-6' });
+  }
+  if (!intel || !intel.businessName) {
+    return res.status(400).json({ error: 'intel.businessName is required' });
+  }
+
+  const apiKey = process.env.ANTHROPIC_API_KEY;
+  if (!apiKey) return res.status(500).json({ error: 'ANTHROPIC_API_KEY not configured' });
+
+  try {
+    console.log('[CAD] Step', stepIndex, 'for:', intel.businessName);
+    const content = await callClaudeCadence(stepIndex, intel, priorSteps || [], apiKey);
+    return res.json({ success: true, content });
+  } catch (err) {
+    console.error('[CAD] Error:', err.message);
+    return res.status(500).json({ error: err.message || 'Cadence generation failed' });
   }
 });
 
