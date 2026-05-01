@@ -806,7 +806,9 @@ function refreshPlanModal() {
               + 'onclick="openCallPrep(\''+cpid+'\')" '
               + 'onmouseover="this.style.color=\'var(--accent)\'" '
               + 'onmouseout="this.style.color=\'#fff\'" '
-              + 'title="Click for call prep">' + displayName + '</strong></td>';
+              + 'title="Click for call prep">' + displayName + '</strong>'
+              + (a._website ? '<br><a href="'+a._website+'" target="_blank" rel="noopener" style="font-size:.67rem;color:var(--accent);text-decoration:none;font-weight:400;">↗ '+a._website.replace(/^https?:\/\//,'').replace(/\/$/,'')+'</a>' : '')
+              + '</td>';
           })()
         + '<td class="hide-mobile" style="color:var(--dim);font-size:.78rem;">'+(a.cat||a.type||'-')+'</td>'
         + '<td class="text-right hide-mobile">'
