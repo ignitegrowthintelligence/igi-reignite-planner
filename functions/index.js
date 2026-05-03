@@ -638,10 +638,14 @@ app.post('/', async (req, res) => {
   try {
     // Check Firestore cache first (if available)
     if (db) {
-      const cached = await db.collection('prospectIntel').doc(safeKey).get();
-      if (cached.exists) {
-        console.log('[IGI] Cache hit:', safeKey);
-        return res.json({ success: true, data: cached.data(), cached: true });
+      try {
+        const cached = await db.collection('prospectIntel').doc(safeKey).get();
+        if (cached.exists) {
+          console.log('[IGI] Cache hit:', safeKey);
+          return res.json({ success: true, data: cached.data(), cached: true });
+        }
+      } catch (cacheErr) {
+        console.warn('[IGI] Cache read failed, continuing without cache:', cacheErr.message);
       }
     }
 
@@ -680,8 +684,12 @@ app.post('/', async (req, res) => {
 
     // Save to Firestore (if available)
     if (db) {
-      await db.collection('prospectIntel').doc(safeKey).set(intel);
-      console.log('[IGI] Intel saved:', safeKey);
+      try {
+        await db.collection('prospectIntel').doc(safeKey).set(intel);
+        console.log('[IGI] Intel saved:', safeKey);
+      } catch (saveErr) {
+        console.warn('[IGI] Cache write failed, result still returned:', saveErr.message);
+      }
     }
 
     return res.json({ success: true, data: intel, cached: false });
