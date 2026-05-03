@@ -167,6 +167,12 @@ function buildIntelContentBlock() {
     vbrTriggers,
     '',
     elevatorPitch,
+    '',
+    'TOWNSQUARE LOCAL STRATEGIES (recommend ONE as townsquareLocal field — match to prospect situation):',
+    'GROWTH STARTER — Ideal for: little/no digital presence, referral-dependent business, inconsistent web traffic, budget under $5K, wants to get started. Strategy: Addressable Display + Social + Programmatic Display. Key outcome: establishes consistent local visibility and generates measurable early engagement signals.',
+    'FOOT TRAFFIC ACCELERATOR — Ideal for: physical location competing with nearby businesses, needs to measure in-store impact, already doing some advertising. Strategy: Streaming TV + Geofencing + Programmatic Display Retargeting. Key outcome: influences nearby shoppers and measures who walks into the location.',
+    'STREAMING TV LAUNCH — Ideal for: businesses currently on broadcast/cable, measuring impressions not outcomes, budget under $5K, needs proof before scaling. Strategy: Streaming TV + Retargeting across devices. Key outcome: validates local demand and moves from impressions to measurable engagement signals.',
+    '1:1 MARKETING — Ideal for: business with a known customer list or in-market audience, fragmented channel activity, wants direct outreach connected to real outcomes. Strategy: Email to curated list + display/social matching + direct mail/digital coordination. Key outcome: closed-loop system connecting outreach to measurable sales impact.',
     '===END TSI CONTEXT===\n',
   ].join('\n');
 }
@@ -403,22 +409,19 @@ Return ONLY a valid JSON object. No markdown fences, no explanation, no extra te
     {
       "name": "Product name from TSI catalog — must match a real product from TSI PRODUCT MENU",
       "category": "Search / Social / Streaming TV / Programmatic / AMPED / Location / Other",
-      "rationale": "One sentence: why this specific product for this specific business right now. Reference something observed about their business.",
-      "program": false
+      "rationale": "One sentence: why this specific product for this specific business right now. Reference something observed about their business."
     },
     {
       "name": "Second product recommendation",
       "category": "...",
-      "rationale": "One sentence rationale specific to this business.",
-      "program": false
-    },
-    {
-      "name": "Ignite Program name if applicable (e.g. Brick and Mortar Booster, Brand Builder Pro)",
-      "category": "Ignite Program",
-      "rationale": "One sentence: why this bundle fits their situation.",
-      "program": true
+      "rationale": "One sentence rationale specific to this business."
     }
   ],
+
+  "townsquareLocal": {
+    "name": "One of: Growth Starter | Foot Traffic Accelerator | Streaming TV Launch | 1:1 Marketing",
+    "rationale": "One sentence: why this specific Townsquare Local strategy fits this prospect. Reference something observed about their business — their digital readiness, physical presence, current advertising, or growth situation."
+  },
 
   "whyTSI": [
     "4-5 natural talking points tailored to THIS specific business explaining why Townsquare Ignite is the right partner.",
@@ -491,7 +494,8 @@ Critical rules:
 - marketSummary.gaps should be concrete, seller-relevant observations (e.g. "No email capture or lead form detected", "No promotional pricing or seasonal offers visible", "No customer reviews or social proof on homepage"). Max 3. Never mention pixels, GTM, or tracking tech.
 - categoryLanguage.swaps: generate 5-7 pairs specific to this business's exact industry. Simple, concrete vocabulary a seller would actually say out loud. Focus on what sounds credible vs. generic in this category. Examples: { "use": "booked consultations", "avoid": "leads" } for med spa; { "use": "loan application volume", "avoid": "website clicks" } for a bank.
 - categoryLanguage.context: one sentence on why language discipline matters for this specific category — especially important in medical, legal, financial, and regulated industries.
-- recommendedProducts: pick 2 core products + 1 Ignite Program. Products must come from the TSI PRODUCT MENU. Rationale must reference something specific observed about this business — never generic. Match products to the business's industry, funnel stage, and digital readiness.
+- recommendedProducts: pick exactly 2 core products. Products must come from the TSI PRODUCT MENU. Rationale must reference something specific observed about this business — never generic. Match products to the business's industry, funnel stage, and digital readiness.
+- townsquareLocal: pick exactly ONE Townsquare Local strategy from the four options in TOWNSQUARE LOCAL STRATEGIES. Match to what you observe: no digital presence or small budget → Growth Starter; physical location competing locally → Foot Traffic Accelerator; already on broadcast/cable or wants TV proof → Streaming TV Launch; has a known customer list or fragmented channels → 1:1 Marketing. Rationale must be specific to this prospect.
 - CRITICAL — GTM rule: If Google Tag Manager is detected, NEVER mention missing pixels, missing tracking, pixel gaps, or tracking setup as a gap, insight, or opportunity anywhere in the response — not in gaps, not in meetingHook, not in whatToSay, not in bestMeetingAngle, not in coachingNote. GTM is a container that can silently fire any pixel. Flagging missing pixels when GTM is present is factually wrong and will mislead sellers.`;
 
 // ---------------------------------------------------------------------------
