@@ -4116,23 +4116,26 @@ function _renderIntelPostState(data, acct) {
         + aw.seasonal.slice(0,4).map(function(s){ return '<div class="intel-win-item">' + _esc(s) + '</div>'; }).join('')
         + '<button class="intel-see-more" onclick="_showIntelModal(\'adWindows\')" style="margin-top:4px;">See all ↗</button></div>';
     }
-    if (hasAb) {
-      researchHTML += '<div class="intel-card"><div class="intel-sl" style="margin-top:0;">Ad Benchmarks</div>'
-        + (ab.metaCPL   ? '<div class="intel-mini-row"><div class="intel-mini-lbl">Meta CPL</div><div class="intel-mini-val">' + _esc(ab.metaCPL) + '</div></div>' : '')
-        + (ab.googleCPC ? '<div class="intel-mini-row"><div class="intel-mini-lbl">Google CPC</div><div class="intel-mini-val">' + _esc(ab.googleCPC) + '</div></div>' : '')
-        + (ab.googleCPA ? '<div class="intel-mini-row"><div class="intel-mini-lbl">Google CPA</div><div class="intel-mini-val">' + _esc(ab.googleCPA) + '</div></div>' : '')
-        + '</div>';
+    var pixelList = Array.isArray(ap) ? ap : (ap.detected || []);
+    if (hasAb || pixelList.length) {
+      researchHTML += '<div style="display:flex;gap:10px;align-items:flex-start;">';
+      if (hasAb) {
+        researchHTML += '<div class="intel-card" style="flex:1;min-width:0;"><div class="intel-sl" style="margin-top:0;">Ad Benchmarks</div>'
+          + (ab.metaCPL   ? '<div class="intel-mini-row"><div class="intel-mini-lbl">Meta CPL</div><div class="intel-mini-val">' + _esc(ab.metaCPL) + '</div></div>' : '')
+          + (ab.googleCPC ? '<div class="intel-mini-row"><div class="intel-mini-lbl">Google CPC</div><div class="intel-mini-val">' + _esc(ab.googleCPC) + '</div></div>' : '')
+          + (ab.googleCPA ? '<div class="intel-mini-row"><div class="intel-mini-lbl">Google CPA</div><div class="intel-mini-val">' + _esc(ab.googleCPA) + '</div></div>' : '')
+          + '</div>';
+      }
+      if (pixelList.length) {
+        researchHTML += '<div class="intel-card" style="flex:1;min-width:0;padding:14px 16px;">'
+          + '<div class="intel-sl" style="margin-top:0;">Ad Pixels Detected</div>'
+          + '<div style="display:flex;flex-wrap:wrap;gap:6px;">'
+          + pixelList.map(function(p){ return '<span class="intel-cta-tag">' + _esc(p) + '</span>'; }).join('')
+          + '</div></div>';
+      }
+      researchHTML += '</div>';
     }
     researchHTML += '</div>';
-  }
-
-  // Ad Pixels
-  var pixelList = Array.isArray(ap) ? ap : (ap.detected || []);
-  if (pixelList.length) {
-    researchHTML += '<div class="intel-sl">Ad Pixels Detected</div>'
-      + '<div class="intel-card" style="padding:12px 16px;display:flex;flex-wrap:wrap;gap:6px;">'
-      + pixelList.map(function(p){ return '<span class="intel-cta-tag">' + _esc(p) + '</span>'; }).join('')
-      + '</div>';
   }
 
   // ── PERSISTENT ACTIONS ────────────────────────────────────────────────────
