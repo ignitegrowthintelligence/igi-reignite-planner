@@ -1,0 +1,112 @@
+{
+  "_source": "TSU Fast Track Weeks 1-6, TSI Day 2, TSU Connect training",
+  "_description": "Call scripts, voicemail templates, and outreach sequence guidance for TSI sellers",
+
+  "cold_call_anatomy": {
+    "total_time": "25-35 seconds",
+    "phases": [
+      {
+        "phase": "Hook (0-5 sec)",
+        "purpose": "Identify yourself quickly — name and company only",
+        "guidance": "No long intro. No 'How are you today?' Just: 'Hi, this is [Name] with Townsquare Ignite — I'll be brief.'"
+      },
+      {
+        "phase": "VBR (5-15 sec)",
+        "purpose": "Why you're calling THIS business TODAY — specific, not generic",
+        "guidance": "Reference something real about their business — their category, local reputation, a visible opportunity, or seasonal timing. Show you've done research."
+      },
+      {
+        "phase": "Credibility Hook (15-22 sec)",
+        "purpose": "One sentence that creates curiosity without pitching a product",
+        "guidance": "Reference a result you've seen with a similar business or a local insight — not a product name. Keep it outcome-focused."
+      },
+      {
+        "phase": "Ask (22-35 sec)",
+        "purpose": "Clear, specific request for a 20-minute meeting",
+        "guidance": "Give two specific day options. Sound like someone who values their time and yours. Don't ask 'Would you be interested in learning more?' — ask for the meeting."
+      }
+    ]
+  },
+
+  "phone_script_templates": {
+    "standard_cold_call": "Hi, this is [Your Name] with Townsquare Ignite — I'll be quick. I was doing some local research on [category] businesses in [market] and [Business Name] stood out. I had a specific idea I wanted to run by you around [business outcome — e.g. 'getting more people through the door during your busy season' / 'making sure you show up when people in [market] search for [service]']. Would you have 20 minutes this [Day] or [Day]? I'll come prepared with something specific for your business.",
+
+    "referral_mention": "Hi, this is [Your Name] with Townsquare Ignite. I work with a few businesses in [category] in the area — [reference a client if permissioned] — and I had a specific idea I wanted to share with you. Can I take 20 minutes of your time on [Day] or [Day]?",
+
+    "follow_up_call_after_email": "Hi [First Name], this is [Your Name] from Townsquare Ignite — I sent you a brief email earlier this week. I wanted to follow up personally because I had a specific idea for [Business Name] I think is worth a quick conversation. Do you have 20 minutes [Day] or [Day]?",
+
+    "second_follow_up": "Hi [First Name], [Your Name] again from Townsquare Ignite. I've reached out a couple of times — I'll keep it simple. I have a specific idea for [Business Name] around [growth angle]. If there's any interest at all, I'd love 20 minutes. If the timing is off, I completely understand — just let me know either way.",
+
+    "breakup_call": "Hi [First Name], [Your Name] from Townsquare Ignite. I'm going to make this my last reach out for a while. I genuinely believe there's an opportunity for [Business Name] around [specific angle], but I don't want to keep showing up uninvited. If things change and you want to explore this down the road, I'm easy to find. Wishing you a great [season/month]."
+  },
+
+  "voicemail_templates": {
+    "first_voicemail": "Hi [First Name], this is [Your Name] with Townsquare Ignite. I was doing local research on [category] businesses in [market] and [Business Name] came up — I had a specific idea I think would be relevant to your [busy season / growth goals / recent expansion]. Give me a call at [Your Phone] — I'll keep it brief.",
+
+    "second_voicemail": "Hi [First Name], [Your Name] from Townsquare Ignite again. I know you're busy — I sent an email too. I have something specific for [Business Name] I've seen work well in your category. [Your Phone] — happy to make it worth your time.",
+
+    "final_voicemail": "Hi [First Name], last one from me — [Your Name] at Townsquare Ignite. I wanted to reach out one more time about an idea for [Business Name]. If the timing isn't right, completely understood. [Your Phone] if anything changes. Wishing you the best."
+  },
+
+  "walk_in_scripts": {
+    "standard": "Hi — I'm [Your Name] from Townsquare Ignite. I was doing local research today and [Business Name] stood out. I had a quick idea I wanted to share with whoever handles your marketing — is [owner/manager name] available for just a few minutes?",
+    "if_gatekeeper": "Totally understand — I'll make it easy. I'm [Your Name] from Townsquare Ignite. Could I leave my card and a brief note? I had a specific idea for [Business Name] I think they'd find useful."
+  },
+
+  "linkedin_outreach": {
+    "connection_request": "Hi [First Name] — I work with local businesses in [market] on digital marketing strategy. Came across [Business Name] and thought there might be something worth sharing. Happy to connect.",
+    "follow_up_after_connect": "Thanks for connecting. I was doing research on [category] businesses in [market] and had a specific idea for [Business Name] around [growth angle]. Would you be open to a quick 20-min call?",
+    "character_limit_note": "LinkedIn connection messages must be under 300 characters. Keep it simple and human."
+  },
+
+  "email_sequence_cadence": {
+    "step_1_day_1": {
+      "type": "Introductory Email",
+      "purpose": "Open with a strong VBR. Reference something specific about their business. End with a clear meeting ask.",
+      "length": "Short — 3-4 paragraphs, no more than 150 words",
+      "tone": "Professional, curious, confident — not salesy"
+    },
+    "step_2_day_2": {
+      "type": "Follow-Up Phone Call",
+      "purpose": "Reference the Day 1 email by name. Keep it under 30 seconds.",
+      "guidance": "Say 'I sent you an email yesterday about [Business Name]' — don't re-pitch, just reference and ask for time"
+    },
+    "step_3_day_3": {
+      "type": "Email #2 — Success Story",
+      "purpose": "Include a brief, specific success story relevant to their industry or category",
+      "guidance": "One real example with a result — not a generic testimonial. Connect the story to their specific situation."
+    },
+    "step_4_day_5": {
+      "type": "LinkedIn Engage",
+      "purpose": "Brief connection message or comment. Under 150 characters. Casual and human.",
+      "guidance": "Don't pitch on LinkedIn. Connect first. Comment on content if possible."
+    },
+    "step_5_day_7": {
+      "type": "Follow-Up Phone Call #2",
+      "purpose": "Reiterate VBR and urgency. Reference any prior interaction if it happened.",
+      "guidance": "Build on what you've already sent — show you've been consistent and specific, not just dialing"
+    },
+    "step_6_day_9": {
+      "type": "Email #3 — Value + Referral",
+      "purpose": "Highlight key value and include a reference or testimonial if possible",
+      "guidance": "Use a real client story or stat from TSI. Keep it brief. End with a clear ask."
+    },
+    "step_7_day_10": {
+      "type": "Final Call + Break-up Email",
+      "purpose": "State this is the last attempt. Warm, slightly humorous, leaves the door open.",
+      "guidance": "Break-up emails often get the highest response rate of the sequence — keep it light, specific, and human"
+    }
+  },
+
+  "fear_of_loss_language": [
+    "Your [season / growth window] is [X] weeks out — businesses that start now typically see results when it matters most.",
+    "I'm working with a few businesses in [category] in [market] right now — I want to make sure [Business Name] doesn't miss the window.",
+    "Spots for our [specific campaign type] in [market] fill up — I want to have this conversation before that changes.",
+    "Your competitor in [market] is active right now. I don't know if they're working with us, but I know the category is getting more competitive."
+  ],
+
+  "demo_meeting_commitment": {
+    "before_presenting": "Before I walk you through this, I want to make sure it's actually a fit. Can I ask — if I showed you a campaign that [specific outcome], and the math made sense for your business, is this something you'd want to move on?",
+    "mini_close": "Are we in agreement on how we'd measure the success of this? / Do you feel like this approach would actually deliver the results we talked about? / If both of us feel good about this, are you ready to move forward today?"
+  }
+}

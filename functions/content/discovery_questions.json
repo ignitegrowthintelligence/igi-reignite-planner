@@ -1,0 +1,149 @@
+{
+  "_source": "TSU MSM Workshop May 2026, TSU Fast Track ADVISE, 4As Needs Analysis Model",
+  "_description": "Discovery meeting questions using the 4As Needs Analysis Model and Marketing Strategy Model for TSI sellers",
+
+  "framework_overview": {
+    "name": "4As Needs Analysis Model (CSS Sales Accelerator)",
+    "purpose": "Uncover the prospect's real business challenges and desired outcomes so you can tailor a proposal to what matters most to them.",
+    "steps": [
+      {
+        "step": "A1 — Assessment",
+        "purpose": "Discover desired business results. Don't accept the first answer — uncover several to ensure a meaningful assignment.",
+        "guidance": "Ask questions that reveal what the business owner pays attention to on their P&L, what they're proud of, and what keeps them up at night."
+      },
+      {
+        "step": "A2 — Assignment",
+        "purpose": "Summarize all the desired business results you've uncovered and select one to focus on.",
+        "guidance": "Don't pick for them. Surface the list, ask them to prioritize, then agree on the 1-2 that are most important and most addressable."
+      },
+      {
+        "step": "A3 — Analysis",
+        "purpose": "Find out what's getting in the way of achieving the desired business result. Lead with the consumer journey.",
+        "guidance": "Dig deeper into the problem. What makes it tough to achieve? What consumer behavior needs to change? What has prevented them from solving it already?"
+      },
+      {
+        "step": "A4 — Agreement",
+        "purpose": "Agree on 2-3 ways they will measure the success of the campaign.",
+        "guidance": "Ask how they'll know if it's working. Push for specific, measurable success signals — not just 'more calls' but 'X more calls per week.'"
+      }
+    ]
+  },
+
+  "a1_assessment_questions": [
+    "Help me see this business through your eyes — what do you pay most attention to on your P&L?",
+    "You've built something here — what areas of the business are showing real promise right now?",
+    "What results are you most focused on achieving this year?",
+    "Which results are giving you the most trouble?",
+    "What opportunities are you trying to capitalize on in the next 6-12 months?",
+    "If you could change one thing about how this business performs, what would it be?",
+    "What does a great month look like for you versus a tough one?",
+    "Where does your new business come from today — and is that working as well as you'd like?"
+  ],
+
+  "a2_assignment_questions": [
+    "Based on everything you've shared, which of these is the most important to address right now?",
+    "If we could only focus on one of these, which would have the biggest impact on your business?",
+    "Is there anything missing from what we've talked about — anything that's really pressing that we haven't hit yet?",
+    "If we both invested our time in solving [specific result], would that feel like a meaningful win for you?"
+  ],
+
+  "a3_analysis_questions": [
+    "What makes it tough to achieve this result right now?",
+    "Who is the target customer you're trying to attract — can you describe who your best customer is?",
+    "Where do your customers typically come from today? What's their journey before they call or walk in?",
+    "Describe the path a typical new customer takes before they choose you.",
+    "What do you think gets in the way of more people like that finding you?",
+    "Who else are they considering? What does that competitive landscape look like?",
+    "What are the 2-3 things you'd need to see in an ideal solution to feel confident it would work?",
+    "Have you tried to solve this before? What happened?"
+  ],
+
+  "a4_agreement_questions": [
+    "How would you describe the ultimate measure of success for this kind of campaign?",
+    "What return on your investment are you looking for?",
+    "If a campaign ran for 90 days and you were evaluating it — what would you be looking at to decide if it worked?",
+    "Given what we've talked about around the consumer journey, how might we measure progress along the way?",
+    "What would be an early indicator that something is working — before we even get to 90 days?"
+  ],
+
+  "msm_discovery_questions": {
+    "_description": "Marketing Strategy Model questions — used during deeper discovery to understand targeting, competitive position, and messaging",
+    "step_1_targeting": {
+      "focus": "WHO the advertiser wants to market to",
+      "questions": [
+        "Who is the ideal prospect for your products or services?",
+        "Who is your heavy user — the customer who comes back most often or spends the most?",
+        "Do you have different types of customers you're trying to reach? If so, who are the top two or three?",
+        "Describe your best customer in terms of age, income, lifestyle, or how they find you."
+      ]
+    },
+    "step_2_benefits_sought": {
+      "focus": "WHAT the target consumer really wants",
+      "questions": [
+        "What does your customer really want when they choose you over a competitor?",
+        "What's the real benefit they're buying — not just the service, but the feeling or outcome?",
+        "What problem are they trying to solve when they come to you?",
+        "What do your best customers say about why they chose you and why they stay?"
+      ]
+    },
+    "step_3_competitive_perceptions": {
+      "focus": "WHO ELSE offers what the consumer wants",
+      "questions": [
+        "Who are your main competitors in [market]?",
+        "What do you think customers see as the difference between you and your competition?",
+        "If a customer is deciding between you and [competitor], what tips the decision in your favor?",
+        "Is there a competitor who you feel is doing a particularly good job of marketing right now?"
+      ]
+    },
+    "step_4_positioning": {
+      "focus": "WHAT the advertiser promises to deliver",
+      "questions": [
+        "What is your single biggest competitive advantage — the one thing you'd want every potential customer to know?",
+        "How would you describe your business in one or two sentences to someone who's never heard of you?",
+        "What do you want people to think of when they hear your name?",
+        "Is there a story or message about your business that you feel isn't getting out enough?"
+      ]
+    },
+    "step_5_advertising_and_promotion": {
+      "focus": "The CAMPAIGN — why buy and why buy now",
+      "questions": [
+        "Is there something timely or seasonal about your business that creates urgency?",
+        "Are you running any promotions or offers right now that should be part of the message?",
+        "What do you want a new customer to do after they see your advertising — call, visit, book online?",
+        "Have you run advertising before? What worked, and what didn't?"
+      ]
+    }
+  },
+
+  "pain_and_dig_deeper_questions": [
+    "Tell me more about that — how long has that been an issue?",
+    "What does that cost you when it doesn't work the way you want?",
+    "If you solved that, what would be different about the business 12 months from now?",
+    "How are you handling that challenge today? Is that working well?",
+    "What have you already tried to address it?",
+    "On a scale of 1-10, how important is solving this in the next 6 months?"
+  ],
+
+  "opening_the_discovery_meeting": {
+    "step_0_strong_opener": {
+      "components": [
+        "Review the agenda — set a clear structure for the meeting",
+        "Align expectations — explain what you'll cover and what a successful meeting looks like",
+        "Transition to questioning — use the 4As model to drive the discovery"
+      ],
+      "sample_opener": "Thanks for making time — I want to be respectful of it. Here's what I'd love to do today: I'll ask you a few questions about the business and what you're trying to accomplish, and then I want to share a couple of ideas I think could be relevant for you. Sound good? Great — let me start here..."
+    }
+  },
+
+  "closing_the_discovery_meeting": {
+    "step_6_agreement": {
+      "components": [
+        "Summarize the key desired business results you heard",
+        "Confirm the priority assignment",
+        "Agree on 2-3 measures of success",
+        "Set next steps — when and what the follow-up meeting will include"
+      ],
+      "sample_close": "Based on everything we talked about today, it sounds like the most important thing is [assignment]. And the way we'd know if we're winning is [measures of success]. Does that accurately reflect what matters most to you? Great — here's what I'd like to do: I'll come back on [date] with a specific proposal built around exactly that. Sound good?"
+    }
+  }
+}

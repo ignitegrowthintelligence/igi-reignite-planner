@@ -1,0 +1,95 @@
+{
+  "_source": "TSU Fast Track Weeks 1-6, TSU Connect training",
+  "_description": "Valid Business Reason (VBR) framework and templates for opening calls and emails",
+
+  "framework": {
+    "definition": "A VBR is a concise, prospect-focused reason for reaching out that demonstrates research and frames the conversation around a business outcome — not a product pitch.",
+    "purpose": "Get a 20-minute meeting by giving the prospect a compelling reason to invest time with you.",
+    "core_elements": [
+      "Reference something specific and real about their business (not generic)",
+      "Connect it to a business outcome they care about",
+      "Ask for a short, specific meeting — not a sales call",
+      "Sound like you know the industry, not like you audited a website"
+    ],
+    "what_makes_a_strong_vbr": [
+      "It's specific to THIS prospect — references their actual services, location, or reputation",
+      "It leads with their world, not your product",
+      "It's brief — 2-3 sentences max before the ask",
+      "It creates curiosity, not obligation",
+      "It positions you as someone doing local research, not mass outreach"
+    ]
+  },
+
+  "email_vbr_structure": {
+    "subject_line_formulas": [
+      "Quick question about [Business Name]'s [specific service or season]",
+      "Idea for [Business Name] — worth 20 minutes?",
+      "[Business Name] + [specific growth angle]",
+      "Following up on something I noticed about [Business Name]"
+    ],
+    "body_structure": {
+      "opening": "Reference something specific about their business — a service, a review, a promotion, or a visible opportunity. Show you did real research.",
+      "vbr_statement": "One sentence on WHY you're reaching out now — frame it around their business goal or a timing-based reason (season, competition, growth window).",
+      "value_tease": "One sentence hinting at what you've seen work for businesses like theirs — reference a result, not a product.",
+      "ask": "Clear, low-pressure request for 20 minutes. Offer two specific time options.",
+      "signature": "Your name, title, Townsquare Ignite, phone number"
+    },
+    "sample_vbr_email": {
+      "subject": "Quick idea for [Business Name]",
+      "body": "Hi [First Name],\n\nI was doing some local research on [category] businesses in [market] and [Business Name] stood out — [specific observation about their services, reputation, or a visible opportunity].\n\nI work with businesses like yours to help them grow their customer base through targeted local digital advertising, and I had a specific idea I wanted to run by you.\n\nWould you have 20 minutes this [Day] or [Day] to connect? Happy to keep it short and specific.\n\n[Your Name]\nTownsquare Ignite\n[Your Phone]"
+    }
+  },
+
+  "phone_vbr_structure": {
+    "anatomy": {
+      "hook": "State your name and company in the first 5 seconds — no long preamble.",
+      "vbr": "Why you're calling THIS business TODAY — specific, not generic. Reference something real.",
+      "credibility": "One sentence on who you work with or a result you've seen — without pitching a product.",
+      "ask": "Clear request for a short meeting. Give a specific time window."
+    },
+    "timing": "25-35 seconds total for phone, 15-20 seconds for walk-in",
+    "sample_phone_script": "Hi, this is [Your Name] with Townsquare Ignite — I'll be quick. I was doing local research on [category] businesses in [market] and [Business Name] came up. I had a specific idea I wanted to share about how you could [business outcome relevant to their category]. Would you have 20 minutes [day] or [day] to connect? I'll bring something specific — no fluff.",
+    "sample_walkin_script": "Hi — I'm [Your Name] from Townsquare Ignite. I was doing local research today and [Business Name] stood out. I had a quick idea I wanted to share with whoever handles your marketing. Is [owner/manager name] available for just a few minutes?"
+  },
+
+  "voicemail_vbr": {
+    "timing": "15-20 seconds",
+    "structure": "Name → specific business detail that shows research → one-line reason to call back → callback number",
+    "sample": "Hi [First Name], this is [Your Name] with Townsquare Ignite. I was doing research on [category] businesses in [market] and I had a specific idea for [Business Name] I think you'd find interesting — especially around [specific timing or growth angle]. Give me a call back at [Your Phone]. I'll keep it short."
+  },
+
+  "vbr_triggers_by_situation": [
+    {
+      "trigger": "Business has strong reviews but limited online visibility",
+      "vbr_angle": "Your reputation is strong — the challenge is making sure more people find it before they find a competitor."
+    },
+    {
+      "trigger": "Competitive category with multiple local players",
+      "vbr_angle": "In categories like yours, top-of-mind awareness often determines who gets the call — not who's actually better."
+    },
+    {
+      "trigger": "Seasonal business approaching a peak window",
+      "vbr_angle": "Timing matters a lot in your category — businesses that start building awareness 6-8 weeks before their peak season see better results than those who wait."
+    },
+    {
+      "trigger": "Business appears to rely on referrals or word of mouth only",
+      "vbr_angle": "Referral businesses are often sitting on more growth potential than they realize — there's a whole local audience looking for exactly what you do that never finds you."
+    },
+    {
+      "trigger": "Business recently opened or expanded",
+      "vbr_angle": "New locations or new services create a window where getting the word out early sets the pace for how fast you build a customer base."
+    },
+    {
+      "trigger": "Business is in a high-LTV category (legal, home services, medical, auto)",
+      "vbr_angle": "In your category, each new customer is worth a significant amount over time — the math on acquiring even a few new clients through digital advertising is usually very favorable."
+    }
+  ],
+
+  "tsi_vbr_differentiators": [
+    "We work with businesses locally, not as a national agency — we understand your market",
+    "We can show you exactly how campaigns perform, not just impressions and clicks",
+    "Our full-funnel approach connects awareness to actual customer action",
+    "We've worked with businesses in [category] in markets like yours and know what moves the needle",
+    "We're a local team — you can call us and someone actually picks up"
+  ]
+}

@@ -1,0 +1,157 @@
+{
+  "_source": "Townsquare Case Studies and Testimonials 2026",
+  "_description": "Real client success stories and testimonials for use in cadence emails and discovery conversations",
+
+  "case_studies": [
+    {
+      "id": "tide_cleaners",
+      "client": "Tide Cleaners",
+      "industry": "Dry Cleaning / Laundry Services",
+      "categories": ["retail", "service", "consumer", "franchise"],
+      "challenge": "Decline in returning customers, struggled to attract new shoppers in a competitive market, reduction in overall store visits.",
+      "strategy": "Launched 1:1 marketing targeting top-value audiences with higher frequency across channels. Linked POS data and revenue to paid media to measure ROAS and CAC. Optimized omni-channel strategy by reallocating spend to reduce CAC. Built customer profiles to credit both win-backs and new acquisitions.",
+      "results": {
+        "roas": "6.81x — generated $6.81 for every $1 in marketing spend",
+        "trackable_sales": "$1.03M in trackable, campaign-driven sales",
+        "coupon_redemptions": "$50K+ in matched coupon redemptions",
+        "store_visits": "3,200+ store visits plus nearly 12K new customers acquired"
+      },
+      "testimonial": {
+        "quote": "Working with Townsquare Ignite has been a truly positive experience. The clear marketing plan and supportive approach fostered a productive environment, allowing us to achieve excellent outcomes. The team's expertise and dedication to collaborative marketing strategy have had a significant impact on our business. I have and will continue to recommend Ignite to my fellow colleagues and business owners.",
+        "contact": "Brandt Stravlo, COO, Tide Cleaners (Houston, Austin, Denver, Amarillo)"
+      },
+      "best_for_pitching": "Multi-location retail or service businesses concerned about customer retention, competitive pressure, or declining foot traffic.",
+      "talking_point": "We helped Tide Cleaners turn a declining store traffic problem into $1M+ in trackable revenue with a 6.81x return on ad spend — by connecting their POS data directly to their campaign performance."
+    },
+    {
+      "id": "10th_ave_nails",
+      "client": "10th Ave Nails",
+      "industry": "Nail Salon / Beauty",
+      "categories": ["beauty", "salon", "local service", "consumer"],
+      "challenge": "Needed more consistent foot traffic and phone calls from new customers in a competitive beauty market.",
+      "strategy": "Targeted local digital campaigns to drive calls and walk-ins. Transparent reporting showed exactly what was working.",
+      "results": {
+        "summary": "More calls and walk-ins, with transparent reporting showing exactly what was driving results."
+      },
+      "testimonial": {
+        "quote": "Townsquare has been a great partner for our salon. Their campaigns brought more calls and walk-ins, and their reporting shows exactly what's working. Nick and Townsquare Ignite are responsive, honest, and focused on results — we feel like we have a true marketing teammate.",
+        "contact": "John Truong, Owner, 10th Ave Nails"
+      },
+      "best_for_pitching": "Beauty salons, nail salons, spas — any local consumer service business wanting more phone calls and walk-ins.",
+      "talking_point": "The owner of 10th Ave Nails told us they feel like they have a true marketing teammate — not just a vendor. Our reporting shows them exactly what's working, and the campaigns brought in more calls and walk-ins consistently."
+    },
+    {
+      "id": "treasure_valley_coffee",
+      "client": "Treasure Valley Coffee, Inc.",
+      "industry": "Coffee / Specialty Food & Beverage",
+      "categories": ["food and beverage", "local business", "b2b", "consumer"],
+      "challenge": "Needed a reliable marketing partner that paid attention to detail and listened to their specific needs.",
+      "strategy": "Custom marketing approach built around their specific business goals, with attention to campaign details and authentic listening.",
+      "results": {
+        "summary": "Consistent, reliable partnership delivering productive business outcomes."
+      },
+      "testimonial": {
+        "quote": "Competent and highly motivated to foster productive outcomes for their clientele, the Townsquare team is wonderful to work with and dependable. Specifically, their attention to the details of any project and willingness to listen authentically makes project partnering an enjoyable and effective business experience. As such I can recommend their services without any reservations.",
+        "contact": "Suzanne Boyer, President, Treasure Valley Coffee, Inc."
+      },
+      "best_for_pitching": "Local businesses that have been burned by vendors who don't listen or deliver on promises.",
+      "talking_point": "Treasure Valley Coffee told us our willingness to listen authentically and attention to detail set us apart. We don't treat clients as accounts — we treat them as partners."
+    },
+    {
+      "id": "fabulously_clean",
+      "client": "Fabulously Clean",
+      "industry": "House Cleaning Services",
+      "categories": ["home services", "cleaning", "consumer", "local service"],
+      "challenge": "Needed a responsive marketing partner that could deliver fresh, creative campaigns and stay on top of results.",
+      "strategy": "Ongoing partnership with monthly review meetings, regular creative refresh, and responsive account management.",
+      "results": {
+        "summary": "Long-term partnership with productive monthly meetings, consistent creative ideas, and quick responsiveness."
+      },
+      "testimonial": {
+        "quote": "It's truly been a pleasure working with Nick, Jason, and Ignite over the years. Our monthly meetings are always productive as we dive into the numbers and review ads together. They're consistently quick to respond and never short on fresh, creative ideas to help me elevate my content.",
+        "contact": "Joanne Williams, CEO/Owner, Fabulously Clean"
+      },
+      "best_for_pitching": "Home services businesses that have had bad experiences with unresponsive agencies or stale campaigns.",
+      "talking_point": "Fabulously Clean has been with us for years. Their CEO told us we're never short on fresh ideas — and our monthly meetings where we review the numbers together have become a key part of how they run their business."
+    },
+    {
+      "id": "pro_tec_restoration",
+      "client": "Pro-Tec Restoration",
+      "industry": "Property Restoration / Damage Repair",
+      "categories": ["home services", "restoration", "emergency services", "contractor"],
+      "challenge": "Needed industry-specific marketing that understood their category's unique targeting requirements.",
+      "strategy": "Built a customized marketing program around their specific business needs and customer profile, with highly responsive account management.",
+      "results": {
+        "summary": "A custom marketing program built around Pro-Tec's specific needs, with professional and responsive service."
+      },
+      "testimonial": {
+        "quote": "Each industry has its own unique way that it needs to be targeted, from a marketing perspective. I appreciated Nick and the Ignite team listening to my ideas, concerns, and requests and incorporating them into a plan that they felt would benefit my company the most. And I always appreciate quick, responsive customer service, and that is exactly what Nick provides. We always enjoyed his professionalism and assistance with the marketing program we built for my company. Nick is truly one of the good guys in this field.",
+        "contact": "Troy Ball, Founder/Owner, Pro-Tec Restoration"
+      },
+      "best_for_pitching": "Specialty contractors, restoration companies, or any trade business that needs category-specific marketing expertise.",
+      "talking_point": "The owner of Pro-Tec Restoration told us that we really listened — and incorporated his specific ideas into the plan rather than pushing a standard package. That's how we operate."
+    },
+    {
+      "id": "americool_hvac",
+      "client": "Americool Heating & Cooling, LLC",
+      "industry": "HVAC / Heating and Cooling",
+      "categories": ["home services", "hvac", "contractor", "seasonal"],
+      "challenge": "Needed better online visibility and more targeted marketing that understood their specific HVAC customer base.",
+      "strategy": "Tailored digital marketing campaigns with local SEO, targeted to their specific audience. Focused on budget efficiency and growing their community reach.",
+      "results": {
+        "summary": "Increased online visibility, higher conversion rates, expanded customer base and community reach."
+      },
+      "testimonial": {
+        "quote": "Working with Townsquare Ignite has been a game-changer for our HVAC business. Their team really understands our target audience and creates tailored marketing campaigns that resonate. With their expertise in digital marketing and local SEO, we've seen increased online visibility and higher conversion rates. Their hands-on approach and commitment to results and especially our budget have helped us grow our customer base and expand our reach in the community.",
+        "contact": "Angela Sudakow, Office Manager, Americool Heating & Cooling, LLC"
+      },
+      "best_for_pitching": "HVAC, plumbing, electrical, and other home services businesses looking to grow local visibility and customer base.",
+      "talking_point": "Americool called working with us a game-changer — specifically because we understood their target audience and tailored campaigns that actually resonated, while staying mindful of their budget."
+    },
+    {
+      "id": "christian_brothers_auto",
+      "client": "Christian Brothers Automotive",
+      "industry": "Automotive Repair",
+      "categories": ["automotive", "auto repair", "franchise", "local service"],
+      "challenge": "Needed measurable marketing results that were easy to see and report on, plus video content that actually reached local customers.",
+      "strategy": "Measurable digital campaigns with video content distribution across Townsquare platforms, with clear and trackable results.",
+      "results": {
+        "summary": "Great and measurable results, video content with real reach — people actually see it."
+      },
+      "testimonial": {
+        "quote": "Been working with Townsquare for a couple years now — we are super happy with them; the results are great and measurable! Also, Nick, Jason, and Townsquare Ignite take great care of us and are very responsive. I love the videos and what's more — people see them! Great to have Townsquare as part of our marketing efforts!",
+        "contact": "Brett Clancy, President/Owner, Christian Brothers Automotive - North Meridian & Star"
+      },
+      "best_for_pitching": "Auto repair shops, dealerships, or any business that wants measurable results and video advertising that actually reaches people.",
+      "talking_point": "Christian Brothers Automotive has been with us for years — and their owner specifically called out that the results are great AND measurable. They love our video campaigns because, as they put it, 'people actually see them.'"
+    },
+    {
+      "id": "long_arm_mechanics",
+      "client": "Long Arm Mechanics",
+      "industry": "Auto Repair / Community-Focused Business",
+      "categories": ["automotive", "community", "local service"],
+      "challenge": "Needed marketing that aligned with their community values — measurable, valuable, and meaningful.",
+      "strategy": "Collaborative partnership with campaigns that connected business performance to community impact.",
+      "results": {
+        "summary": "Measurable, valuable results that aligned with the business's community values."
+      },
+      "testimonial": {
+        "quote": "Working with Nick and the Townsquare Ignite team has been a great experience. We've collaborated on a few projects together and each time has been beneficial for all involved, including the communities that we serve. It's clear to me that their focus is on doing great work while making it measurable, valuable, and fun. All of which aligns well with our values. I look forward to working with Nick and Townsquare again.",
+        "contact": "Levon Arnold, Owner & Founder, Long Arm Mechanics & Green Light Outreach Program"
+      },
+      "best_for_pitching": "Community-oriented businesses or those that care about both performance AND values-alignment.",
+      "talking_point": "Long Arm Mechanics told us our focus on making work measurable, valuable, and fun aligns with their values. That's not just a great compliment — it's how we approach every client relationship."
+    }
+  ],
+
+  "quick_reference_by_category": {
+    "home_services": ["pro_tec_restoration", "americool_hvac", "fabulously_clean"],
+    "retail_consumer": ["tide_cleaners", "10th_ave_nails"],
+    "automotive": ["christian_brothers_auto", "long_arm_mechanics"],
+    "food_beverage": ["treasure_valley_coffee"],
+    "beauty_salon": ["10th_ave_nails"],
+    "high_roas_proof": ["tide_cleaners"],
+    "responsive_service": ["pro_tec_restoration", "fabulously_clean", "christian_brothers_auto"],
+    "measurable_results": ["tide_cleaners", "christian_brothers_auto", "long_arm_mechanics"]
+  }
+}

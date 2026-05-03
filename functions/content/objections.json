@@ -1,0 +1,95 @@
+{
+  "_source": "TSU Fast Track ADVISE, Handling Objections (Buckets), TSI Day 2",
+  "_description": "Objection handling framework and response scripts for TSI sellers",
+
+  "handling_principles": {
+    "name": "CSS Objection Handling Method",
+    "steps": [
+      "Don't avoid — anticipate objections and lean into them",
+      "Anticipate and listen — let them finish, don't interrupt",
+      "Get them talking — ask a clarifying question to understand what's really behind the objection",
+      "Lead with empathy — acknowledge their concern before addressing it",
+      "Address — provide a direct, confident response focused on their business outcome"
+    ],
+    "key_mindset": "An objection is not a rejection — it's a request for more information or reassurance. The rep who handles objections well wins more often than the rep who avoids them."
+  },
+
+  "common_objections": [
+    {
+      "objection": "I already tried digital advertising and it didn't work.",
+      "category": "Past experience",
+      "empathy": "I hear that a lot, and honestly it's a fair concern. Bad experiences with digital are common — especially when the campaign wasn't tied to a specific business goal.",
+      "overcome": "What typically goes wrong is that campaigns run without a clear success signal — so there's no way to know what to optimize. What we do differently is start with what you're trying to achieve and build the campaign around that. Can I ask — what did you run and what were you hoping to see?",
+      "agreement": "If I could show you a campaign structured around a specific goal — with reporting that tells you exactly what's working — would that be worth a conversation?"
+    },
+    {
+      "objection": "I don't have a budget for advertising right now.",
+      "category": "Budget",
+      "empathy": "That's fair — timing matters, and I wouldn't want to push something that doesn't make sense right now.",
+      "overcome": "A lot of business owners feel that way until we run the math on what one new customer is worth in their category. For businesses like yours, even a modest campaign often pays for itself with one or two new clients. It's worth at least knowing the numbers.",
+      "agreement": "Would you be open to a 20-minute conversation where I show you what other businesses in [category] have spent and what they got back? No commitment — just good information."
+    },
+    {
+      "objection": "I get all my business from referrals.",
+      "category": "Don't see the need",
+      "empathy": "Referrals are great — that means your customers love you, which is the hardest part. That's a real advantage.",
+      "overcome": "The challenge with referral-only businesses is that you're dependent on a network that's finite and unpredictable. There's a whole audience in your market actively searching for exactly what you do who never hears your name. Digital lets you capture that demand without replacing what's already working.",
+      "agreement": "What would it mean for your business if you could add even 10-15% more new customers on top of your existing referral base?"
+    },
+    {
+      "objection": "I'm too busy to deal with this right now.",
+      "category": "Timing",
+      "empathy": "Completely understand — busy is a good problem in this business.",
+      "overcome": "That's exactly why I want to keep this to 20 minutes and make it as turnkey as possible on your end. You tell us the goal, we build the campaign and manage it — you get the reporting without the work.",
+      "agreement": "What if we set something for [specific day] — I'll do all the legwork ahead of time and come in with a specific idea. If it doesn't make sense, we'll part as friends."
+    },
+    {
+      "objection": "I already work with [competitor / Google / Facebook directly].",
+      "category": "Already have someone",
+      "empathy": "That makes sense — a lot of businesses in your category use those platforms. I'm glad you're investing in digital.",
+      "overcome": "What I hear most often from businesses that run those on their own is that it's hard to know if it's really working — clicks and impressions are hard to connect to actual customers walking in or calling. What we add is a full-funnel strategy that ties ad spend to real business outcomes, and we bring local market knowledge those platforms can't replicate.",
+      "agreement": "Would you be open to a quick comparison? Just 20 minutes — let's look at what you're running and see if there's anything we could add or improve."
+    },
+    {
+      "objection": "I need to think about it / talk to my partner.",
+      "category": "Stall",
+      "empathy": "Of course — decisions like this are worth thinking through, especially if there's someone else involved.",
+      "overcome": "I want to make sure I've given you everything you need to have that conversation. Can I ask — is there a specific part of this you're unsure about? Sometimes that's the piece I can address right now.",
+      "agreement": "Would it make sense to get both of you together for 20 minutes so you can both ask questions at the same time and make a decision with complete information?"
+    },
+    {
+      "objection": "Your prices are too high.",
+      "category": "Price",
+      "empathy": "I hear you — and I want to make sure we're talking about an investment that actually makes sense for your business.",
+      "overcome": "Let's put the price in context. In your category, a single new customer is typically worth [industry LTV]. If this campaign brought you just [X] new customers over the course of a year, the math works significantly in your favor. The question isn't really price — it's whether the return justifies the spend.",
+      "agreement": "Can we spend a few minutes looking at your numbers and seeing what the breakeven actually looks like? That usually changes the conversation."
+    },
+    {
+      "objection": "I don't believe advertising works for my type of business.",
+      "category": "Skepticism",
+      "empathy": "That's honest, and I respect it. A lot of business owners feel that way — especially if the category tends to rely on word of mouth or reputation.",
+      "overcome": "The good news is I can show you what's actually worked for businesses in your exact category — with real numbers. This isn't hypothetical. Would a couple of specific examples help?",
+      "agreement": "If I could show you a case study from a business very similar to yours — same category, similar size, similar market — would that be worth 20 minutes?"
+    }
+  ],
+
+  "sem_specific_objections": [
+    {
+      "objection": "I can just run Google Ads myself.",
+      "response": "A lot of business owners start there. The challenge is that Google Ads requires constant management — keyword bids, negative keywords, quality scores, landing page alignment. Without that, spend leaks fast. We manage all of that and add call tracking so you can see exactly what campaigns are driving phone calls."
+    },
+    {
+      "objection": "My SEO is good, I don't need paid search.",
+      "response": "SEO is great for long-term visibility, but it takes time and doesn't capture urgent search intent — people searching right now for exactly what you offer. SEM captures that immediate demand and is measurable to the phone call or form fill."
+    }
+  ],
+
+  "objection_buckets": [
+    "Past experience with digital advertising",
+    "Budget / timing / not ready",
+    "Already satisfied / not looking",
+    "Skepticism about results / ROI",
+    "Needs to think / involve others",
+    "Price / value uncertainty"
+  ]
+}

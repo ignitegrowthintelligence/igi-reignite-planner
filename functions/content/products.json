@@ -1,0 +1,1118 @@
+{
+  "_source": "IGNITE PRODUCTS deck, Goals/Signals/AMPED Solutions Deck, Townsquare Local Marketing Strategies",
+  "_description": "Complete Townsquare Ignite product suite — all products organized by category with positioning, use cases, and selling language",
+
+  "search_products": [
+    {
+      "id": "sem",
+      "name": "Search Engine Marketing (SEM)",
+      "also_known_as": "Paid Search / Google Ads",
+      "funnel_stage": "Conversion",
+      "goal": "Capture active, in-market demand from people searching right now",
+      "positioning": "SEM puts your business in front of people who are actively searching for exactly what you offer, right at the moment they're ready to buy.",
+      "best_for": [
+        "High-intent categories: legal, medical, HVAC, auto, home services",
+        "Businesses that want measurable leads and phone calls",
+        "Categories where customers search before they buy",
+        "High lifetime customer value categories"
+      ],
+      "key_benefits": [
+        "Shows up at the exact moment someone searches for your service",
+        "Pay only when someone clicks — budget goes to interested prospects",
+        "Call tracking connects keywords to actual phone calls",
+        "Measurable ROI — from click to call to customer",
+        "Managed by experts — not a set-it-and-forget-it platform"
+      ],
+      "trigger_phrases": [
+        "I want more calls from people who are actually looking for what we do",
+        "I want to show up on Google",
+        "My competitor shows up first when people search for my service",
+        "I want leads, not just impressions"
+      ],
+      "seller_language": {
+        "use": "booked appointments, service calls, qualified leads, search visibility",
+        "avoid": "clicks, impressions, CTR, CPC (unless asked)"
+      },
+      "objection_handling": "SEM captures people who've already decided they need what you offer — the question is whether they find you or your competitor."
+    },
+    {
+      "id": "seo",
+      "name": "Search Engine Optimization (SEO)",
+      "funnel_stage": "Awareness + Conversion (long-term)",
+      "goal": "Long-term organic search visibility",
+      "positioning": "SEO builds your business's visibility in search results over time — so when people search for your category locally, your name shows up consistently without paying for every click.",
+      "best_for": [
+        "Businesses investing in long-term digital foundation",
+        "Businesses with new or under-optimized websites",
+        "Local service businesses in competitive categories",
+        "Businesses wanting to reduce dependence on paid ads over time"
+      ],
+      "key_benefits": [
+        "Builds sustainable, long-term search visibility",
+        "Complements SEM — organic results increase credibility when ads also appear",
+        "Local SEO makes you visible on Google Maps and local search results",
+        "Content strategy establishes authority in your category"
+      ],
+      "trigger_phrases": [
+        "People can't find me online",
+        "My website doesn't show up on Google",
+        "I want long-term results, not just short-term ads",
+        "I want to rank in my city for my services"
+      ],
+      "seller_language": {
+        "use": "local search rankings, organic visibility, Google Maps presence, long-term digital foundation",
+        "avoid": "backlinks, domain authority, meta tags (unless technical audience)"
+      }
+    },
+    {
+      "id": "demand_gen",
+      "name": "Demand Gen",
+      "also_known_as": "Google Demand Generation",
+      "funnel_stage": "Awareness + Interest",
+      "goal": "Reach potential customers before they start searching — build demand upstream",
+      "positioning": "Demand Gen places your brand across Google's visually engaging surfaces — YouTube, Gmail, Discover — connecting with users as they explore content that matches their interests, before they ever search.",
+      "best_for": [
+        "Businesses wanting to build awareness before purchase intent forms",
+        "Brands with strong visual or video creative",
+        "Complement to SEM for full-funnel Google coverage",
+        "Businesses targeting specific audience signals"
+      ],
+      "key_benefits": [
+        "Reaches people on YouTube, Gmail, and Google Discover simultaneously",
+        "Uses Google's AI-driven audience signals and lookalikes",
+        "High-impact creative: video and images across premium Google surfaces",
+        "Optimized toward clicks, conversions, or ROAS"
+      ],
+      "trigger_phrases": [
+        "I want to build awareness before people start searching",
+        "I want to be on YouTube and Google at the same time",
+        "I want smarter Google targeting beyond just search ads"
+      ]
+    }
+  ],
+
+  "ai_programmatic_products": [
+    {
+      "id": "spark_ai",
+      "name": "SPARK AI",
+      "also_known_as": "AI-powered programmatic advertising",
+      "funnel_stage": "Awareness + Interest + Conversion",
+      "goal": "Reach the right audience across digital channels with AI-driven targeting and optimization",
+      "positioning": "SPARK AI uses artificial intelligence to find and reach your most likely customers across the web — constantly learning and optimizing across Google Search, Google Maps, Gmail, YouTube, and the Google Display Network.",
+      "best_for": [
+        "Businesses that want smart, automated digital targeting",
+        "Businesses with a defined customer profile wanting to reach more like their best customers",
+        "Businesses looking to expand beyond search and social",
+        "Multi-platform reach with single campaign management"
+      ],
+      "key_benefits": [
+        "AI continuously optimizes who sees your ads based on real performance data",
+        "Reaches prospects across Google Search, Google Maps, Gmail, YouTube, and Display Network simultaneously",
+        "Campaigns learn over time — get smarter the longer they run",
+        "Reduces wasted spend by targeting high-probability audiences",
+        "Streamlined campaign reporting across all touchpoints"
+      ],
+      "trigger_phrases": [
+        "I want to reach more of my target customer",
+        "I feel like my ads are going to the wrong people",
+        "I want smarter targeting, not just more impressions",
+        "I want to be on Google and YouTube without managing separate campaigns"
+      ]
+    },
+    {
+      "id": "targeted_display_video",
+      "name": "Targeted Display & Video",
+      "also_known_as": "Programmatic Display",
+      "funnel_stage": "Awareness + Interest",
+      "goal": "Surround target audience with brand across websites, apps, and games",
+      "positioning": "Place your brand on websites, apps, and games — reaching the right people at the right time based on their demographics, interests, browsing behavior, and location.",
+      "best_for": [
+        "Businesses building broad local awareness",
+        "Businesses wanting to reach audiences by interest or behavior",
+        "Complement to search for full-funnel coverage",
+        "Businesses that want multiple audience targeting methods"
+      ],
+      "key_benefits": [
+        "Multiple targeting methods: demographics, interests, content adjacency, retargeting, location",
+        "Cross-platform delivery via display ads or pre-roll video",
+        "Surrounds target audience wherever they spend time online",
+        "Cost-effective reach vs. premium placements"
+      ],
+      "trigger_phrases": [
+        "I want my ads to follow people around the web",
+        "I want to reach my audience everywhere they go online",
+        "I want to build awareness beyond just search and social"
+      ]
+    },
+    {
+      "id": "retargeting",
+      "name": "Retargeting",
+      "funnel_stage": "Intent + Conversion",
+      "goal": "Re-engage people who have already visited your website",
+      "positioning": "Stay in front of people who've already shown interest in your business — delivering follow-up ads that bring them back when they're ready to decide.",
+      "best_for": [
+        "Businesses with website traffic that isn't converting",
+        "Higher-consideration purchases where customers research before buying",
+        "Businesses with multiple products or services to cross-sell",
+        "Complement to any awareness campaign"
+      ],
+      "key_benefits": [
+        "Reaches people who've already expressed interest — higher conversion probability",
+        "Keeps your brand top-of-mind during the research and decision phase",
+        "Cross-platform delivery via display ads or pre-roll video",
+        "Highly efficient spend — only reaches warm audiences"
+      ],
+      "trigger_phrases": [
+        "People visit my website but don't call or buy",
+        "I want to follow up with people who've looked at us online",
+        "I want to stay in front of prospects after they leave my site"
+      ]
+    },
+    {
+      "id": "crm_matching",
+      "name": "CRM Matching / Look-Alike Modeling",
+      "funnel_stage": "Awareness + Conversion",
+      "goal": "Use existing customer data to re-engage known customers and find new ones like them",
+      "positioning": "Upload your customer database to reach current customers across digital channels, or build a look-alike audience of new prospects who share the same profile as your best customers.",
+      "best_for": [
+        "Businesses with an existing customer list or CRM data",
+        "Businesses wanting to re-engage lapsed customers",
+        "Franchise or multi-location businesses with customer data",
+        "Businesses wanting to scale beyond their current customer base"
+      ],
+      "key_benefits": [
+        "Target your actual customers across digital platforms with precision",
+        "Build look-alike audiences using Townsquare's 1st-party and 3rd-party data",
+        "Win back lapsed customers with tailored messaging",
+        "Match-back reporting can connect campaigns to actual sales"
+      ],
+      "trigger_phrases": [
+        "I want to re-engage past customers",
+        "I have a customer list — can I use it for advertising?",
+        "I want to find more customers who look like my best ones"
+      ]
+    },
+    {
+      "id": "native_advertising",
+      "name": "Native Advertising",
+      "funnel_stage": "Awareness + Interest",
+      "goal": "Place branded content naturally within publisher pages to build trust and drive engagement",
+      "positioning": "Integrate your message directly into local and national publisher sites with placements that mirror the editorial content around them — building trust by association and driving readers to your content.",
+      "best_for": [
+        "Businesses with a content story to tell (home services, health, finance)",
+        "Businesses wanting to educate before the sale",
+        "Complement to display for higher-engagement reach",
+        "Categories where trust is a key purchasing factor"
+      ],
+      "key_benefits": [
+        "Seamless integration — matches publisher look and feel, increasing credibility",
+        "Higher engagement than standard display ads",
+        "Drives consumers to branded content that builds trust",
+        "Cross-platform delivery via video or display"
+      ],
+      "trigger_phrases": [
+        "I want my advertising to not look like advertising",
+        "I want to tell the story of my business",
+        "I want something that builds trust, not just impressions"
+      ]
+    },
+    {
+      "id": "social_display",
+      "name": "Social Display",
+      "funnel_stage": "Awareness + Interest",
+      "goal": "Extend social content reach beyond Facebook to display networks",
+      "positioning": "Deliver your social posts as standard display ads across the web — so consumers see your social content on websites outside of Facebook, reaching targeted audiences wherever they browse.",
+      "best_for": [
+        "Businesses with strong social creative they want to extend",
+        "Complement to social campaigns for broader reach",
+        "Businesses wanting higher-engagement display alternatives"
+      ],
+      "key_benefits": [
+        "Social posts appear on websites outside Facebook — unusual format that grabs attention",
+        "Higher engagement than standard display ads",
+        "Targeted reach by demographics or interests outside the social platform",
+        "Leverages existing social creative — no additional production needed"
+      ],
+      "trigger_phrases": [
+        "I want my Facebook content to reach people beyond Facebook",
+        "I want my social posts to work harder"
+      ]
+    }
+  ],
+
+  "social_media_products": [
+    {
+      "id": "facebook_social",
+      "name": "Facebook / Instagram Marketing",
+      "funnel_stage": "Awareness + Interest + Conversion",
+      "goal": "Awareness, interest, and conversion through social targeting",
+      "positioning": "Facebook and Instagram advertising lets you reach highly specific local audiences based on demographics, interests, and behaviors — building awareness and driving action where your customers are already spending time.",
+      "best_for": [
+        "Businesses targeting specific demographics (age, income, family status, interests)",
+        "Businesses running promotions, events, or seasonal offers",
+        "Beauty, fitness, restaurants, retail — visually-driven categories",
+        "Businesses that want retargeting (reaching people who've visited their site)"
+      ],
+      "key_benefits": [
+        "Precise targeting — reach people by age, location, interests, and behaviors",
+        "Visual storytelling — video and image ads that stop the scroll",
+        "68% of U.S. adults use Facebook daily — massive local reach",
+        "Measurable KPIs: awareness, engagement, video views, site traffic"
+      ],
+      "trigger_phrases": [
+        "I want to get in front of a specific audience",
+        "I want to promote a special offer",
+        "My customers use Facebook and Instagram",
+        "I want video ads that people actually see"
+      ],
+      "seller_language": {
+        "use": "targeted reach, audience matching, social presence, video storytelling",
+        "avoid": "engagement rate, CPM, algorithm (unless asked)"
+      }
+    },
+    {
+      "id": "facebook_lead_gen",
+      "name": "Facebook / Instagram Lead Gen",
+      "funnel_stage": "Conversion",
+      "goal": "Capture real-time leads directly from Facebook and Instagram",
+      "positioning": "Capture leads directly inside Facebook and Instagram — prospects fill out a form without ever leaving the platform, giving you real customer information for immediate follow-up.",
+      "best_for": [
+        "Service businesses that need lead capture (home services, med spa, financial)",
+        "Businesses without a strong landing page or website",
+        "High-intent categories where immediate follow-up matters",
+        "Businesses running promotions or consultations"
+      ],
+      "key_benefits": [
+        "No landing page required — lead forms built inside Facebook",
+        "Real-time lead capture with immediate prospect information",
+        "Pre-filled forms lower friction for the consumer",
+        "High-intent users — connecting with people most likely to convert"
+      ],
+      "trigger_phrases": [
+        "I need more leads from social media",
+        "My website doesn't convert well",
+        "I want to capture contact info directly from social"
+      ]
+    },
+    {
+      "id": "facebook_conversions",
+      "name": "Facebook / Instagram Conversions",
+      "funnel_stage": "Conversion",
+      "goal": "Drive specific conversion actions on website — purchases, form fills, bookings",
+      "positioning": "Drive significant actions on your website — purchases, form fills, appointments — by targeting social users who are ready to convert, with precision timing and messaging.",
+      "best_for": [
+        "E-commerce businesses",
+        "Service businesses with online booking",
+        "Businesses running time-sensitive offers",
+        "Complement to awareness campaigns to close the loop"
+      ],
+      "key_benefits": [
+        "Targets users at the moment they're ready to take action",
+        "Precision targeting — right audience, right time, right offer",
+        "Drives purchases, form fills, appointments directly",
+        "Real-time relevance — delivers timely offers that prompt action"
+      ],
+      "trigger_phrases": [
+        "I want people to actually book or buy, not just see my ad",
+        "I want my social ads to drive real conversions"
+      ]
+    },
+    {
+      "id": "tiktok",
+      "name": "TikTok Advertising",
+      "funnel_stage": "Awareness + Interest",
+      "goal": "Reach a younger, engaged audience through creative video content",
+      "positioning": "Connect with an entertained, engaged audience on the fastest-growing video platform — using creative, authentic video content to build brand visibility and drive interaction with younger consumers.",
+      "best_for": [
+        "Businesses targeting 18-35 demographics",
+        "Visually compelling categories: food, beauty, fitness, entertainment",
+        "Businesses with strong video creative or brand personality",
+        "Brands wanting to reach audiences through influencer-style content"
+      ],
+      "key_benefits": [
+        "Highly engaged audience — TikTok is used as a self-learning and discovery tool",
+        "Target by interests and the influencers audiences follow",
+        "High interaction rates vs. other platforms",
+        "Creative formats that feel native, not intrusive"
+      ],
+      "trigger_phrases": [
+        "I want to reach younger customers",
+        "I want to be on TikTok",
+        "I want fun, engaging video content"
+      ]
+    },
+    {
+      "id": "linkedin",
+      "name": "LinkedIn Advertising",
+      "funnel_stage": "Awareness + Conversion",
+      "goal": "Reach business professionals and decision-makers for B2B or professional services",
+      "positioning": "LinkedIn's deep professional data lets you target decision-makers, business owners, and professionals by title, industry, company size, and seniority — ideal for B2B or professional service businesses.",
+      "best_for": [
+        "B2B businesses selling to other businesses",
+        "Professional services: legal, financial, consulting, staffing",
+        "Businesses recruiting specific professional profiles",
+        "Higher-value sales requiring decision-maker access"
+      ],
+      "key_benefits": [
+        "Target by job title, industry, company size, and seniority",
+        "Direct access to decision-makers who rarely see other ads",
+        "Professional context — ads appear in a credible business environment",
+        "Cross-platform delivery via display or video"
+      ],
+      "trigger_phrases": [
+        "My customers are business owners or executives",
+        "I'm selling to other businesses",
+        "I want to reach decision-makers"
+      ]
+    },
+    {
+      "id": "nextdoor",
+      "name": "Nextdoor Advertising",
+      "funnel_stage": "Awareness + Interest",
+      "goal": "Build neighborhood-level brand presence and local community trust",
+      "positioning": "Reach hyper-local audiences on Nextdoor — a community platform where neighbors share recommendations and local service providers — building authentic trust in your immediate market area.",
+      "best_for": [
+        "Local service businesses: home services, cleaning, landscaping",
+        "Businesses that thrive on community reputation and referrals",
+        "Businesses targeting specific neighborhoods or zip codes",
+        "New businesses establishing local presence"
+      ],
+      "key_benefits": [
+        "Authentic community environment — neighbors actively sharing recommendations",
+        "High-trust context — community-driven content builds brand rapport",
+        "Hyper-local targeting — neighborhood and zip-code level precision",
+        "Reaches homeowners in a purchase-intent mindset"
+      ],
+      "trigger_phrases": [
+        "I get most of my business from word of mouth in my neighborhood",
+        "I want to build my reputation locally",
+        "I want to reach homeowners in specific neighborhoods"
+      ]
+    },
+    {
+      "id": "pinterest",
+      "name": "Pinterest Advertising",
+      "funnel_stage": "Awareness + Interest",
+      "goal": "Reach audiences actively planning projects and purchases",
+      "positioning": "Pinterest reaches users at the moment they're planning — home renovations, weddings, events, seasonal purchases — associating your brand with their creative and buying process before they've decided where to buy.",
+      "best_for": [
+        "Home improvement, interior design, renovation",
+        "Weddings, events, catering",
+        "Fashion, beauty, retail",
+        "Seasonal businesses where planning starts early"
+      ],
+      "key_benefits": [
+        "85% of weekly U.S. Pinners use Pinterest when planning new projects or purchases",
+        "Reaches high-intent planners before the purchase decision is made",
+        "Visual format — ideal for products and services with strong visual appeal",
+        "Less competitive than Facebook/Instagram in some categories"
+      ],
+      "trigger_phrases": [
+        "My customers plan ahead before buying",
+        "I'm in a category where people do a lot of research",
+        "I want to reach people who are actively planning a project"
+      ]
+    },
+    {
+      "id": "snapchat",
+      "name": "Snapchat Advertising",
+      "funnel_stage": "Awareness + Interest",
+      "goal": "Reach a younger, mobile-first audience with playful, engaging content",
+      "positioning": "Connect with a younger, mobile-savvy audience on Snapchat using playful, immersive ad formats that fit naturally into how Gen Z and younger Millennials communicate.",
+      "best_for": [
+        "Businesses targeting 13-30 demographics",
+        "Entertainment, food, beauty, fashion categories",
+        "Businesses with creative, visually engaging content"
+      ],
+      "key_benefits": [
+        "Unique reach among 13-30 demographics not easily accessible elsewhere",
+        "Immersive, full-screen ad formats with high engagement",
+        "Mobile-first platform — reaches users throughout the day"
+      ],
+      "trigger_phrases": [
+        "I want to reach teens and young adults",
+        "I'm in a category that skews young"
+      ]
+    },
+    {
+      "id": "twitter_x",
+      "name": "X (Twitter) Advertising",
+      "funnel_stage": "Awareness + Interest",
+      "goal": "Reach active, opinionated users engaged in real-time conversations",
+      "positioning": "Be part of every trending conversation — X advertising captures active, engaged users discussing current events, news, and their interests in real time.",
+      "best_for": [
+        "News, media, and current events-adjacent businesses",
+        "Political or advocacy campaigns",
+        "Businesses targeting engaged, opinionated audiences",
+        "Real-time offers tied to events or news moments"
+      ],
+      "key_benefits": [
+        "Real-time buzz — reach users engaged with current events",
+        "Active audience that tends toward high engagement",
+        "Unique targeting around interests, keywords, and trending topics"
+      ],
+      "trigger_phrases": [
+        "I want to reach people who follow news and current events",
+        "I have something timely to promote"
+      ]
+    }
+  ],
+
+  "streaming_tv_products": [
+    {
+      "id": "stv_general",
+      "name": "Streaming Television (STV)",
+      "also_known_as": "Connected TV / CTV / OTT",
+      "funnel_stage": "Awareness",
+      "goal": "Deliver non-skippable video ads to cord-cutters on streaming platforms",
+      "positioning": "Reach consumers who've cut the cord — watching on Sling, Pluto, Tubi, Roku, Amazon Fire, and more — with :15 and :30 non-skippable video ads. 87% of U.S. households now have a Connected TV device.",
+      "best_for": [
+        "Businesses that used to advertise on cable TV",
+        "Categories where a commercial-style message builds trust",
+        "Businesses wanting to reach cord-cutters where cable TV can't",
+        "Any business that can tell their story in :15 or :30 seconds"
+      ],
+      "key_benefits": [
+        "Non-skippable ads — viewers must watch your message before their content",
+        "Precise targeting: demographics, interests, behaviors, or channel type (news, sports, etc.)",
+        "87% of U.S. households have a Connected TV device",
+        "Reaches the 46M+ households who have cut the cord"
+      ],
+      "trigger_phrases": [
+        "I want to be on TV but cable is too expensive",
+        "My customers watch streaming services, not cable",
+        "I want to run video commercials without the traditional TV price tag"
+      ]
+    },
+    {
+      "id": "audience_targeted_stv",
+      "name": "Audience Targeted STV",
+      "funnel_stage": "Consideration",
+      "goal": "Deliver STV ads to specific audience segments — not just geographic zones",
+      "positioning": "Go beyond geography — deliver STV commercials specifically to in-market audiences defined by age, gender, household income, interests, and hundreds of behavioral signals.",
+      "best_for": [
+        "Any budget level — accessible entry point to STV",
+        "Businesses wanting audience precision over broad reach",
+        "Complement to channel-targeted STV"
+      ],
+      "key_benefits": [
+        "In-market targeting, age, gender, HHI, and many more data points",
+        "Geo-targeted at state, DMA, or zip code level",
+        "Custom frequency capping — control how often consumers see your ad",
+        "Great consideration-stage product with flexible targeting"
+      ],
+      "trigger_phrases": [
+        "I don't want to pay for people who will never be my customer",
+        "I want smart audience targeting on streaming TV"
+      ]
+    },
+    {
+      "id": "stv_retargeted_display",
+      "name": "STV Retargeted Display",
+      "funnel_stage": "Intent",
+      "goal": "Follow up STV-exposed households with display ads on their personal devices",
+      "positioning": "Households that saw your streaming TV commercial then receive follow-up display ads on their phones, tablets, and computers — reinforcing your message across screens and moving them toward action.",
+      "best_for": [
+        "Businesses running STV campaigns wanting to extend impact",
+        "Higher-consideration categories where multiple touchpoints matter",
+        "Full-funnel campaigns combining TV awareness with direct response"
+      ],
+      "key_benefits": [
+        "Extends STV reach from the TV to every personal device in the household",
+        "Reinforced frequency and recall — more touchpoints strengthen brand recognition",
+        "Personalized display ads served to households already exposed to your TV creative",
+        "Moves audiences from awareness to consideration to action"
+      ],
+      "trigger_phrases": [
+        "I want my TV ads to work harder",
+        "I want to follow up with people who saw my streaming ads"
+      ]
+    },
+    {
+      "id": "hulu",
+      "name": "Hulu Advertising",
+      "funnel_stage": "Awareness",
+      "goal": "Premium STV placement on Hulu with extensive targeting options",
+      "positioning": "Access Hulu's massive, premium streaming audience with detailed targeting — reaching subscribers across a diverse library of on-demand and live content in a brand-safe environment.",
+      "best_for": [
+        "Businesses wanting brand-safe, premium streaming placement",
+        "Broad audience reach with demographic refinement",
+        "Complement to other STV products for extended reach"
+      ],
+      "key_benefits": [
+        "Massive reach — one of the largest streaming audiences in the U.S.",
+        "Precise targeting: geography, demographics, interests",
+        "Premium, brand-safe content environment"
+      ],
+      "trigger_phrases": [
+        "I want to advertise on Hulu",
+        "I want premium streaming TV placement"
+      ]
+    },
+    {
+      "id": "youtube_tv",
+      "name": "YouTube TV Advertising",
+      "funnel_stage": "Awareness",
+      "goal": "Reach live and on-demand YouTube TV audience — no ad-free option available",
+      "positioning": "YouTube TV currently has no ad-free subscription option — meaning your message reaches every subscriber. Deliver ads to a broad, engaged audience across live and on-demand content.",
+      "best_for": [
+        "Businesses wanting guaranteed ad exposure to all subscribers",
+        "Broad demographic reach with geographic precision",
+        "Live sports and news audiences"
+      ],
+      "key_benefits": [
+        "No ad-free tier means every subscriber sees your ad",
+        "Demographic targeting: age, parental status, HHI, and more",
+        "Geo-targeting: state, DMA, city, and zip code",
+        "Frequency capping available to manage exposure"
+      ],
+      "trigger_phrases": [
+        "I want to advertise on YouTube TV",
+        "I want to reach live TV viewers"
+      ]
+    },
+    {
+      "id": "netflix",
+      "name": "Netflix Advertising",
+      "funnel_stage": "Awareness",
+      "goal": "Stand out with limited inventory on Netflix's massive audience",
+      "positioning": "Netflix's limited advertising inventory means less competition and more attention — reaching a highly engaged audience that actively discovers and watches content through AI-driven recommendations.",
+      "best_for": [
+        "Businesses in large geographies wanting maximum reach",
+        "Brands wanting prestige placement",
+        "Broad awareness campaigns with limited frequency requirements"
+      ],
+      "key_benefits": [
+        "Limited ad inventory creates higher attention and less clutter",
+        "Highly engaged audience — Netflix's AI keeps people watching",
+        "Frequency capping: 3 impressions per day, 14 per week, 40 per month"
+      ],
+      "trigger_phrases": [
+        "I want to advertise on Netflix",
+        "I want prestige placement with a premium audience"
+      ]
+    },
+    {
+      "id": "live_sports",
+      "name": "Live In-Game Sports Advertising",
+      "funnel_stage": "Awareness",
+      "goal": "Reach passionate sports fans during live game broadcasts on streaming",
+      "positioning": "Sports remain the last appointment viewing experience — fans watch live and stay engaged through ads. Advertise during live professional and college game broadcasts on streaming platforms.",
+      "best_for": [
+        "Businesses targeting sports fans (male 25-54 skew for most sports)",
+        "Auto dealerships, home services, financial services, food and beverage",
+        "Businesses wanting a high-energy, brand-safe environment",
+        "Seasonal campaigns aligned with major sporting events"
+      ],
+      "key_benefits": [
+        "Sports is the last appointment viewing — highest viewer engagement vs. other content types",
+        "Fans pay closer attention to ads during live sports than on-demand content",
+        "Targeting by team, league, and multi-sport available",
+        "State and DMA geo-targeting"
+      ],
+      "trigger_phrases": [
+        "I want to reach sports fans",
+        "I want to advertise during game broadcasts",
+        "My customer is typically a sports fan"
+      ]
+    }
+  ],
+
+  "amped_local_brands": {
+    "_description": "AMPED = Townsquare's owned media advertising products using local radio station websites, apps, and social channels. These reach Townsquare's loyal local radio audience across digital touchpoints. In Townsquare markets, radio + online radio reaches 50%+ of adults weekly; with AMPED, over 70%.",
+    "headline_positioning": "AMPED lets you leverage the power of trusted local radio brands — the most visited local websites and apps in your market — to reach engaged, loyal local audiences who already know and trust these voices.",
+
+    "products": [
+      {
+        "id": "mobile_app_sponsorship",
+        "name": "Mobile App Sponsorship",
+        "also_known_as": "Station App Sponsorship",
+        "goal": "Awareness and Interest — high-impact, high-frequency ownership position",
+        "description": "Sponsor Townsquare's local radio station apps to reach the most devoted local audiences. Your brand appears as a loading screen for 7 seconds when the app opens — guaranteed first impression before any content loads.",
+        "key_features": [
+          "7-second brand ownership position on app open — before any content loads",
+          "First impression plus anchored ad unit (refreshes every 1,000 pixels of scrolling)",
+          "Reaches most engaged local audience — people who choose to listen via app"
+        ],
+        "best_for": "Businesses that want a premium, high-visibility local brand position with the most loyal radio listeners.",
+        "delivery": "Banner ads, mobile"
+      },
+      {
+        "id": "local_display",
+        "name": "Local Display",
+        "also_known_as": "Station Site Display",
+        "goal": "Awareness — reach engaged local audience on individual station site",
+        "description": "Align your message with the credibility and influence of a Townsquare radio station with digital banner ads on that station's website — reaching the local audience that comes for news, events, and music.",
+        "key_features": [
+          "Hyper-local reach on the most visited local station site in the community",
+          "Multi-platform: runs on both desktop and mobile sites",
+          "Increased recall: pairing on-air spots with digital ads boosts consumer memory"
+        ],
+        "best_for": "Businesses building brand awareness locally. Strong complement to on-air radio campaigns.",
+        "delivery": "Display ads, cross-platform"
+      },
+      {
+        "id": "local_network",
+        "name": "Local Display Network",
+        "goal": "Awareness — broad local reach across ALL Townsquare station sites in the market",
+        "description": "High-impact digital display advertising across all Townsquare radio station websites in the market simultaneously. Reach the full local audience wherever they go for news, events, and music.",
+        "key_features": [
+          "Reach across all local Townsquare station sites in the market simultaneously",
+          "Trusted environments — ads appear alongside well-known local media brands",
+          "Efficient CPM — more impressions for budget vs. programmatic alternatives",
+          "Multi-platform: desktop and mobile"
+        ],
+        "best_for": "Businesses building brand awareness across the full local market. Strong complement to SEM and social.",
+        "delivery": "Display ads, cross-platform"
+      },
+      {
+        "id": "ignite_display_network",
+        "name": "Ignite Display Network",
+        "goal": "Awareness — geo-targeted display across Townsquare local, regional, and national brands",
+        "description": "Reach consumers with geo-targeted display ads as they consume content across Townsquare's local, regional, and national brands — aligning your message with loyal audiences enjoying entertaining content.",
+        "key_features": [
+          "Massive reach across all TSQ-owned properties",
+          "Precise targeting: geography, demographics, and interests",
+          "Content adjacency: your brand appears alongside trusted editorial content"
+        ],
+        "best_for": "Businesses wanting cost-effective display reach with content association across Townsquare's owned media network.",
+        "delivery": "Display ads"
+      },
+      {
+        "id": "ignite_video_network",
+        "name": "Ignite Video Network",
+        "goal": "Awareness — video ads embedded in content across Townsquare properties",
+        "description": "Reach consumers with video embedded into articles as they consume content on Townsquare's local, regional, and national brands — high-attention in-content video placement.",
+        "key_features": [
+          "Video in-article placement — high attention context mid-content read",
+          "Massive reach across TSQ local and national content",
+          "Geographic and demographic targeting available"
+        ],
+        "best_for": "Businesses with video creative wanting high-attention video at lower cost than STV.",
+        "delivery": "Video ads, in-article"
+      },
+      {
+        "id": "first_impression_takeover",
+        "name": "First Impression Site Takeover",
+        "goal": "Awareness — maximum visibility for every single site visitor",
+        "description": "Dominate the digital space by taking over Townsquare radio station websites for EVERY user when they first land on the page — ensuring every visitor from the dedicated listener audience sees your message.",
+        "key_features": [
+          "Every first-time visitor sees your brand — not a percentage, every one",
+          "Strong brand recall — maximum visibility with the full loyal audience",
+          "High-impact display and site skin across desktop and mobile"
+        ],
+        "best_for": "Businesses with a time-sensitive message, major launch, or seasonal promotion needing maximum local visibility fast.",
+        "delivery": "Display ads and site skin — cross-platform desktop and mobile"
+      },
+      {
+        "id": "content_sponsorship",
+        "name": "Content Sponsorship",
+        "goal": "Awareness + Credibility — brand aligned with trusted local editorial content",
+        "description": "Align your brand with high-quality content by sponsoring relevant articles, videos, and other media created by Townsquare's local editorial team — positioning your brand as a content provider, building trust through association.",
+        "key_features": [
+          "Brand integration with quality, professionally curated local content",
+          "Enhanced credibility — sponsors are seen as providing valuable community content",
+          "Increased engagement — audience actively reading is highly attentive to adjacent ads"
+        ],
+        "best_for": "Businesses wanting to build credibility through local content association rather than standard advertising.",
+        "delivery": "Display ads, cross-platform"
+      },
+      {
+        "id": "sponsored_social_mentions",
+        "name": "Sponsored Social Mentions (SSM)",
+        "goal": "Awareness and Interest — authentic reach through trusted local voices",
+        "description": "Boost your brand's visibility and credibility by having it promoted by one of the most trusted resources in the community — Townsquare's local radio station brands and their DJs, the original local influencers.",
+        "key_features": [
+          "Authentic reach — leverages trust and influence of local DJs and station brands",
+          "DJs are the original local influencers — endorsements drive genuine consumer interest",
+          "Targeted — cross-platform posts targeting specific local audiences on Facebook/Instagram"
+        ],
+        "best_for": "Businesses that want to build credibility and trust quickly through local community voices. Strong for events, promotions, grand openings.",
+        "delivery": "Cross-platform via video, static image, or carousel"
+      },
+      {
+        "id": "digital_endorsements",
+        "name": "Digital Endorsements",
+        "goal": "Awareness + Credibility — immersive brand experience through DJ content",
+        "description": "A step beyond SSM — DJs and station personalities actually experience your business, products, or services and create authentic content about it. Mix of organic and paid posting for maximum reach.",
+        "key_features": [
+          "DJs experience your business firsthand — creating authentic, story-driven content",
+          "Playful, high-engagement format that separates your business from competitors",
+          "Mix of organic and paid postings to maximize local reach",
+          "Links to custom-created content on station websites"
+        ],
+        "best_for": "Restaurants, local attractions, fitness studios, or any business with an experiential component that tells well as a story.",
+        "delivery": "Cross-platform: custom content + sponsored Facebook ad linked to content"
+      },
+      {
+        "id": "listen_live",
+        "name": "Listen Live 2.0",
+        "also_known_as": "Online Radio Sponsorship",
+        "goal": "Awareness — reach at-work online radio listeners",
+        "description": "Capture the attention of online radio listeners with engaging pre-roll videos and anchored ad units — ideal for reaching a primarily at-work, captive audience who listens while working.",
+        "key_features": [
+          "Pre-roll video during commercial breaks — captures listener attention before content",
+          "1st-party data allows delivery on the best station to reach the right audience beyond just format",
+          "At-work audience — captive listeners with higher receptivity during the workday"
+        ],
+        "best_for": "B2B businesses, professional services, or any business targeting working adults during the workday.",
+        "delivery": "Pre-roll video and display ads, cross-platform"
+      },
+      {
+        "id": "studio_sponsorship",
+        "name": "360 Studio Sponsorship",
+        "goal": "Awareness + Top-of-Mind — ownership position across all station touchpoints",
+        "description": "A comprehensive sponsorship across all of a radio station's digital and on-air elements — keeping your brand top-of-mind for listeners and sending a strong competitive signal in the market.",
+        "key_features": [
+          "Brand co-association with a popular local station across all touchpoints",
+          "Frequent mentions and brand integration across digital and on-air",
+          "Top-of-mind positioning — listeners associate your brand with their favorite station"
+        ],
+        "best_for": "Established local brands wanting a dominant, differentiated position in the market. Sends a strong competitive signal.",
+        "delivery": "Integrated across digital and radio elements"
+      }
+    ]
+  },
+
+  "location_based_products": [
+    {
+      "id": "geofencing_foot_traffic",
+      "name": "Geofencing with Foot Traffic Attribution",
+      "funnel_stage": "Awareness + Interest + Conversion",
+      "goal": "Target consumers based on physical location and measure store visit lift",
+      "positioning": "Place a virtual fence around any location — competitor lots, event venues, relevant businesses, neighborhoods — deliver ads to people who enter that zone, then measure how many actually visit your store.",
+      "best_for": [
+        "Retail and brick-and-mortar businesses",
+        "Businesses wanting to target competitor locations",
+        "Auto dealerships, home improvement, restaurants",
+        "Event-driven businesses and seasonal campaigns"
+      ],
+      "key_features": [
+        "Target fence options: competitor locations, event venues, neighborhoods, relevant businesses, mixed-use spaces",
+        "Foot traffic attribution: proves which ad exposures drove actual store visits",
+        "Real-time targeting — reaches people at the moment they're in relevant locations"
+      ],
+      "key_benefits": [
+        "Conquesting: target people who visit your competitors",
+        "Closed-loop attribution — see the direct connection between ad spend and store visits",
+        "Highly relevant messaging delivered at the moment of location-based intent"
+      ],
+      "trigger_phrases": [
+        "I want to target people who go to my competitors",
+        "I want to know if my ads are actually bringing people in",
+        "I want to reach people near my store"
+      ]
+    },
+    {
+      "id": "addressable_geofencing",
+      "name": "Addressable Geofencing",
+      "funnel_stage": "Awareness + Conversion",
+      "goal": "Target specific households with personalized ads across all devices",
+      "positioning": "Deliver STV commercials, pre-roll video, or display ads to specific households by address — using curated lists from CRM data, direct mail lists, or demographic profiles for true household-level precision.",
+      "best_for": [
+        "Businesses with a customer list or direct mail database",
+        "High-value, high-consideration purchases (home services, financial, medical)",
+        "Franchise systems wanting to target known households",
+        "Businesses combining digital with direct mail"
+      ],
+      "key_features": [
+        "Household-level precision — target specific homes, not just zip codes",
+        "Works with: custom audiences, direct mail lists, CRM data, subscription lists, political databases",
+        "Delivers STV, pre-roll video, and display ads across all household devices",
+        "Foot traffic attribution available when appropriate"
+      ],
+      "trigger_phrases": [
+        "I want to target specific households",
+        "I have a direct mail list — can I use it for digital advertising?",
+        "I want to reach homeowners in specific areas"
+      ]
+    },
+    {
+      "id": "dooh",
+      "name": "Digital Out-of-Home (DOOH)",
+      "funnel_stage": "Awareness",
+      "goal": "Reach consumers in physical spaces through digital screens",
+      "positioning": "Place your brand on digital screens where people are already waiting and paying attention — gas pumps, convenience stores, bars, cafes, gyms, salons, and medical offices.",
+      "best_for": [
+        "Businesses wanting high-frequency local brand impressions",
+        "Categories relevant to the DOOH venue (health brands in gyms, food in cafes)",
+        "Businesses wanting to reach captive audiences in specific environments"
+      ],
+      "key_features": [
+        "Delivery options: gas pumps, convenience stores, bars, cafes, gyms, salons, medical offices",
+        "Captive audience — people waiting and not distracted by a phone",
+        "High-frequency local impressions at point-of-consideration"
+      ],
+      "trigger_phrases": [
+        "I want to advertise in local businesses",
+        "I want to reach people at gas stations or gyms",
+        "I want my brand visible in the community beyond online"
+      ]
+    }
+  ],
+
+  "other_channels": [
+    {
+      "id": "youtube_trueview",
+      "name": "YouTube TrueView",
+      "funnel_stage": "Awareness + Interest",
+      "goal": "Deliver skippable pre-roll video to engaged, research-mindset YouTube viewers",
+      "positioning": "Hold viewers' attention right before the video they're searching to watch — reaching a learning-mindset audience that uses YouTube to research and discover products and services.",
+      "best_for": [
+        "Businesses whose customers research extensively before buying",
+        "Categories with an educational component (home services, medical, auto)",
+        "Businesses with compelling video creative",
+        "Complement to SEM for full Google ecosystem coverage"
+      ],
+      "key_benefits": [
+        "Viewers are in a learning mindset — higher receptivity to informative messages",
+        "Pay only when targeted users watch the full :15 or :30 second ad",
+        "Skipped ads are delivered at no charge but still build brand awareness",
+        "Target by audience demographics, interests, and specific YouTube channels"
+      ],
+      "trigger_phrases": [
+        "I want to advertise on YouTube",
+        "I have a video I want people to see",
+        "My customers do a lot of research before choosing"
+      ]
+    },
+    {
+      "id": "email_marketing",
+      "name": "Email Marketing",
+      "funnel_stage": "Awareness + Conversion",
+      "goal": "Deliver messaging directly to inboxes of targeted prospects",
+      "positioning": "Deliver your offer directly to the inbox of targeted prospects in your area — reaching people who match your ideal customer profile with a personal, high-ROI channel that drives direct response.",
+      "best_for": [
+        "Businesses with a time-sensitive offer or promotion",
+        "Businesses targeting a specific demographic profile",
+        "Complement to social and display campaigns",
+        "Businesses wanting measurable direct response with match-back"
+      ],
+      "key_benefits": [
+        "Delivered directly to inbox — one of the highest-ROI digital channels",
+        "Match-back reporting available: connect email sends to actual sales",
+        "Optional add-ons: pre-targeting, retargeting, push-to-opener, direct mail",
+        "Precise demographic targeting for the audience list"
+      ],
+      "trigger_phrases": [
+        "I want to send an offer directly to potential customers",
+        "I want to reach people by email",
+        "I have a promotion I want to get in front of the right people"
+      ]
+    },
+    {
+      "id": "programmatic_audio",
+      "name": "Programmatic Audio",
+      "also_known_as": "Spotify / Podcast Advertising",
+      "funnel_stage": "Awareness",
+      "goal": "Reach highly engaged audio streaming audiences with non-skippable audio ads",
+      "positioning": "Reach a highly engaged audience with non-skippable audio ads on streaming platforms like Spotify — delivered alongside music, podcasts, and premium audio content.",
+      "best_for": [
+        "Businesses wanting audio brand awareness beyond traditional radio",
+        "Complement to on-air radio campaigns",
+        "Businesses targeting commuters, exercisers, or at-work listeners",
+        "Categories with strong audio listening demographics"
+      ],
+      "key_benefits": [
+        "Non-skippable — listeners hear your full message",
+        "Runs alongside premium content: podcasts and music streaming",
+        "Mobile-first delivery to a highly engaged, attentive audience",
+        "Reaches audiences who have migrated from AM/FM to streaming audio"
+      ],
+      "trigger_phrases": [
+        "I want to be on Spotify",
+        "I want to reach podcast listeners",
+        "I want audio advertising beyond traditional radio"
+      ]
+    },
+    {
+      "id": "add_to_wallet",
+      "name": "Add to Wallet",
+      "also_known_as": "Digital Wallet Offers / Apple & Google Wallet",
+      "funnel_stage": "Conversion + Retention",
+      "goal": "Convert promotions into digital wallet passes that drive repeat visits and measurable redemptions",
+      "positioning": "Turn your promotions into digital wallet offers that customers save to Apple or Google Wallet — with real-time push notifications, easy redemption, and in-depth reporting on actual coupon usage.",
+      "best_for": [
+        "Retail, restaurant, beauty, and service businesses running promotions",
+        "Businesses wanting to drive repeat visits and loyalty",
+        "Businesses replacing paper coupon programs with digital tracking",
+        "Franchise systems wanting measurable promotion performance"
+      ],
+      "key_benefits": [
+        "Managed redemptions with full in-app push communication to customers",
+        "Redemption-level reporting — know exactly which offers drove results",
+        "Drives repeat purchases and long-term loyalty",
+        "Versatile delivery: most digital platforms, QR codes, and direct links"
+      ],
+      "trigger_phrases": [
+        "I want to run a digital coupon program",
+        "I want to track how many people actually redeem my offers",
+        "I want to build customer loyalty and repeat visits"
+      ]
+    },
+    {
+      "id": "direct_match",
+      "name": "Direct Match",
+      "also_known_as": "Direct Mail + Digital Integration",
+      "funnel_stage": "Awareness + Conversion",
+      "goal": "Reach homeowners with direct mail and extend the message across all digital platforms",
+      "positioning": "Combine the tangibility of direct mail with the reach of digital — targeting households by intent, home value, and demographics, then following up digitally across all screens with closed-loop attribution.",
+      "best_for": [
+        "Home services businesses: HVAC, roofing, plumbing, landscaping",
+        "Businesses wanting to reach homeowners with high precision",
+        "Businesses combining traditional mail with digital integration",
+        "Franchise and multi-location businesses that need scale"
+      ],
+      "key_benefits": [
+        "Household precision: target by intent, home value, build year, HHI, and more",
+        "Digital integration: extends direct mail messaging across all digital solutions",
+        "Closed-loop attribution: campaigns designed for trackable ROI and booked jobs",
+        "Enterprise-grade data with strict hygiene standards for accurate delivery"
+      ],
+      "trigger_phrases": [
+        "I want to reach homeowners in my service area",
+        "I do direct mail — is there a way to extend it digitally?",
+        "I want to target homes based on age or value"
+      ]
+    },
+    {
+      "id": "radio",
+      "name": "Radio Advertising",
+      "funnel_stage": "Awareness",
+      "goal": "Reach a broad, loyal local audience with an intrusive, emotional medium",
+      "positioning": "Radio reaches over 90% of the population each week — building top-of-funnel awareness with a loyal, emotionally connected audience that's captive and close to the point of purchase. In Townsquare markets, radio + AMPED reaches over 70% of adults weekly.",
+      "best_for": [
+        "Businesses wanting mass local reach at an efficient cost",
+        "Businesses with a story or offer to tell through audio",
+        "Complement to digital campaigns for full-funnel coverage",
+        "Local businesses wanting a trusted voice in their community"
+      ],
+      "key_benefits": [
+        "Reaches over 90% of the population each week",
+        "In TSQ markets: radio + AMPED reaches 70%+ of adults weekly",
+        "Intrusive medium — reaches people while multitasking, closest to the point of purchase",
+        "Emotional and influential — audio builds trust and purchase intent",
+        "Townsquare Analytics measures radio campaign impact on web traffic and consumer response"
+      ],
+      "trigger_phrases": [
+        "I want to advertise on the radio",
+        "I want broad local reach",
+        "I want to reach people while they're in their cars"
+      ]
+    }
+  ],
+
+  "ignite_programs": {
+    "_description": "Pre-packaged campaign programs combining multiple products designed to match specific business goals.",
+    "programs": [
+      {
+        "id": "site_growth_engine",
+        "name": "Site GrowthEngine",
+        "monthly_investment": "$3,000",
+        "goal": "Drive targeted website traffic with Facebook and SPARK AI simultaneously",
+        "components": ["Facebook Link Clicks", "SPARK AI (Landing Page Views)"],
+        "description": "Combines Facebook Link Click ads with SPARK AI optimized for landing page views — a one-two punch driving targeted website traffic from both social and AI-powered programmatic channels.",
+        "best_for": "Businesses wanting to grow website traffic from multiple channels simultaneously.",
+        "trigger_phrases": ["I want more people coming to my website", "I want website traffic from multiple channels"]
+      },
+      {
+        "id": "seasonal_spotlight",
+        "name": "Seasonal Spotlight",
+        "monthly_investment": "$2,700",
+        "goal": "Boost seasonal business visibility across social, email, and local radio endorsement",
+        "components": ["Sponsored Social Mention", "Facebook Link Clicks", "Email Marketing"],
+        "description": "Built for businesses with a seasonal push — leverages local radio credibility (SSM), Facebook ads for direct traffic, and email to drive leads from a focused audience in the right window.",
+        "best_for": "Businesses with seasonal peaks, grand openings, or time-limited promotions needing fast local visibility.",
+        "trigger_phrases": ["I have a seasonal business", "I need to promote a limited-time offer", "I want to drive traffic during my busy season"]
+      },
+      {
+        "id": "brick_mortar_booster",
+        "name": "Brick and Mortar Booster",
+        "monthly_investment": "$1,500",
+        "goal": "Drive foot traffic to a physical location using location-based targeting with attribution",
+        "components": ["Geofencing with Foot Traffic Attribution", "Addressable Geofencing Display"],
+        "description": "Targets potential customers based on where they are and where they've been, then measures the direct lift in store visits tied to the campaign — a clear, provable connection between ad spend and foot traffic.",
+        "best_for": "Retail, restaurant, salon, gym — any brick-and-mortar business wanting to grow store visits with measurable results.",
+        "trigger_phrases": ["I want more people in my store", "I want to know if my ads actually bring people in", "I want to target people near my location"]
+      },
+      {
+        "id": "brand_builder_pro",
+        "name": "Brand Builder Pro",
+        "monthly_investment": "$2,000",
+        "goal": "Build long-term brand awareness across social endorsement, video, and programmatic display",
+        "components": ["Sponsored Social Mention", "YouTube TrueView", "Programmatic Display"],
+        "description": "A brand-building combo leveraging local radio trust (SSM), YouTube video for education and engagement, and programmatic display for surround-sound brand presence — laying the foundation for sustained customer relationships.",
+        "best_for": "Businesses investing in long-term brand building. Strong for new businesses establishing presence or established businesses refreshing their image.",
+        "trigger_phrases": ["I want to build my brand", "I want to be known in my market", "I want long-term brand awareness"]
+      },
+      {
+        "id": "one_to_one_marketing",
+        "name": "1:1 Marketing",
+        "monthly_investment": "$1,750",
+        "goal": "Reach a curated in-market audience with email + multi-channel digital follow-up",
+        "components": ["Email Marketing", "Targeted Display / Video / STV retargeting to email openers"],
+        "description": "Email is deployed to a targeted consumer list, then those who open are retargeted across display, video, and STV for the next 30 days — creating a coordinated, household-level conversation. Match-back reporting can connect campaigns to actual sales.",
+        "best_for": "Businesses wanting coordinated outreach to a defined audience with full visibility into what's actually working.",
+        "trigger_phrases": ["I want to reach a very specific audience", "I want to know which marketing actually drove sales", "I want to combine email with digital follow-up"]
+      }
+    ]
+  },
+
+  "product_pairing_guidance": [
+    {
+      "business_goal": "Get more phone calls and leads NOW",
+      "recommended": ["sem"],
+      "add_on": ["seo", "local_network", "demand_gen", "retargeting"]
+    },
+    {
+      "business_goal": "Build local brand awareness",
+      "recommended": ["local_network", "first_impression_takeover", "sponsored_social_mentions"],
+      "add_on": ["facebook_social", "mobile_app_sponsorship", "stv_general", "content_sponsorship"]
+    },
+    {
+      "business_goal": "Increase foot traffic to a physical location",
+      "recommended": ["brick_mortar_booster", "geofencing_foot_traffic", "facebook_social"],
+      "add_on": ["local_network", "sponsored_social_mentions", "addressable_geofencing", "dooh"]
+    },
+    {
+      "business_goal": "Promote a seasonal offer or event",
+      "recommended": ["seasonal_spotlight", "first_impression_takeover", "sponsored_social_mentions"],
+      "add_on": ["sem", "email_marketing", "facebook_social", "add_to_wallet"]
+    },
+    {
+      "business_goal": "Long-term digital foundation",
+      "recommended": ["seo", "sem"],
+      "add_on": ["local_network", "spark_ai", "retargeting", "brand_builder_pro"]
+    },
+    {
+      "business_goal": "Reach cord-cutters and streaming TV viewers",
+      "recommended": ["stv_general", "audience_targeted_stv"],
+      "add_on": ["stv_retargeted_display", "hulu", "youtube_tv", "live_sports"]
+    },
+    {
+      "business_goal": "Re-engage past customers or leverage CRM data",
+      "recommended": ["crm_matching", "one_to_one_marketing", "email_marketing"],
+      "add_on": ["retargeting", "addressable_geofencing", "add_to_wallet"]
+    },
+    {
+      "business_goal": "B2B or professional services",
+      "recommended": ["linkedin", "sem"],
+      "add_on": ["email_marketing", "targeted_display_video", "listen_live", "native_advertising"]
+    },
+    {
+      "business_goal": "Build brand awareness with video",
+      "recommended": ["stv_general", "youtube_trueview", "brand_builder_pro"],
+      "add_on": ["ignite_video_network", "facebook_social", "tiktok", "demand_gen"]
+    },
+    {
+      "business_goal": "Drive homeowner leads (home services)",
+      "recommended": ["sem", "addressable_geofencing", "direct_match"],
+      "add_on": ["geofencing_foot_traffic", "facebook_social", "stv_general", "nextdoor"]
+    },
+    {
+      "business_goal": "Build community trust and local credibility",
+      "recommended": ["sponsored_social_mentions", "digital_endorsements", "radio"],
+      "add_on": ["content_sponsorship", "nextdoor", "studio_sponsorship", "local_network"]
+    }
+  ]
+}

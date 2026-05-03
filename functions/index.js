@@ -9,6 +9,235 @@ const app = express();
 app.use(express.json());
 
 // ---------------------------------------------------------------------------
+// Content library — loaded at startup
+// ---------------------------------------------------------------------------
+const contentVBR        = require('./content/vbr.json');
+const contentObjections = require('./content/objections.json');
+const contentScripts    = require('./content/call_scripts.json');
+const contentStories    = require('./content/success_stories.json');
+const contentProducts   = require('./content/products.json');
+const contentDiscovery  = require('./content/discovery_questions.json');
+
+// Flatten all products across every category into one lookup map by id
+function buildProductMap() {
+  const map = {};
+  const sections = [
+    contentProducts.search_products,
+    contentProducts.ai_programmatic_products,
+    contentProducts.social_media_products,
+    contentProducts.streaming_tv_products,
+    contentProducts.location_based_products,
+    contentProducts.other_channels,
+  ];
+  for (const arr of sections) {
+    if (Array.isArray(arr)) arr.forEach(p => { map[p.id] = p; });
+  }
+  // AMPED products stored under .amped_local_brands.products
+  if (contentProducts.amped_local_brands && contentProducts.amped_local_brands.products) {
+    contentProducts.amped_local_brands.products.forEach(p => { map[p.id] = p; });
+  }
+  return map;
+}
+const PRODUCT_MAP = buildProductMap();
+
+// Map an industry string to a quick-reference category key
+function inferCategory(industry) {
+  if (!industry) return null;
+  const lower = industry.toLowerCase();
+  if (/hvac|heat|cool|plumb|electr|restor|handyman|home service|contractor|cleaning|maid/.test(lower)) return 'home_services';
+  if (/beauty|salon|spa|nail|hair|estheti/.test(lower)) return 'beauty_salon';
+  if (/auto|car|vehicle|truck|repair|mechanic|collision/.test(lower)) return 'automotive';
+  if (/food|coffee|restaurant|cafe|bar|bakery|catering|beverage/.test(lower)) return 'food_beverage';
+  if (/dry clean|laundry|retail|shop|store|boutique/.test(lower)) return 'retail_consumer';
+  return null;
+}
+
+// Return the best-fit success story for an industry
+function pickSuccessStory(industry) {
+  const cat = inferCategory(industry);
+  const ids  = cat ? contentStories.quick_reference_by_category[cat] : null;
+  if (ids && ids.length) {
+    const story = contentStories.case_studies.find(s => s.id === ids[0]);
+    if (story) return story;
+  }
+  return contentStories.case_studies.find(s => s.id === 'tide_cleaners');
+}
+
+// Return 2 best-fit products for an industry using the full product map
+function pickProducts(industry) {
+  const lower = (industry || '').toLowerCase();
+  let ids;
+  // Check auto before HVAC — "auto repair" should not match the HVAC rule
+  if (/auto|automotive|car |vehicle|mechanic|collision|dealership/.test(lower)) {
+    ids = ['sem', 'facebook_social'];
+  } else if (/hvac|heat|cool|plumb|electr|restor|handyman|home service|contractor|emergency/.test(lower)) {
+    ids = ['sem', 'seo'];
+  } else if (/beauty|salon|nail|restaurant|food|retail|fitness|spa/.test(lower)) {
+    ids = ['facebook_social', 'sem'];
+  } else if (/b2b|staffing|recrui|consulting|accounting|insur|financial/.test(lower)) {
+    ids = ['linkedin', 'sem'];
+  } else if (/legal|attorney|medical|doctor|dental/.test(lower)) {
+    ids = ['sem', 'seo'];
+  } else {
+    ids = ['sem', 'facebook_social'];
+  }
+  return ids.map(id => PRODUCT_MAP[id]).filter(Boolean);
+}
+
+// Pick the best AMPED product for an industry
+function pickAmpedProduct(industry) {
+  const lower = (industry || '').toLowerCase();
+  // High foot-traffic / promo businesses → First Impression or SSM
+  if (/restaurant|food|retail|salon|nail|beauty|fitness|spa|gym/.test(lower)) {
+    return PRODUCT_MAP['sponsored_social_mentions'];
+  }
+  // B2B / professional → Listen Live (at-work audience)
+  if (/b2b|staffing|consulting|financial|insur|legal|attorney/.test(lower)) {
+    return PRODUCT_MAP['listen_live'];
+  }
+  // Home services / seasonal → First Impression Takeover
+  if (/hvac|plumb|restor|contractor|home service|cleaning|landscap/.test(lower)) {
+    return PRODUCT_MAP['first_impression_takeover'];
+  }
+  // Default: Local Display Network (broadly useful)
+  return PRODUCT_MAP['local_network'];
+}
+
+// Pick the best Ignite program for an industry/goal
+function pickProgram(industry) {
+  const lower = (industry || '').toLowerCase();
+  if (/restaurant|retail|salon|nail|beauty|fitness|gym/.test(lower)) return contentProducts.ignite_programs.programs.find(p => p.id === 'brick_mortar_booster');
+  if (/seasonal|event|holiday|promo/.test(lower)) return contentProducts.ignite_programs.programs.find(p => p.id === 'seasonal_spotlight');
+  if (/b2b|consulting|staffing|financial/.test(lower)) return contentProducts.ignite_programs.programs.find(p => p.id === 'one_to_one_marketing');
+  return contentProducts.ignite_programs.programs.find(p => p.id === 'brand_builder_pro');
+}
+
+// Build intel content block — compact product MENU (one-liners) + VBR triggers + 3 success stories.
+// Industry unknown at this point; model uses the menu to orient itself, full detail comes in cadence.
+function buildIntelContentBlock() {
+  const menu = [
+    'SEARCH: SEM (active demand/paid Google), SEO (long-term organic), Demand Gen (pre-search: YouTube/Gmail/Discover)',
+    'AI/PROGRAMMATIC: SPARK AI (AI multi-platform targeting across Google network), Targeted Display & Video (programmatic web/apps/games), Retargeting (follow website visitors), CRM Matching / Look-Alike (upload customer list + find similar audiences), Native Advertising (in-content brand messaging), Social Display (social posts as web display ads)',
+    'SOCIAL: Facebook/Instagram Marketing (awareness+conversion, demographic targeting), FB Lead Gen (in-platform lead forms), FB Conversions (drive site actions), TikTok (youth/video), LinkedIn (B2B/decision-makers), Nextdoor (hyper-local community), Pinterest (planners/visual), Snapchat (13-30), X/Twitter (news/current events)',
+    'STREAMING TV: STV general (non-skip :30 ads on Sling/Pluto/Tubi/Roku/Fire), Audience Targeted STV (demographic+behavioral), STV Retargeted Display (follow STV viewers to their phones), Hulu (premium), YouTube TV (no ad-free tier), Netflix (limited inventory/prestige), Live Sports (appointment viewing)',
+    'AMPED LOCAL BRANDS (Townsquare station-owned media): Mobile App Sponsorship (7-sec takeover on app open), Local Display (single-station site), Local Display Network (all stations in market), Ignite Display/Video Network (TSQ content network), First Impression Site Takeover (every site visitor sees your ad), Content Sponsorship (editorial adjacency), SSM / Sponsored Social Mentions (DJ-endorsed Facebook posts), Digital Endorsements (DJs experience your business), Listen Live 2.0 (pre-roll for at-work online radio), 360 Studio Sponsorship (full station co-brand)',
+    'LOCATION: Geofencing + Foot Traffic Attribution (target by location, measure store visits), Addressable Geofencing (household-level targeting by address), DOOH (gas pumps, gyms, cafes, salons, medical)',
+    'OTHER: YouTube TrueView (skippable pre-roll, research mindset), Email Marketing (inbox delivery to targeted list + match-back reporting), Programmatic Audio (Spotify/podcast non-skip audio), Add to Wallet (digital coupon + redemption tracking), Direct Match (direct mail + digital for homeowners), Radio (90%+ weekly reach; TSQ markets 70%+ with AMPED)',
+    'IGNITE PROGRAMS (bundled): Site GrowthEngine ($3K — FB + SPARK AI), Seasonal Spotlight ($2.7K — SSM + FB + Email), Brick & Mortar Booster ($1.5K — Geofencing + Addressable), Brand Builder Pro ($2K — SSM + YouTube + Display), 1:1 Marketing ($1.75K — Email + multi-channel retargeting)',
+  ].join('\n');
+
+  const stories = [
+    contentStories.case_studies.find(s => s.id === 'tide_cleaners'),
+    contentStories.case_studies.find(s => s.id === 'americool_hvac'),
+    contentStories.case_studies.find(s => s.id === 'christian_brothers_auto'),
+  ].filter(Boolean).map(s =>
+    `• ${s.client} (${s.industry}): ${s.talking_point}`
+  ).join('\n');
+
+  const vbrTriggers = contentVBR.vbr_triggers_by_situation.map(t =>
+    `• "${t.trigger}" → ${t.vbr_angle}`
+  ).join('\n');
+
+  return [
+    '\n===TSI PRODUCT MENU===',
+    'Recommend the right mix from this catalog. Match products to the business\'s industry, funnel stage, and digital readiness.',
+    menu,
+    '',
+    'SAMPLE SUCCESS STORIES (use talking_point in scripts):',
+    stories,
+    '',
+    'VBR TRIGGERS BY SITUATION:',
+    vbrTriggers,
+    '===END TSI CONTEXT===\n',
+  ].join('\n');
+}
+
+// Build a targeted content block injected into cadence user messages.
+// Industry is known here — inject full detail only for the 2 matched products,
+// 1 AMPED pick, 1 Ignite program, call scripts, and the relevant success story.
+function buildCadenceContentBlock(industry) {
+  const story          = pickSuccessStory(industry);
+  const products       = pickProducts(industry);       // 2 industry-matched products, full detail
+  const ampedProduct   = pickAmpedProduct(industry);   // 1 best-fit AMPED product
+  const program        = pickProgram(industry);        // 1 best-fit Ignite program
+
+  const vbr1          = contentVBR.email_vbr_structure.sample_vbr_email;
+  const vm1           = contentScripts.voicemail_templates.first_voicemail;
+  const vm2           = contentScripts.voicemail_templates.second_voicemail;
+  const vmF           = contentScripts.voicemail_templates.final_voicemail;
+  const phoneScript   = contentScripts.phone_script_templates.standard_cold_call;
+  const followUp      = contentScripts.phone_script_templates.follow_up_call_after_email;
+  const breakupCall   = contentScripts.phone_script_templates.breakup_call;
+  const fearOfLoss    = contentScripts.fear_of_loss_language[0];
+  const miniClose     = contentScripts.demo_meeting_commitment.before_presenting;
+  const step3         = contentScripts.email_sequence_cadence.step_3_day_3.guidance;
+  const step6         = contentScripts.email_sequence_cadence.step_6_day_9.guidance;
+  const step7         = contentScripts.email_sequence_cadence.step_7_day_10.guidance;
+
+  const objPast   = contentObjections.common_objections.find(o => o.category === 'Past experience');
+  const objBudget = contentObjections.common_objections.find(o => o.category === 'Budget');
+  const objStall  = contentObjections.common_objections.find(o => o.category === 'Stall');
+
+  const discoveryOpener = contentDiscovery.opening_the_discovery_meeting.step_0_strong_opener.sample_opener;
+  const a1Questions     = contentDiscovery.a1_assessment_questions.slice(0, 3).join(' | ');
+
+  // Format product detail block
+  const productDetail = products.map(p => [
+    `${p.name} — ${p.positioning}`,
+    `Best for: ${p.best_for[0]}`,
+    p.seller_language ? `Sell with: ${p.seller_language.use} | Avoid: ${p.seller_language.avoid}` : '',
+    `Trigger phrase: "${p.trigger_phrases[0]}"`,
+  ].filter(Boolean).join('\n')).join('\n\n');
+
+  return [
+    '\n===TSI SALES CONTENT===',
+    'PRODUCTS MATCHED TO THIS INDUSTRY:',
+    productDetail,
+    '',
+    `AMPED LOCAL BRAND RECOMMENDATION: ${ampedProduct.name}`,
+    ampedProduct.description.slice(0, 120),
+    '',
+    `IGNITE PROGRAM RECOMMENDATION: ${program.name} (${program.monthly_investment}/mo)`,
+    program.description.slice(0, 120),
+    '',
+    'VBR EMAIL TEMPLATE:',
+    `Subject: ${vbr1.subject}`,
+    `Body:\n${vbr1.body}`,
+    '',
+    'PHONE SCRIPT TEMPLATE:',
+    phoneScript,
+    '',
+    'VOICEMAIL TEMPLATES:',
+    `VM1: ${vm1}`,
+    `VM2: ${vm2}`,
+    `Final: ${vmF}`,
+    '',
+    'FOLLOW-UP SCRIPT:', followUp,
+    'BREAK-UP CALL:', breakupCall,
+    '',
+    'EMAIL #2 (Success Story step):', step3,
+    'EMAIL #3 (Value + Referral step):', step6,
+    'FINAL STEP:', step7,
+    '',
+    'FEAR-OF-LOSS:', fearOfLoss,
+    'MINI-CLOSE:', miniClose,
+    '',
+    `SUCCESS STORY — ${(industry || 'this category').toUpperCase()}:`,
+    `${story.client} (${story.industry}) — ${story.talking_point}`,
+    `"${story.testimonial.quote.slice(0, 180)}" — ${story.testimonial.contact}`,
+    '',
+    'LIKELY OBJECTIONS:',
+    objPast   ? `"${objPast.objection}" → ${objPast.overcome.slice(0, 110)}` : '',
+    objBudget ? `"${objBudget.objection}" → ${objBudget.overcome.slice(0, 110)}` : '',
+    objStall  ? `"${objStall.objection}" → ${objStall.overcome.slice(0, 110)}` : '',
+    '',
+    'DISCOVERY OPENER:', discoveryOpener,
+    'A1 QUESTIONS:', a1Questions,
+    '===END TSI CONTENT===\n',
+  ].filter(line => line !== null && line !== undefined).join('\n');
+}
+
+// ---------------------------------------------------------------------------
 // CORS – allow all origins (GitHub Pages calls this from the browser)
 // ---------------------------------------------------------------------------
 app.use((req, res, next) => {
@@ -204,6 +433,9 @@ Scoring guide for meetingStrengthScore (1-10):
 Critical rules:
 - NEVER use the words pixels, GTM, tracking tags, remarketing, or conversion tracking in whatToSay, meetingHook, or bestMeetingAngle
 - whatToSay scripts must feel specific to THIS business — reference their actual services, location, reviews, or promotions from the site
+- When writing phone and walk-in scripts, follow the VBR structure from TSI PRODUCT & SALES CONTEXT: Hook → VBR → Credibility → Ask (25-35 sec total for phone)
+- Use the VBR TRIGGERS BY SITUATION to inform the bestMeetingAngle and meetingHook — pick the trigger that best matches what you observe about this business
+- categoryLanguage.swaps must align with seller_language guidance from the matching product in TSI PRODUCT & SALES CONTEXT — use its "use" terms as the foundation
 - conversationStarters must open natural business conversations, not interrogations
 - If website could not be fetched, infer everything from domain name and industry — still generate all fields
 - marketSummary.headline must be specific to THIS business — never generic. Reference actual content from the site.
@@ -235,6 +467,7 @@ async function callClaude(html, domain, pixels, apiKey, businessName, context) {
     (context ? '\n===SALES REP PERSONALIZATION===\n' +
       context + '\n' +
       'IMPORTANT: You MUST incorporate the above personalization into bestMeetingAngle and both whatToSay scripts (phone and walkin). The sales rep typed this instruction specifically so it appears in the output they will use. Do not ignore it.\n\n' : '') +
+    buildIntelContentBlock() +
     'Website HTML (truncated to 30,000 characters):\n' +
     (html ? html.slice(0, 15000) : 'Website could not be fetched. Generate intel based on the domain name and industry inference only.');
 
@@ -302,6 +535,14 @@ Critical rules:
 - Break-up email: warm tone, light humor, specific to this business, leaves door open
 - Use [Your Name] as placeholder for the rep's name
 - Use [Your Phone] as placeholder for the callback number
+- The user message includes a TSI SALES CONTENT block — use it as follows:
+  • Step 1 email: follow VBR EMAIL TEMPLATE structure; use subject formula; reference the RELEVANT SUCCESS STORY talking_point if natural
+  • Step 2/5 phone: adapt the PHONE SCRIPT TEMPLATE with this prospect's details; use voicemail templates verbatim with prospect details filled in
+  • Step 3 email: open with the RELEVANT SUCCESS STORY — quote or paraphrase the testimonial; follow EMAIL #2 GUIDANCE
+  • Step 4 LinkedIn: keep under 150 characters, casual; do NOT pitch — just connect
+  • Step 6 email: use EMAIL #3 GUIDANCE; include the FEAR-OF-LOSS LANGUAGE if timing is relevant
+  • Step 7: use BREAK-UP CALL SCRIPT as a structural guide; keep break-up email specific to this business and warm
+  • Phone steps: always provide BOTH a live script AND a voicemail version
 
 Return ONLY valid JSON. No markdown fences, no explanation.
 
@@ -340,6 +581,7 @@ async function callClaudeCadence(stepIndex, intel, priorSteps, apiKey) {
     `Why worth calling:\n${(intel.whyWorthCalling || []).map(w => `- ${w.label||''}: ${w.detail||''}`).join('\n')}\n\n` +
     `Market summary: ${(intel.marketSummary && intel.marketSummary.headline) || ''}\n\n` +
     priorContext + '\n\n' +
+    buildCadenceContentBlock(intel.industry) +
     `Generate content for: Step ${stepIndex + 1} — Day ${step.day} — ${step.label}`;
 
   const response = await fetch('https://api.anthropic.com/v1/messages', {
