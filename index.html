@@ -3774,7 +3774,7 @@ function _generateCadenceStep(pk, idx) {
     bestMeetingAngle: intel.bestMeetingAngle || '', meetingHook: intel.meetingHook || '',
     whyWorthCalling: intel.whyWorthCalling || [], marketSummary: intel.marketSummary || {}
   };
-  fetch('https://generate-prospect-intel-337108570573.us-central1.run.app/cadence', {
+  fetch('https://generate-prospect-intel-337108570573.us-east1.run.app/cadence', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ profileKey: safeKey, stepIndex: idx, intel: intelSummary, priorSteps: priorSteps })
@@ -4300,7 +4300,7 @@ function _rerunIntelPersonalized(pk) {
   if (btn)      { btn.disabled = true; btn.innerHTML = 'Running…'; }
   if (statusEl) { statusEl.style.display = 'block'; statusEl.textContent = 'Personalizing intel…'; }
 
-  var INTEL_URL = 'https://generate-prospect-intel-337108570573.us-central1.run.app';
+  var INTEL_URL = 'https://generate-prospect-intel-337108570573.us-east1.run.app';
   var safeKey   = pk.replace(/[^a-z0-9\-_]/gi, '-').slice(0, 80);
   var runKey    = safeKey + '-ctx-' + Date.now();
 
@@ -4395,7 +4395,7 @@ function _triggerIntelGeneration(profileKey) {
     if (label && msgIdx < messages.length && pct > msgIdx * 20) { label.textContent = messages[msgIdx]; msgIdx++; }
   }, 800);
 
-  var INTEL_URL = 'https://generate-prospect-intel-337108570573.us-central1.run.app';
+  var INTEL_URL = 'https://generate-prospect-intel-337108570573.us-east1.run.app';
   var safeKey   = profileKey.replace(/[^a-z0-9\-_]/gi, '-').slice(0, 80);
 
   fetch(INTEL_URL, {
@@ -4740,7 +4740,7 @@ function _buildRebuildBody(a) {
 }
 
 function generateDiscoveryIntel(domain, containerId, businessName) {
-  var INTEL_URL = 'https://generate-prospect-intel-337108570573.us-central1.run.app';
+  var INTEL_URL = 'https://generate-prospect-intel-337108570573.us-east1.run.app';
 
   if (!domain) {
     var btnEl = document.getElementById(containerId + '-btn');
