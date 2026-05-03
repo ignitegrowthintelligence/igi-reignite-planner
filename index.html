@@ -4013,25 +4013,27 @@ function _renderIntelPostState(data, acct) {
       + '</div>';
   }
 
-  // Why Townsquare Ignite
-  var tsiIndustry = (d.industry || '').toLowerCase();
-  var tsiCategoryPhrase = tsiIndustry ? tsiIndustry + ' businesses' : 'businesses like yours';
-  var tsiDiffs = [
-    'We work with businesses locally, not as a national agency — we understand your market',
-    'We can show you exactly how campaigns perform, not just impressions and clicks',
-    'Our full-funnel approach connects awareness to actual customer action',
-    'We’ve worked with ' + tsiCategoryPhrase + ' in markets like yours and know what moves the needle',
-    'We’re a local team — you can call us and someone actually picks up'
-  ];
-  onCallHTML += '<div class="intel-sl">Why Townsquare Ignite</div>'
-    + '<div class="intel-card" style="padding:4px 20px;">'
+  // Why Townsquare Ignite — use AI-generated bullets if available, fall back to static
+  var tsiIndustry = (d.industry || ‘’).toLowerCase();
+  var tsiCategoryPhrase = tsiIndustry ? tsiIndustry + ‘ businesses’ : ‘businesses like yours’;
+  var tsiDiffs = (d.whyTSI && d.whyTSI.length)
+    ? d.whyTSI
+    : [
+        ‘We work with businesses locally, not as a national agency — we understand your market’,
+        ‘We can show you exactly how campaigns perform, not just impressions and clicks’,
+        ‘Our full-funnel approach connects awareness to actual customer action’,
+        ‘We’ve worked with ‘ + tsiCategoryPhrase + ‘ in markets like yours and know what moves the needle’,
+        ‘We’re a local team — you can call us and someone actually picks up’
+      ];
+  onCallHTML += ‘<div class="intel-sl">Why Townsquare Ignite</div>’
+    + ‘<div class="intel-card" style="padding:4px 20px;">’
     + tsiDiffs.map(function(diff) {
-        return '<div style="display:flex;align-items:flex-start;gap:10px;padding:10px 0;border-bottom:1px solid rgba(255,255,255,0.06);">'
-          + '<div style="color:#EF4136;font-weight:700;font-size:11px;flex-shrink:0;margin-top:2px;">→</div>'
-          + '<div style="font-size:13px;color:rgba(255,255,255,0.7);line-height:1.55;">' + _esc(diff) + '</div>'
-          + '</div>';
-      }).join('')
-    + '</div>';
+        return ‘<div style="display:flex;align-items:flex-start;gap:10px;padding:10px 0;border-bottom:1px solid rgba(255,255,255,0.06);">’
+          + ‘<div style="color:#EF4136;font-weight:700;font-size:11px;flex-shrink:0;margin-top:2px;">→</div>’
+          + ‘<div style="font-size:13px;color:rgba(255,255,255,0.7);line-height:1.55;">’ + _esc(diff) + ‘</div>’
+          + ‘</div>’;
+      }).join(‘’)
+    + ‘</div>’;
 
   // ── KNOW THE BUSINESS (appended to Pre-Call) ─────────────────────────────
   var researchHTML = '';

@@ -147,6 +147,14 @@ function buildIntelContentBlock() {
     `• "${t.trigger}" → ${t.vbr_angle}`
   ).join('\n');
 
+  const elevatorPitch = [
+    'TSI ELEVATOR PITCH (use to generate whyTSI field — adapt to this specific prospect):',
+    'WHO WE ARE: Townsquare Ignite provides national-scale digital marketing with a local focus, specializing in helping businesses thrive in communities outside the top 50 markets.',
+    'WHAT WE DO: We use our own powerful ad technology and first-party data to connect businesses with the right customers and deliver a measurable return on investment.',
+    'WHY WE\'RE DIFFERENT — Our People: 220+ dedicated digital experts including data scientists, creative, buyers, and operations. Our Process: complete transparency with live, goal-oriented reporting so clients always know exactly what\'s working. Our Product: a strategy built specifically for each client — not a template.',
+    'OUR PROMISE: We are a partner, not a vendor. We stay accountable to their goals so they always see what\'s working, what\'s next, and where their ROI is coming from.',
+  ].join('\n');
+
   return [
     '\n===TSI PRODUCT MENU===',
     'Recommend the right mix from this catalog. Match products to the business\'s industry, funnel stage, and digital readiness.',
@@ -157,6 +165,8 @@ function buildIntelContentBlock() {
     '',
     'VBR TRIGGERS BY SITUATION:',
     vbrTriggers,
+    '',
+    elevatorPitch,
     '===END TSI CONTEXT===\n',
   ].join('\n');
 }
@@ -388,6 +398,14 @@ Return ONLY a valid JSON object. No markdown fences, no explanation, no extra te
     "soft": "Low-pressure ask. Position it as sharing a few ideas or comparing notes. One or two sentences.",
     "strong": "More direct ask. Reference a specific opportunity. Give two day options. Two sentences."
   },
+
+  "whyTSI": [
+    "4-5 natural talking points tailored to THIS specific business explaining why Townsquare Ignite is the right partner.",
+    "Each point must connect to something you actually observed about this prospect — their gaps, category, competitive situation, or growth opportunity.",
+    "Blend the TSI elevator pitch across the set (do not cram all elements into every bullet): WHO WE ARE: national-scale digital marketing with a local focus, specializing in markets outside the top 50; WHAT WE DO: proprietary ad technology and first-party data to connect them with the right customers and deliver measurable ROI; WHY DIFFERENT — People: 220+ digital experts (data scientists, creative, buyers, operations), Process: complete transparency with live goal-oriented reporting, Product: strategy built specifically for their business and industry; OUR PROMISE: partner not vendor, accountable to their goals, they always see what's working, what's next, and where ROI is coming from.",
+    "Pick the 1-2 TSI elements most relevant to what you found about this business. Do not use generic bullets that could apply to any prospect.",
+    "Write them as natural statements a rep could say out loud in a meeting — not corporate marketing copy."
+  ],
 
   "coachingNote": "Only populate this field if meetingStrengthScore is 6 or below. 2-3 sentences of direct coaching for the sales rep: explain specifically WHY this one is harder (competitive category, established business, thin digital gaps, low transaction value, etc.), what they should do differently on this call vs. a high-score prospect, and what a realistic win looks like here. Leave this field null if score is 7 or above.",
 
