@@ -399,6 +399,27 @@ Return ONLY a valid JSON object. No markdown fences, no explanation, no extra te
     "strong": "More direct ask. Reference a specific opportunity. Give two day options. Two sentences."
   },
 
+  "recommendedProducts": [
+    {
+      "name": "Product name from TSI catalog — must match a real product from TSI PRODUCT MENU",
+      "category": "Search / Social / Streaming TV / Programmatic / AMPED / Location / Other",
+      "rationale": "One sentence: why this specific product for this specific business right now. Reference something observed about their business.",
+      "program": false
+    },
+    {
+      "name": "Second product recommendation",
+      "category": "...",
+      "rationale": "One sentence rationale specific to this business.",
+      "program": false
+    },
+    {
+      "name": "Ignite Program name if applicable (e.g. Brick and Mortar Booster, Brand Builder Pro)",
+      "category": "Ignite Program",
+      "rationale": "One sentence: why this bundle fits their situation.",
+      "program": true
+    }
+  ],
+
   "whyTSI": [
     "4-5 natural talking points tailored to THIS specific business explaining why Townsquare Ignite is the right partner.",
     "Each point must connect to something you actually observed about this prospect — their gaps, category, competitive situation, or growth opportunity.",
@@ -470,6 +491,7 @@ Critical rules:
 - marketSummary.gaps should be concrete, seller-relevant observations (e.g. "No email capture or lead form detected", "No promotional pricing or seasonal offers visible", "No customer reviews or social proof on homepage"). Max 3. Never mention pixels, GTM, or tracking tech.
 - categoryLanguage.swaps: generate 5-7 pairs specific to this business's exact industry. Simple, concrete vocabulary a seller would actually say out loud. Focus on what sounds credible vs. generic in this category. Examples: { "use": "booked consultations", "avoid": "leads" } for med spa; { "use": "loan application volume", "avoid": "website clicks" } for a bank.
 - categoryLanguage.context: one sentence on why language discipline matters for this specific category — especially important in medical, legal, financial, and regulated industries.
+- recommendedProducts: pick 2 core products + 1 Ignite Program. Products must come from the TSI PRODUCT MENU. Rationale must reference something specific observed about this business — never generic. Match products to the business's industry, funnel stage, and digital readiness.
 - CRITICAL — GTM rule: If Google Tag Manager is detected, NEVER mention missing pixels, missing tracking, pixel gaps, or tracking setup as a gap, insight, or opportunity anywhere in the response — not in gaps, not in meetingHook, not in whatToSay, not in bestMeetingAngle, not in coachingNote. GTM is a container that can silently fire any pixel. Flagging missing pixels when GTM is present is factually wrong and will mislead sellers.`;
 
 // ---------------------------------------------------------------------------

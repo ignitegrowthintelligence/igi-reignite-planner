@@ -82,6 +82,42 @@
     {
       "trigger": "Business is in a high-LTV category (legal, home services, medical, auto)",
       "vbr_angle": "In your category, each new customer is worth a significant amount over time — the math on acquiring even a few new clients through digital advertising is usually very favorable."
+    },
+    {
+      "trigger": "Business has little or no digital presence — basic or outdated website",
+      "vbr_angle": "Most people in your market are searching online before they ever make a call — right now there's no digital strategy making sure they find you first."
+    },
+    {
+      "trigger": "Established business (10+ years) that may be losing new customers to more visible competitors",
+      "vbr_angle": "Your reputation is built — the risk is that newer competitors are showing up first when people search, and loyalty only goes so far with new customers who don't know you yet."
+    },
+    {
+      "trigger": "Business has strong social media presence but no clear website conversion path",
+      "vbr_angle": "You're getting engagement but the path from interest to action is unclear — people who want to buy or book can't always find a direct way to do it."
+    },
+    {
+      "trigger": "Multiple locations but only one being marketed or promoted",
+      "vbr_angle": "Each location is its own growth opportunity — customers near your other locations may not even know you exist there."
+    },
+    {
+      "trigger": "B2B business with no LinkedIn or professional digital presence",
+      "vbr_angle": "Your buyers are on LinkedIn making decisions before they ever reach out — right now there's no strategy putting you in front of them during that research phase."
+    },
+    {
+      "trigger": "Competitor ads are visibly running in this category",
+      "vbr_angle": "Your competitors are actively spending to show up first when people search — every day without a presence is ground you're letting them take."
+    },
+    {
+      "trigger": "Business recently rebranded or launched a new website with no traffic strategy",
+      "vbr_angle": "A new brand or site is only valuable if people find it — right now the investment in the rebrand isn't being amplified by anything that drives traffic to it."
+    },
+    {
+      "trigger": "Business has strong organic rankings but no paid presence to capture urgent demand",
+      "vbr_angle": "Organic is great for awareness but it's slow — paid search captures people who are ready to act right now and searching with intent, which organic alone can miss."
+    },
+    {
+      "trigger": "Service business where speed-to-lead is critical (emergency services, legal, medical)",
+      "vbr_angle": "In your category, the business that shows up first when someone needs help urgently almost always gets the call — being second isn't close."
     }
   ],
 
