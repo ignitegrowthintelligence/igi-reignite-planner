@@ -1,10 +1,19 @@
 'use strict';
 
 const express = require('express');
-const admin   = require('firebase-admin');
 
-admin.initializeApp();
-const db  = admin.firestore();
+// Firestore cache is optional — if Firebase Admin can't initialize (e.g. project
+// doesn't have Firestore enabled), the service runs fine without caching.
+let db = null;
+try {
+  const admin = require('firebase-admin');
+  admin.initializeApp();
+  db = admin.firestore();
+  console.log('[IGI] Firestore cache enabled');
+} catch (e) {
+  console.warn('[IGI] Firestore unavailable — running without cache:', e.message);
+}
+
 const app = express();
 app.use(express.json());
 
@@ -627,11 +636,13 @@ app.post('/', async (req, res) => {
   const safeKey = profileKey.replace(/[^a-z0-9\-_]/gi, '-').slice(0, 80);
 
   try {
-    // Check Firestore cache first
-    const cached = await db.collection('prospectIntel').doc(safeKey).get();
-    if (cached.exists) {
-      console.log('[IGI] Cache hit:', safeKey);
-      return res.json({ success: true, data: cached.data(), cached: true });
+    // Check Firestore cache first (if available)
+    if (db) {
+      const cached = await db.collection('prospectIntel').doc(safeKey).get();
+      if (cached.exists) {
+        console.log('[IGI] Cache hit:', safeKey);
+        return res.json({ success: true, data: cached.data(), cached: true });
+      }
     }
 
     console.log('[IGI] Generating intel for:', domain);
@@ -667,9 +678,11 @@ app.post('/', async (req, res) => {
     if (!intel.supportingIntel) intel.supportingIntel = {};
     intel.supportingIntel.adPixels = { detected: detectedPixels, hasGTM: pixels.gtm };
 
-    // Save to Firestore
-    await db.collection('prospectIntel').doc(safeKey).set(intel);
-    console.log('[IGI] Intel saved:', safeKey);
+    // Save to Firestore (if available)
+    if (db) {
+      await db.collection('prospectIntel').doc(safeKey).set(intel);
+      console.log('[IGI] Intel saved:', safeKey);
+    }
 
     return res.json({ success: true, data: intel, cached: false });
 
